@@ -189,22 +189,13 @@ spec:
 
 **NOTE**: Unikorn Server is not installed by default, see below for details.
 
-You can install using the local repo, or with CD.
-
-First, unless you are doing local development and want to manually load images, you will want to configure image pull secrets in order to be able to pull the images.
-Create a GitHub personal access token that has the `read:packages` scope, then add it to your `~/.docker/config.json`:
-
-```
-docker login ghcr.io --username spjmurray --password ghp_blahBlahBlah
-```
-
 Then install Unikorn:
 
 <details>
 <summary>Helm</summary>
 
 ```shell
-helm install unikorn charts/unikorn --namespace unikorn --create-namespace --set dockerConfig=$(base64 -w0 ~/.docker/config.json)
+helm install unikorn charts/unikorn --namespace unikorn --create-namespace
 ```
 </details>
 
