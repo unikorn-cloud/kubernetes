@@ -50,7 +50,7 @@ Unikorn is split up into domain specific micro-services:
 Download the official binary (update the version as appropriate):
 
 ```shell
-wget -O ~/bin/unikornctl https://github.com/spjmurray/unikorn/releases/download/v0.4.0/unikornctl-linux-amd64
+wget -O ~/bin/unikornctl https://github.com/spjmurray/unikorn/releases/download/v0.4.1/unikornctl-linux-amd64
 ```
 
 ### Set up shell completion
@@ -220,13 +220,9 @@ metadata:
 spec:
   project: default
   source:
-    path: charts/unikorn
-    repoURL: https://github.com/spjmurray/unikorn
-    targetRevision: v0.4.0
-    helm:
-      parameters:
-      - name: dockerConfig
-        value: # output of "base64 -w0 ~/.docker/config.json"
+    repoURL: https://spjmurray.github.io/unikorn
+    chart: unikorn
+    targetRevision: v0.4.1
   destination:
     namespace: unikorn
     server: https://kubernetes.default.svc
