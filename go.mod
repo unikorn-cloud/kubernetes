@@ -1,11 +1,10 @@
-module github.com/eschercloudai/unikorn
+module github.com/spjmurray/unikorn
 
 go 1.21.1
 
 require (
 	github.com/coreos/go-oidc/v3 v3.9.0
 	github.com/deepmap/oapi-codegen v1.16.2
-	github.com/eschercloudai/unikorn-core v0.1.1
 	github.com/getkin/kin-openapi v0.122.0
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/go-jose/go-jose/v3 v3.0.1
@@ -18,6 +17,7 @@ require (
 	github.com/spdx/tools-golang v0.5.3
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
+	github.com/spjmurray/unikorn-core v0.2.0
 	github.com/stretchr/testify v1.8.4
 	go.opentelemetry.io/otel v1.21.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.21.0

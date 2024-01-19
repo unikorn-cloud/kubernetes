@@ -44,8 +44,8 @@ var (
 )
 
 const (
-	tlsKeyPathDefault  = "/var/lib/secrets/unikorn.eschercloud.ai/jose/tls.key"
-	tlsCertPathDefault = "/var/lib/secrets/unikorn.eschercloud.ai/jose/tls.crt"
+	tlsKeyPathDefault  = "/var/lib/secrets/unikorn.spjmurray.co.uk/jose/tls.key"
+	tlsCertPathDefault = "/var/lib/secrets/unikorn.spjmurray.co.uk/jose/tls.crt"
 )
 
 type Options struct {

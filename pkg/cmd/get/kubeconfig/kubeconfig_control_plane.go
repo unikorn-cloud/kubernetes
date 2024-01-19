@@ -22,11 +22,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/eschercloudai/unikorn/generated/clientset/unikorn"
-	"github.com/eschercloudai/unikorn/pkg/cmd/aliases"
-	"github.com/eschercloudai/unikorn/pkg/cmd/util"
-	"github.com/eschercloudai/unikorn/pkg/cmd/util/flags"
-	"github.com/eschercloudai/unikorn/pkg/provisioners/helmapplications/vcluster"
+	"github.com/spjmurray/unikorn/generated/clientset/unikorn"
+	"github.com/spjmurray/unikorn/pkg/cmd/aliases"
+	"github.com/spjmurray/unikorn/pkg/cmd/util"
+	"github.com/spjmurray/unikorn/pkg/cmd/util/flags"
+	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/vcluster"
 
 	"k8s.io/client-go/kubernetes"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"

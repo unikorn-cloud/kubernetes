@@ -23,10 +23,10 @@ import (
 	"net"
 	"strings"
 
-	coreclient "github.com/eschercloudai/unikorn-core/pkg/client"
-	"github.com/eschercloudai/unikorn-core/pkg/constants"
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners/application"
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners/util"
+	coreclient "github.com/spjmurray/unikorn-core/pkg/client"
+	"github.com/spjmurray/unikorn-core/pkg/constants"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners/application"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners/util"
 
 	corev1 "k8s.io/api/core/v1"
 )

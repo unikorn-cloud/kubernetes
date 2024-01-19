@@ -22,10 +22,10 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"github.com/eschercloudai/unikorn/pkg/server/authorization"
-	"github.com/eschercloudai/unikorn/pkg/server/authorization/jose"
-	"github.com/eschercloudai/unikorn/pkg/server/authorization/oauth2"
-	"github.com/eschercloudai/unikorn/pkg/server/errors"
+	"github.com/spjmurray/unikorn/pkg/server/authorization"
+	"github.com/spjmurray/unikorn/pkg/server/authorization/jose"
+	"github.com/spjmurray/unikorn/pkg/server/authorization/oauth2"
+	"github.com/spjmurray/unikorn/pkg/server/errors"
 )
 
 // authorizationContext is passed through the middleware to propagate

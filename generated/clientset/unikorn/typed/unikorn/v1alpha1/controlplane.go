@@ -22,8 +22,8 @@ import (
 	"context"
 	"time"
 
-	scheme "github.com/eschercloudai/unikorn/generated/clientset/unikorn/scheme"
-	v1alpha1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
+	scheme "github.com/spjmurray/unikorn/generated/clientset/unikorn/scheme"
+	v1alpha1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"

@@ -24,7 +24,7 @@ import (
 
 const (
 	// GroupName is the Kubernetes API group our resources belong to.
-	GroupName = "unikorn.eschercloud.ai"
+	GroupName = "unikorn.spjmurray.co.uk"
 	// GroupVersion is the version of our custom resources.
 	GroupVersion = "v1alpha1"
 	// Group is group/version of our resources.

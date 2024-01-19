@@ -24,7 +24,7 @@ package v1alpha1
 import (
 	net "net"
 
-	unikornv1alpha1 "github.com/eschercloudai/unikorn-core/pkg/apis/unikorn/v1alpha1"
+	unikornv1alpha1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )

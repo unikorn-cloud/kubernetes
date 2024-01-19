@@ -21,7 +21,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/eschercloudai/unikorn/pkg/server/generated"
+	"github.com/spjmurray/unikorn/pkg/server/generated"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )

@@ -21,7 +21,7 @@ import (
 	"crypto/sha256"
 	"time"
 
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )

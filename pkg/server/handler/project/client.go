@@ -21,12 +21,12 @@ import (
 	goerrors "errors"
 	"fmt"
 
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn/pkg/server/authorization/oauth2"
-	"github.com/eschercloudai/unikorn/pkg/server/errors"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/pkg/server/authorization/oauth2"
+	"github.com/spjmurray/unikorn/pkg/server/errors"
 
-	"github.com/eschercloudai/unikorn-core/pkg/constants"
-	"github.com/eschercloudai/unikorn-core/pkg/util/retry"
+	"github.com/spjmurray/unikorn-core/pkg/constants"
+	"github.com/spjmurray/unikorn-core/pkg/util/retry"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

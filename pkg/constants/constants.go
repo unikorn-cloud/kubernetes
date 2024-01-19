@@ -57,14 +57,14 @@ const (
 	// VersionLabel is a label applied to resources so we know the application
 	// version that was used to create them (and thus what metadata is valid
 	// for them).  Metadata may be upgraded to a later version for any resource.
-	VersionLabel = "unikorn.eschercloud.ai/version"
+	VersionLabel = "unikorn.spjmurray.co.uk/version"
 
 	// KindLabel is used to match a resource that may be owned by a particular kind.
 	// For example, projects and control planes are modelled on namespaces.  For CPs
 	// you have to select based on project and CP name, because of name reuse, but
 	// this raises the problem that selecting a project's namespace will match multiple
 	// so this provides a concrete type associated with each resource.
-	KindLabel = "unikorn.eschercloud.ai/kind"
+	KindLabel = "unikorn.spjmurray.co.uk/kind"
 
 	// KindLabelValueProject is used to denote a resource belongs to this type.
 	KindLabelValueProject = "project"
@@ -77,30 +77,30 @@ const (
 
 	// ProjectLabel is a label applied to namespaces to indicate it is under
 	// control of this tool.  Useful for label selection.
-	ProjectLabel = "unikorn.eschercloud.ai/project"
+	ProjectLabel = "unikorn.spjmurray.co.uk/project"
 
 	// ControlPlaneLabel is a label applied to resources to indicate is belongs
 	// to a specific control plane.
-	ControlPlaneLabel = "unikorn.eschercloud.ai/controlplane"
+	ControlPlaneLabel = "unikorn.spjmurray.co.uk/controlplane"
 
 	// KubernetesClusterLabel is applied to resources to indicate it belongs
 	// to a specific cluster.
-	KubernetesClusterLabel = "unikorn.eschercloud.ai/cluster"
+	KubernetesClusterLabel = "unikorn.spjmurray.co.uk/cluster"
 
 	// ApplicationLabel is applied to ArgoCD applications to differentiate
 	// between them.
-	ApplicationLabel = "unikorn.eschercloud.ai/application"
+	ApplicationLabel = "unikorn.spjmurray.co.uk/application"
 
 	// ApplicationIDLabel is used to lookup applications based on their ID.
-	ApplicationIDLabel = "unikorn.eschercloud.ai/application-id"
+	ApplicationIDLabel = "unikorn.spjmurray.co.uk/application-id"
 
 	// IngressEndpointAnnotation helps us find the ingress IP address.
-	IngressEndpointAnnotation = "unikorn.eschercloud.ai/ingress-endpoint"
+	IngressEndpointAnnotation = "unikorn.spjmurray.co.uk/ingress-endpoint"
 
 	// ConfigurationHashAnnotation is used where application owners refuse to
 	// poll configuration updates and we (and all other users) are forced into
 	// manually restarting services based on a Deployment/DaemonSet changing.
-	ConfigurationHashAnnotation = "unikorn.eschercloud.ai/config-hash"
+	ConfigurationHashAnnotation = "unikorn.spjmurray.co.uk/config-hash"
 
 	// Finalizer is applied to resources that need to be deleted manually
 	// and do other complex logic.

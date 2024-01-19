@@ -26,7 +26,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/eschercloudai/unikorn/pkg/constants"
+	"github.com/spjmurray/unikorn/pkg/constants"
 )
 
 // NetworkClient wraps the generic client because gophercloud is unsafe.

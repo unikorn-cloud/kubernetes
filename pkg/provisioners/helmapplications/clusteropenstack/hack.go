@@ -21,11 +21,11 @@ import (
 	"errors"
 	"fmt"
 
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
 
-	"github.com/eschercloudai/unikorn-core/pkg/cd"
-	coreclient "github.com/eschercloudai/unikorn-core/pkg/client"
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners/application"
+	"github.com/spjmurray/unikorn-core/pkg/cd"
+	coreclient "github.com/spjmurray/unikorn-core/pkg/client"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners/application"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -124,7 +124,7 @@ func resourceExistsUnstructured(o unstructured.Unstructured, names []string) boo
 // workload pool.
 func machineDeploymentForWorkloadPool(objects []unstructured.Unstructured, name string) (*unstructured.Unstructured, error) {
 	for i, object := range objects {
-		if value, ok := object.GetAnnotations()["pool.eschercloud.ai/name"]; ok {
+		if value, ok := object.GetAnnotations()["pool.spjmurray.co.uk/name"]; ok {
 			if value == name {
 				return &objects[i], nil
 			}

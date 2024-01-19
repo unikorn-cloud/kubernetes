@@ -21,8 +21,8 @@ package v1alpha1
 import (
 	"net/http"
 
-	"github.com/eschercloudai/unikorn/generated/clientset/unikorn/scheme"
-	v1alpha1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/generated/clientset/unikorn/scheme"
+	v1alpha1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
 	rest "k8s.io/client-go/rest"
 )
 
@@ -35,7 +35,7 @@ type UnikornV1alpha1Interface interface {
 	ProjectsGetter
 }
 
-// UnikornV1alpha1Client is used to interact with features provided by the unikorn.eschercloud.ai group.
+// UnikornV1alpha1Client is used to interact with features provided by the unikorn.spjmurray.co.uk group.
 type UnikornV1alpha1Client struct {
 	restClient rest.Interface
 }

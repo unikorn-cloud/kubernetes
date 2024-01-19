@@ -20,12 +20,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/eschercloudai/unikorn/pkg/providers/openstack"
-	"github.com/eschercloudai/unikorn/pkg/server/authorization/jose"
-	"github.com/eschercloudai/unikorn/pkg/server/authorization/keystone"
-	"github.com/eschercloudai/unikorn/pkg/server/authorization/oauth2"
-	"github.com/eschercloudai/unikorn/pkg/server/errors"
-	"github.com/eschercloudai/unikorn/pkg/server/generated"
+	"github.com/spjmurray/unikorn/pkg/providers/openstack"
+	"github.com/spjmurray/unikorn/pkg/server/authorization/jose"
+	"github.com/spjmurray/unikorn/pkg/server/authorization/keystone"
+	"github.com/spjmurray/unikorn/pkg/server/authorization/oauth2"
+	"github.com/spjmurray/unikorn/pkg/server/errors"
+	"github.com/spjmurray/unikorn/pkg/server/generated"
 )
 
 // Authenticator provides Keystone authentication functionality.

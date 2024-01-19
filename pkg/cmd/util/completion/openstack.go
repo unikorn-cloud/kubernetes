@@ -23,7 +23,7 @@ import (
 	"github.com/gophercloud/utils/openstack/clientconfig"
 	"github.com/spf13/cobra"
 
-	"github.com/eschercloudai/unikorn/pkg/providers/openstack"
+	"github.com/spjmurray/unikorn/pkg/providers/openstack"
 )
 
 // CloudCompletionFunc parses clouds.yaml and supplies matching cloud names.

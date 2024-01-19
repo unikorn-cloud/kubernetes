@@ -17,9 +17,9 @@ limitations under the License.
 package main
 
 import (
-	"github.com/eschercloudai/unikorn/pkg/managers/cluster"
+	"github.com/spjmurray/unikorn/pkg/managers/cluster"
 
-	"github.com/eschercloudai/unikorn-core/pkg/manager"
+	"github.com/spjmurray/unikorn-core/pkg/manager"
 )
 
 func main() {

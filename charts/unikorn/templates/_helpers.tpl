@@ -96,11 +96,11 @@ Create the container images
 Create Prometheus labels
 */}}
 {{- define "unikorn.prometheusServiceSelector" -}}
-prometheus.eschercloud.ai/app: unikorn
+prometheus.spjmurray.co.uk/app: unikorn
 {{- end }}
 
 {{- define "unikorn.prometheusJobLabel" -}}
-prometheus.eschercloud.ai/job
+prometheus.spjmurray.co.uk/job
 {{- end }}
 
 {{- define "unikorn.prometheusLabels" -}}

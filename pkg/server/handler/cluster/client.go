@@ -23,16 +23,16 @@ import (
 
 	"github.com/gophercloud/utils/openstack/clientconfig"
 
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
-	"github.com/eschercloudai/unikorn/pkg/provisioners/helmapplications/vcluster"
-	"github.com/eschercloudai/unikorn/pkg/server/authorization"
-	"github.com/eschercloudai/unikorn/pkg/server/errors"
-	"github.com/eschercloudai/unikorn/pkg/server/generated"
-	"github.com/eschercloudai/unikorn/pkg/server/handler/controlplane"
-	"github.com/eschercloudai/unikorn/pkg/server/handler/providers/openstack"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
+	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/vcluster"
+	"github.com/spjmurray/unikorn/pkg/server/authorization"
+	"github.com/spjmurray/unikorn/pkg/server/errors"
+	"github.com/spjmurray/unikorn/pkg/server/generated"
+	"github.com/spjmurray/unikorn/pkg/server/handler/controlplane"
+	"github.com/spjmurray/unikorn/pkg/server/handler/providers/openstack"
 
-	coreclient "github.com/eschercloudai/unikorn-core/pkg/client"
+	coreclient "github.com/spjmurray/unikorn-core/pkg/client"
 
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"

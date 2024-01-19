@@ -22,10 +22,10 @@ import (
 	"slices"
 	"time"
 
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn/pkg/constants"
-	"github.com/eschercloudai/unikorn/pkg/monitor/upgrade/errors"
-	"github.com/eschercloudai/unikorn/pkg/monitor/upgrade/util"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/pkg/constants"
+	"github.com/spjmurray/unikorn/pkg/monitor/upgrade/errors"
+	"github.com/spjmurray/unikorn/pkg/monitor/upgrade/util"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"

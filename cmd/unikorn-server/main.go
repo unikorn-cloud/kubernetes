@@ -28,11 +28,11 @@ import (
 
 	"github.com/spf13/pflag"
 
-	unikornscheme "github.com/eschercloudai/unikorn/generated/clientset/unikorn/scheme"
-	"github.com/eschercloudai/unikorn/pkg/server"
+	unikornscheme "github.com/spjmurray/unikorn/generated/clientset/unikorn/scheme"
+	"github.com/spjmurray/unikorn/pkg/server"
 
-	coreclient "github.com/eschercloudai/unikorn-core/pkg/client"
-	"github.com/eschercloudai/unikorn-core/pkg/constants"
+	coreclient "github.com/spjmurray/unikorn-core/pkg/client"
+	"github.com/spjmurray/unikorn-core/pkg/constants"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )

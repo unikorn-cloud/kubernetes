@@ -23,8 +23,8 @@ import (
 	"github.com/getkin/kin-openapi/routers"
 	"github.com/getkin/kin-openapi/routers/gorillamux"
 
-	"github.com/eschercloudai/unikorn/pkg/server/errors"
-	"github.com/eschercloudai/unikorn/pkg/server/generated"
+	"github.com/spjmurray/unikorn/pkg/server/errors"
+	"github.com/spjmurray/unikorn/pkg/server/generated"
 )
 
 // OpenAPI abstracts schema access and validation.

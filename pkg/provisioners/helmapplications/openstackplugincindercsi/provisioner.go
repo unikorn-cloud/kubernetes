@@ -20,13 +20,13 @@ import (
 	"context"
 	"strings"
 
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn/pkg/provisioners/helmapplications/openstackcloudprovider"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/openstackcloudprovider"
 
-	coreclient "github.com/eschercloudai/unikorn-core/pkg/client"
-	"github.com/eschercloudai/unikorn-core/pkg/constants"
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners/application"
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners/util"
+	coreclient "github.com/spjmurray/unikorn-core/pkg/client"
+	"github.com/spjmurray/unikorn-core/pkg/constants"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners/application"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners/util"
 
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"

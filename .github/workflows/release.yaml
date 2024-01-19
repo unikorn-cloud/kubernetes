@@ -36,13 +36,13 @@ jobs:
     - name: Build SBOMS
       run: go run ./hack/sbom
     - name: Build Documentation
-      run: sudo apt -y install wbritish && go run github.com/eschercloudai/unikorn-core/hack/docs -o docs/server-api.md
+      run: sudo apt -y install wbritish && go run github.com/spjmurray/unikorn-core/hack/docs -o docs/server-api.md
     - name: Configure Git
       run: |
         git config user.name "$GITHUB_ACTOR"
         git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
     - name: Release Helm Chart
-      uses: eschercloudai/unikorn-chart-release-action@v1
+      uses: spjmurray/unikorn-chart-release-action@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Rename Release Assets

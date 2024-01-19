@@ -28,7 +28,7 @@ import (
 
 	"golang.org/x/oauth2"
 
-	"github.com/eschercloudai/unikorn/pkg/server/generated"
+	"github.com/spjmurray/unikorn/pkg/server/generated"
 )
 
 const (

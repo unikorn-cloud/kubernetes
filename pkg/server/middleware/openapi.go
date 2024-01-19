@@ -26,9 +26,9 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/eschercloudai/unikorn/pkg/constants"
-	"github.com/eschercloudai/unikorn/pkg/server/authorization/oauth2"
-	"github.com/eschercloudai/unikorn/pkg/server/errors"
+	"github.com/spjmurray/unikorn/pkg/constants"
+	"github.com/spjmurray/unikorn/pkg/server/authorization/oauth2"
+	"github.com/spjmurray/unikorn/pkg/server/errors"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )

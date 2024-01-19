@@ -29,11 +29,11 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/applicationcredentials"
 	lru "github.com/hashicorp/golang-lru/v2"
 
-	"github.com/eschercloudai/unikorn/pkg/providers/openstack"
-	"github.com/eschercloudai/unikorn/pkg/server/authorization"
-	"github.com/eschercloudai/unikorn/pkg/server/authorization/oauth2"
-	"github.com/eschercloudai/unikorn/pkg/server/errors"
-	"github.com/eschercloudai/unikorn/pkg/server/generated"
+	"github.com/spjmurray/unikorn/pkg/providers/openstack"
+	"github.com/spjmurray/unikorn/pkg/server/authorization"
+	"github.com/spjmurray/unikorn/pkg/server/authorization/oauth2"
+	"github.com/spjmurray/unikorn/pkg/server/errors"
+	"github.com/spjmurray/unikorn/pkg/server/generated"
 )
 
 var (

@@ -19,8 +19,8 @@ package nvidiagpuoperator
 import (
 	"context"
 
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners/application"
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners/util"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners/application"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners/util"
 )
 
 const (

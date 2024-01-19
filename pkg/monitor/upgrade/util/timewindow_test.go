@@ -26,8 +26,8 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/google/uuid"
 
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn/pkg/monitor/upgrade/util"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/pkg/monitor/upgrade/util"
 )
 
 const (

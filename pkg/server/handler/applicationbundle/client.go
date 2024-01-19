@@ -20,9 +20,9 @@ import (
 	"context"
 	"slices"
 
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn/pkg/server/errors"
-	"github.com/eschercloudai/unikorn/pkg/server/generated"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/pkg/server/errors"
+	"github.com/spjmurray/unikorn/pkg/server/generated"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

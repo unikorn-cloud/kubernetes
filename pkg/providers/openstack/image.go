@@ -29,8 +29,8 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/exp/slices"
 
-	"github.com/eschercloudai/unikorn-core/pkg/constants"
-	"github.com/eschercloudai/unikorn-core/pkg/util"
+	"github.com/spjmurray/unikorn-core/pkg/constants"
+	"github.com/spjmurray/unikorn-core/pkg/util"
 )
 
 // ImageClient wraps the generic client because gophercloud is unsafe.

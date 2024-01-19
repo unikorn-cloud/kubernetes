@@ -33,10 +33,10 @@ import (
 	"github.com/spf13/pflag"
 	"golang.org/x/oauth2"
 
-	"github.com/eschercloudai/unikorn/pkg/server/authorization/jose"
-	"github.com/eschercloudai/unikorn/pkg/server/authorization/keystone"
-	"github.com/eschercloudai/unikorn/pkg/server/errors"
-	"github.com/eschercloudai/unikorn/pkg/server/generated"
+	"github.com/spjmurray/unikorn/pkg/server/authorization/jose"
+	"github.com/spjmurray/unikorn/pkg/server/authorization/keystone"
+	"github.com/spjmurray/unikorn/pkg/server/errors"
+	"github.com/spjmurray/unikorn/pkg/server/generated"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )

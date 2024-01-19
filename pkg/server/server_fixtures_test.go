@@ -23,11 +23,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
 
-	coreunikornv1 "github.com/eschercloudai/unikorn-core/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn-core/pkg/constants"
-	"github.com/eschercloudai/unikorn-core/pkg/util"
+	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn-core/pkg/constants"
+	"github.com/spjmurray/unikorn-core/pkg/util"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

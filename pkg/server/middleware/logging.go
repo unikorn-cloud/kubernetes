@@ -28,7 +28,7 @@ import (
 	"go.opentelemetry.io/otel/semconv/v1.18.0/httpconv"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/eschercloudai/unikorn/pkg/constants"
+	"github.com/spjmurray/unikorn/pkg/constants"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )

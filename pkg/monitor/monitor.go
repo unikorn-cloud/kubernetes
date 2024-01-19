@@ -22,8 +22,8 @@ import (
 
 	"github.com/spf13/pflag"
 
-	upgradecluster "github.com/eschercloudai/unikorn/pkg/monitor/upgrade/cluster"
-	upgradecontrolplane "github.com/eschercloudai/unikorn/pkg/monitor/upgrade/controlplane"
+	upgradecluster "github.com/spjmurray/unikorn/pkg/monitor/upgrade/cluster"
+	upgradecontrolplane "github.com/spjmurray/unikorn/pkg/monitor/upgrade/controlplane"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"

@@ -19,10 +19,10 @@ package clusterautoscaler
 import (
 	"context"
 
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
 
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners/application"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners/application"
 )
 
 // Provisioner encapsulates provisioning.

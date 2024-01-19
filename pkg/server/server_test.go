@@ -36,13 +36,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2"
 
-	unikornscheme "github.com/eschercloudai/unikorn/generated/clientset/unikorn/scheme"
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn/pkg/constants"
-	"github.com/eschercloudai/unikorn/pkg/server"
-	"github.com/eschercloudai/unikorn/pkg/server/generated"
+	unikornscheme "github.com/spjmurray/unikorn/generated/clientset/unikorn/scheme"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/pkg/constants"
+	"github.com/spjmurray/unikorn/pkg/server"
+	"github.com/spjmurray/unikorn/pkg/server/generated"
 
-	coreclient "github.com/eschercloudai/unikorn-core/pkg/client"
+	coreclient "github.com/spjmurray/unikorn-core/pkg/client"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 

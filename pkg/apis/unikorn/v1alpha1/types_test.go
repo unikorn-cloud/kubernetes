@@ -20,7 +20,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
 )
 
 const (

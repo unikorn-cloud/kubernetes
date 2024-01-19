@@ -20,7 +20,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/eschercloudai/unikorn/pkg/server/errors"
+	"github.com/spjmurray/unikorn/pkg/server/errors"
 )
 
 // GetHTTPAuthenticationScheme grabs the scheme and token from the HTTP

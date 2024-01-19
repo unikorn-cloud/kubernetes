@@ -19,7 +19,7 @@ package get
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/eschercloudai/unikorn/pkg/cmd/get/kubeconfig"
+	"github.com/spjmurray/unikorn/pkg/cmd/get/kubeconfig"
 
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 )

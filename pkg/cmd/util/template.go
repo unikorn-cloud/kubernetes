@@ -20,7 +20,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/eschercloudai/unikorn/pkg/constants"
+	"github.com/spjmurray/unikorn/pkg/constants"
 
 	"k8s.io/kubectl/pkg/util/templates"
 )

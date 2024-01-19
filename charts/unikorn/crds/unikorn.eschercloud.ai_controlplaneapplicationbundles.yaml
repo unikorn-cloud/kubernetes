@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.12.1
-  name: controlplaneapplicationbundles.unikorn.eschercloud.ai
+  name: controlplaneapplicationbundles.unikorn.spjmurray.co.uk
 spec:
-  group: unikorn.eschercloud.ai
+  group: unikorn.spjmurray.co.uk
   names:
     categories:
     - unikorn

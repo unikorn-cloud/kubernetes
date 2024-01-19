@@ -21,7 +21,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/eschercloudai/unikorn/pkg/constants"
+	"github.com/spjmurray/unikorn/pkg/constants"
 )
 
 // newVersionCommand returns a version command that prints out application

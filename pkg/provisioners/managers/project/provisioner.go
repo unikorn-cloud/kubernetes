@@ -20,12 +20,12 @@ import (
 	"context"
 	"errors"
 
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
 
-	coreunikornv1 "github.com/eschercloudai/unikorn-core/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners"
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners/resource"
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners/util"
+	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners/resource"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners/util"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

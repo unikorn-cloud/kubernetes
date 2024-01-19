@@ -23,8 +23,8 @@ import (
 	"strings"
 	"time"
 
-	coreunikornv1 "github.com/eschercloudai/unikorn-core/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn-core/pkg/constants"
+	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn-core/pkg/constants"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"

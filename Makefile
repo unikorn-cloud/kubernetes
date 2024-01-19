@@ -3,7 +3,7 @@ VERSION = 0.0.0
 
 # Base go module name.
 MODULE := $(shell cat go.mod | grep -m1 module | awk '{print $$2}')
-CORE_MODULE := github.com/eschercloudai/unikorn-core
+CORE_MODULE := github.com/spjmurray/unikorn-core
 
 # Git revision.
 REVISION := $(shell git rev-parse HEAD)
@@ -90,7 +90,7 @@ MOCKGEN_VERSION=v0.3.0
 
 # This is the base directory to generate kubernetes API primitives from e.g.
 # clients and CRDs.
-GENAPIBASE = github.com/eschercloudai/unikorn/pkg/apis
+GENAPIBASE = github.com/spjmurray/unikorn/pkg/apis
 
 # This is the list of APIs to generate clients for.
 GENAPIS = $(GENAPIBASE)/unikorn/v1alpha1
@@ -106,7 +106,7 @@ GENCLIENTNAME = unikorn
 GENCLIENTS = $(MODULE)/$(GENDIR)/clientset
 
 # This defines how docker containers are tagged.
-DOCKER_ORG = ghcr.io/eschercloudai
+DOCKER_ORG = ghcr.io/spjmurray
 
 # Main target, builds all binaries.
 .PHONY: all
@@ -212,10 +212,10 @@ validate: $(SRVGENDIR)
 # Validate the docs can be generated without fail.
 .PHONY: validate-docs
 validate-docs: $(SRVGENDIR)
-	go run github.com/eschercloudai/unikorn-core/hack/docs --dry-run
+	go run github.com/spjmurray/unikorn-core/hack/docs --dry-run
 
 # Perform license checking.
 # This must pass or you will be denied by CI.
 .PHONY: license
 license:
-	go run github.com/eschercloudai/unikorn-core/hack/check_license
+	go run github.com/spjmurray/unikorn-core/hack/check_license

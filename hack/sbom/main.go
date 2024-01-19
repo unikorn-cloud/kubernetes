@@ -30,9 +30,9 @@ import (
 	spdx_common "github.com/spdx/tools-golang/spdx/v2/common"
 	spdx "github.com/spdx/tools-golang/spdx/v2/v2_3"
 
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
 
-	coreunikornv1 "github.com/eschercloudai/unikorn-core/pkg/apis/unikorn/v1alpha1"
+	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
 
 	"sigs.k8s.io/yaml"
 )
@@ -257,7 +257,7 @@ func generateSBOM(name string, spec *unikornv1.ApplicationBundleSpec, applicatio
 		DataLicense:       spdx.DataLicense,
 		SPDXIdentifier:    "DOCUMENT",
 		DocumentName:      name,
-		DocumentNamespace: "unikorn.eschercloud.ai",
+		DocumentNamespace: "unikorn.spjmurray.co.uk",
 		CreationInfo: &spdx.CreationInfo{
 			Creators: []spdx_common.Creator{
 				{

@@ -19,11 +19,11 @@ package vcluster
 import (
 	"context"
 
-	"github.com/eschercloudai/unikorn/pkg/constants"
+	"github.com/spjmurray/unikorn/pkg/constants"
 
-	coreunikornv1 "github.com/eschercloudai/unikorn-core/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn-core/pkg/cd"
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners"
+	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn-core/pkg/cd"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners"
 
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )

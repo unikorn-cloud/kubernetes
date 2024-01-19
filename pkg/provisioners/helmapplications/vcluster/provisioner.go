@@ -19,7 +19,7 @@ package vcluster
 import (
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners/application"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners/application"
 
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )

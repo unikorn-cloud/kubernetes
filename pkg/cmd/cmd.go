@@ -19,10 +19,10 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/eschercloudai/unikorn/pkg/cmd/create"
-	"github.com/eschercloudai/unikorn/pkg/cmd/delete"
-	"github.com/eschercloudai/unikorn/pkg/cmd/get"
-	"github.com/eschercloudai/unikorn/pkg/constants"
+	"github.com/spjmurray/unikorn/pkg/cmd/create"
+	"github.com/spjmurray/unikorn/pkg/cmd/delete"
+	"github.com/spjmurray/unikorn/pkg/cmd/get"
+	"github.com/spjmurray/unikorn/pkg/constants"
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"

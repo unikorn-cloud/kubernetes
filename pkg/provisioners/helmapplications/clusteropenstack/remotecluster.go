@@ -21,12 +21,12 @@ import (
 	"crypto/sha256"
 	"fmt"
 
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn/pkg/constants"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/pkg/constants"
 
-	"github.com/eschercloudai/unikorn-core/pkg/cd"
-	coreclient "github.com/eschercloudai/unikorn-core/pkg/client"
-	"github.com/eschercloudai/unikorn-core/pkg/provisioners"
+	"github.com/spjmurray/unikorn-core/pkg/cd"
+	coreclient "github.com/spjmurray/unikorn-core/pkg/client"
+	"github.com/spjmurray/unikorn-core/pkg/provisioners"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"

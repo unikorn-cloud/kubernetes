@@ -24,8 +24,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/eschercloudai/unikorn/generated/clientset/unikorn"
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/generated/clientset/unikorn"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"

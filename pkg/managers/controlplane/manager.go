@@ -17,14 +17,14 @@ limitations under the License.
 package controlplane
 
 import (
-	unikornscheme "github.com/eschercloudai/unikorn/generated/clientset/unikorn/scheme"
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn/pkg/provisioners/managers/controlplane"
+	unikornscheme "github.com/spjmurray/unikorn/generated/clientset/unikorn/scheme"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/pkg/provisioners/managers/controlplane"
 
-	coreclient "github.com/eschercloudai/unikorn-core/pkg/client"
-	"github.com/eschercloudai/unikorn-core/pkg/constants"
-	coremanager "github.com/eschercloudai/unikorn-core/pkg/manager"
-	"github.com/eschercloudai/unikorn-core/pkg/manager/options"
+	coreclient "github.com/spjmurray/unikorn-core/pkg/client"
+	"github.com/spjmurray/unikorn-core/pkg/constants"
+	coremanager "github.com/spjmurray/unikorn-core/pkg/manager"
+	"github.com/spjmurray/unikorn-core/pkg/manager/options"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"

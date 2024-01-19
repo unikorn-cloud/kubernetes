@@ -50,7 +50,7 @@ Unikorn is split up into domain specific micro-services:
 Download the official binary (update the version as appropriate):
 
 ```shell
-wget -O ~/bin/unikornctl https://github.com/eschercloudai/unikorn/releases/download/v0.3.61/unikornctl-linux-amd64
+wget -O ~/bin/unikornctl https://github.com/spjmurray/unikorn/releases/download/v0.4.0/unikornctl-linux-amd64
 ```
 
 ### Set up shell completion
@@ -221,8 +221,8 @@ spec:
   project: default
   source:
     path: charts/unikorn
-    repoURL: https://github.com/eschercloudai/unikorn
-    targetRevision: v0.3.61
+    repoURL: https://github.com/spjmurray/unikorn
+    targetRevision: v0.4.0
     helm:
       parameters:
       - name: dockerConfig
@@ -274,7 +274,7 @@ It's base64 encoded e.g. `echo -n MY_TOKEN | base64 -w0`.
 
 To enable Unikorn UI `--set ui.enabled=true`.
 This only enables the ingress route for now.
-You will also need to install the UI using Helm as described in the [unikorn-ui repository](https://github.com/eschercloudai/unikorn-ui).
+You will also need to install the UI using Helm as described in the [unikorn-ui repository](https://github.com/spjmurray/unikorn-ui).
 It **must** be installed in the same namespace as Unikorn server in order for the service to be seen by the Ingress.
 
 ## Monitoring & Logging

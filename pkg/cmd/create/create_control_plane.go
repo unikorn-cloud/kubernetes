@@ -22,13 +22,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/eschercloudai/unikorn/generated/clientset/unikorn"
-	unikornv1 "github.com/eschercloudai/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/eschercloudai/unikorn/pkg/cmd/aliases"
-	"github.com/eschercloudai/unikorn/pkg/cmd/errors"
-	"github.com/eschercloudai/unikorn/pkg/cmd/util"
-	"github.com/eschercloudai/unikorn/pkg/cmd/util/flags"
-	"github.com/eschercloudai/unikorn/pkg/constants"
+	"github.com/spjmurray/unikorn/generated/clientset/unikorn"
+	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/spjmurray/unikorn/pkg/cmd/aliases"
+	"github.com/spjmurray/unikorn/pkg/cmd/errors"
+	"github.com/spjmurray/unikorn/pkg/cmd/util"
+	"github.com/spjmurray/unikorn/pkg/cmd/util/flags"
+	"github.com/spjmurray/unikorn/pkg/constants"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"

@@ -17,9 +17,9 @@ limitations under the License.
 package main
 
 import (
-	"github.com/eschercloudai/unikorn/pkg/managers/project"
+	"github.com/spjmurray/unikorn/pkg/managers/project"
 
-	"github.com/eschercloudai/unikorn-core/pkg/manager"
+	"github.com/spjmurray/unikorn-core/pkg/manager"
 )
 
 func main() {

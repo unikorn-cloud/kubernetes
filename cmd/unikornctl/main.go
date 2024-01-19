@@ -19,8 +19,8 @@ package main
 import (
 	"os"
 
-	unikornscheme "github.com/eschercloudai/unikorn/generated/clientset/unikorn/scheme"
-	"github.com/eschercloudai/unikorn/pkg/cmd"
+	unikornscheme "github.com/spjmurray/unikorn/generated/clientset/unikorn/scheme"
+	"github.com/spjmurray/unikorn/pkg/cmd"
 
 	"k8s.io/client-go/kubernetes/scheme"
 )
