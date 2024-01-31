@@ -42,11 +42,9 @@ jobs:
         git config user.name "$GITHUB_ACTOR"
         git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
     - name: Release Helm Chart
-      uses: unikorn-cloud/unikorn-chart-release-action@v1
+      uses: unikorn-cloud/chart-release-action@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Rename Release Assets
-      run: cp bin/unikornctl bin/unikornctl-linux-amd64
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
@@ -54,6 +52,5 @@ jobs:
         name: Release ${{ github.ref_name }}
         tag_name: ${{ github.ref_name }}
         files: |
-          bin/unikornctl-linux-amd64
           sboms/*.spdx
           docs/server-api.md
