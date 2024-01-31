@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,9 +18,9 @@ limitations under the License.
 package main
 
 import (
-	"github.com/spjmurray/unikorn/pkg/managers/project"
+	"github.com/unikorn-cloud/unikorn/pkg/managers/project"
 
-	"github.com/spjmurray/unikorn-core/pkg/manager"
+	"github.com/unikorn-cloud/core/pkg/manager"
 )
 
 func main() {

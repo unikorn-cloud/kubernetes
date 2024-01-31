@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,7 +22,7 @@ import (
 	"errors"
 	"net"
 
-	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -188,7 +189,7 @@ type ProjectStatus struct {
 	Namespace string `json:"namespace,omitempty"`
 
 	// Current service state of a project.
-	Conditions []coreunikornv1.Condition `json:"conditions,omitempty"`
+	Conditions []unikornv1core.Condition `json:"conditions,omitempty"`
 }
 
 // ControlPlaneList is a typed list of control planes.
@@ -242,7 +243,7 @@ type ControlPlaneStatus struct {
 	Namespace string `json:"namespace,omitempty"`
 
 	// Current service state of a control plane.
-	Conditions []coreunikornv1.Condition `json:"conditions,omitempty"`
+	Conditions []unikornv1core.Condition `json:"conditions,omitempty"`
 }
 
 // MachineGeneric contains common things across all pool types, including
@@ -489,7 +490,7 @@ type KubernetesClusterStatus struct {
 	Namespace string `json:"namespace,omitempty"`
 
 	// Current service state of a Kubernetes cluster.
-	Conditions []coreunikornv1.Condition `json:"conditions,omitempty"`
+	Conditions []unikornv1core.Condition `json:"conditions,omitempty"`
 }
 
 // ControlPlaneApplicationBundleList defines a list of application bundles.
@@ -568,7 +569,7 @@ type ApplicationNamedReference struct {
 	// Unikorn's application management engine.
 	Name *string `json:"name"`
 	// Reference is a reference to the application definition.
-	Reference *coreunikornv1.ApplicationReference `json:"reference"`
+	Reference *unikornv1core.ApplicationReference `json:"reference"`
 }
 
 type ApplicationBundleStatus struct{}

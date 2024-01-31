@@ -1,8 +1,7 @@
 # Unikorn
 
-A badass, opinionated, deployer of souls!
-
-![Unikorn](docs/unikornapi.png)
+![Unikorn Logo](https://raw.githubusercontent.com/unikorn-cloud/assets/main/images/logos/light-on-dark/logo.svg#gh-dark-mode-only)
+![Unikorn Logo](https://raw.githubusercontent.com/unikorn-cloud/assets/main/images/logos/dark-on-light/logo.svg#gh-light-mode-only)
 
 ## Overview
 
@@ -50,7 +49,7 @@ Unikorn is split up into domain specific micro-services:
 Download the official binary (update the version as appropriate):
 
 ```shell
-wget -O ~/bin/unikornctl https://github.com/spjmurray/unikorn/releases/download/v0.4.1/unikornctl-linux-amd64
+wget -O ~/bin/unikornctl https://github.com/unikorn-cloud/unikorn/releases/download/v0.4.1/unikornctl-linux-amd64
 ```
 
 ### Set up shell completion
@@ -211,7 +210,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://spjmurray.github.io/unikorn
+    repoURL: https://unikorn-cloud.github.io/unikorn
     chart: unikorn
     targetRevision: v0.4.1
   destination:
@@ -261,7 +260,7 @@ It's base64 encoded e.g. `echo -n MY_TOKEN | base64 -w0`.
 
 To enable Unikorn UI `--set ui.enabled=true`.
 This only enables the ingress route for now.
-You will also need to install the UI using Helm as described in the [unikorn-ui repository](https://github.com/spjmurray/unikorn-ui).
+You will also need to install the UI using Helm as described in the [unikorn-ui repository](https://github.com/unikorn-cloud/unikorn-ui).
 It **must** be installed in the same namespace as Unikorn server in order for the service to be seen by the Ingress.
 
 ## Monitoring & Logging

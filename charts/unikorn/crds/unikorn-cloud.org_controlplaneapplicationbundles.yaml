@@ -4,16 +4,16 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.12.1
-  name: kubernetesclusterapplicationbundles.unikorn.spjmurray.co.uk
+  name: controlplaneapplicationbundles.unikorn-cloud.org
 spec:
-  group: unikorn.spjmurray.co.uk
+  group: unikorn-cloud.org
   names:
     categories:
     - unikorn
-    kind: KubernetesClusterApplicationBundle
-    listKind: KubernetesClusterApplicationBundleList
-    plural: kubernetesclusterapplicationbundles
-    singular: kubernetesclusterapplicationbundle
+    kind: ControlPlaneApplicationBundle
+    listKind: ControlPlaneApplicationBundleList
+    plural: controlplaneapplicationbundles
+    singular: controlplaneapplicationbundle
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -35,7 +35,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: KubernetesClusterApplicationBundle defines a bundle of applications
+        description: ControlPlaneApplicationBundle defines a bundle of applications
           related with a particular custom resource e.g. a ControlPlane has vcluster,
           cert-manager and cluster-api applications associated with it.  This forms
           the backbone of upgrades by allowing bundles to be switched out in control

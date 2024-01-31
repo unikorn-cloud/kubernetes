@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,10 +24,10 @@ import (
 	"net"
 	"strings"
 
-	coreclient "github.com/spjmurray/unikorn-core/pkg/client"
-	"github.com/spjmurray/unikorn-core/pkg/constants"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/application"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/util"
+	coreclient "github.com/unikorn-cloud/core/pkg/client"
+	"github.com/unikorn-cloud/core/pkg/constants"
+	"github.com/unikorn-cloud/core/pkg/provisioners/application"
+	"github.com/unikorn-cloud/core/pkg/provisioners/util"
 
 	corev1 "k8s.io/api/core/v1"
 )

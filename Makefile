@@ -3,7 +3,7 @@ VERSION = 0.0.0
 
 # Base go module name.
 MODULE := $(shell cat go.mod | grep -m1 module | awk '{print $$2}')
-CORE_MODULE := github.com/spjmurray/unikorn-core
+CORE_MODULE := github.com/unikorn-cloud/core
 
 # Git revision.
 REVISION := $(shell git rev-parse HEAD)
@@ -11,7 +11,6 @@ REVISION := $(shell git rev-parse HEAD)
 # Commands to build, the first lot are architecture agnostic and will be built
 # for your host's architecture.  The latter are going to run in Kubernetes, so
 # want to be amd64.
-COMMANDS = unikornctl
 CONTROLLERS = \
   unikorn-project-manager \
   unikorn-control-plane-manager \
@@ -52,11 +51,7 @@ SRVGENDIR = $(SRVBASE)/$(SRVGENPKG)
 PREFIX = $(HOME)/bin
 
 # List of binaries to build.
-BINARIES := $(patsubst %,$(BINDIR)/%,$(COMMANDS))
 CONTROLLER_BINARIES := $(foreach arch,$(CONTROLLER_ARCH),$(foreach ctrl,$(CONTROLLERS),$(BINDIR)/$(arch)-linux-gnu/$(ctrl)))
-
-# And where to install them to.
-INSTALL_BINARIES := $(patsubst %,$(PREFIX)/%,$(COMMANDS))
 
 # List of sources to trigger a build.
 # TODO: Bazel may be quicker, but it's a massive hog, and a pain in the arse.
@@ -90,7 +85,7 @@ MOCKGEN_VERSION=v0.3.0
 
 # This is the base directory to generate kubernetes API primitives from e.g.
 # clients and CRDs.
-GENAPIBASE = github.com/spjmurray/unikorn/pkg/apis
+GENAPIBASE = github.com/unikorn-cloud/unikorn/pkg/apis
 
 # This is the list of APIs to generate clients for.
 GENAPIS = $(GENAPIBASE)/unikorn/v1alpha1
@@ -98,19 +93,12 @@ GENAPIS = $(GENAPIBASE)/unikorn/v1alpha1
 # These are generic arguments that need to be passed to client generation.
 GENARGS = --go-header-file hack/boilerplate.go.txt --output-base ../../..
 
-# This controls the name of the client that will be generated and it will affect
-# code import paths.  This overrides the default "versioned".
-GENCLIENTNAME = unikorn
-
-# This defines where clients will be generated.
-GENCLIENTS = $(MODULE)/$(GENDIR)/clientset
-
 # This defines how docker containers are tagged.
-DOCKER_ORG = ghcr.io/spjmurray
+DOCKER_ORG = ghcr.io/unikorn-cloud
 
 # Main target, builds all binaries.
 .PHONY: all
-all: $(BINARIES) $(CONTROLLER_BINARIES) $(CRDDIR)
+all: $(CONTROLLER_BINARIES) $(CRDDIR)
 
 # Create a binary output directory, this should be an order-only prerequisite.
 $(BINDIR) $(BINDIR)/amd64-linux-gnu $(BINDIR)/arm64-linux-gnu:
@@ -133,11 +121,6 @@ $(BINDIR)/arm64-linux-gnu/%: $(SOURCES) $(GENDIR) | $(BINDIR)/arm64-linux-gnu
 generate:
 	@go install go.uber.org/mock/mockgen@$(MOCKGEN_VERSION)
 	go generate ./...
-
-# Installation target, to test out things like shell completion you'll
-# want to install it somewhere in your PATH.
-.PHONY: install
-install: $(INSTALL_BINARIES)
 
 # Create container images.  Use buildkit here, as it's the future, and it does
 # good things, like per file .dockerignores and all that jazz.
@@ -175,9 +158,7 @@ $(CRDDIR): $(APISRC)
 # Generate a clientset to interact with our custom resources.
 $(GENDIR): $(APISRC)
 	@go install k8s.io/code-generator/cmd/deepcopy-gen@$(CODEGEN_VERSION)
-	@go install k8s.io/code-generator/cmd/client-gen@$(CODEGEN_VERSION)
 	$(GOBIN)/deepcopy-gen --input-dirs $(GENAPIS) -O zz_generated.deepcopy --bounding-dirs $(GENAPIBASE) $(GENARGS)
-	$(GOBIN)/client-gen --clientset-name $(GENCLIENTNAME) --input-base "" --input $(GENAPIS) --output-package $(GENCLIENTS) $(GENARGS)
 	@touch $@
 
 # Generate the server schema, types and router boilerplate.
@@ -212,10 +193,10 @@ validate: $(SRVGENDIR)
 # Validate the docs can be generated without fail.
 .PHONY: validate-docs
 validate-docs: $(SRVGENDIR)
-	go run github.com/spjmurray/unikorn-core/hack/docs --dry-run
+	go run github.com/unikorn-cloud/core/hack/docs --dry-run
 
 # Perform license checking.
 # This must pass or you will be denied by CI.
 .PHONY: license
 license:
-	go run github.com/spjmurray/unikorn-core/hack/check_license
+	go run github.com/unikorn-cloud/core/hack/check_license

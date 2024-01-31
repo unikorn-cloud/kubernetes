@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +20,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/spjmurray/unikorn/pkg/server/errors"
+	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 )
 
 // NotFound is called from the router when a path is not found.

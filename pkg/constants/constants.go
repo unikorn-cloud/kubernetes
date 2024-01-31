@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -57,14 +58,14 @@ const (
 	// VersionLabel is a label applied to resources so we know the application
 	// version that was used to create them (and thus what metadata is valid
 	// for them).  Metadata may be upgraded to a later version for any resource.
-	VersionLabel = "unikorn.spjmurray.co.uk/version"
+	VersionLabel = "unikorn-cloud.org/version"
 
 	// KindLabel is used to match a resource that may be owned by a particular kind.
 	// For example, projects and control planes are modelled on namespaces.  For CPs
 	// you have to select based on project and CP name, because of name reuse, but
 	// this raises the problem that selecting a project's namespace will match multiple
 	// so this provides a concrete type associated with each resource.
-	KindLabel = "unikorn.spjmurray.co.uk/kind"
+	KindLabel = "unikorn-cloud.org/kind"
 
 	// KindLabelValueProject is used to denote a resource belongs to this type.
 	KindLabelValueProject = "project"
@@ -77,30 +78,30 @@ const (
 
 	// ProjectLabel is a label applied to namespaces to indicate it is under
 	// control of this tool.  Useful for label selection.
-	ProjectLabel = "unikorn.spjmurray.co.uk/project"
+	ProjectLabel = "unikorn-cloud.org/project"
 
 	// ControlPlaneLabel is a label applied to resources to indicate is belongs
 	// to a specific control plane.
-	ControlPlaneLabel = "unikorn.spjmurray.co.uk/controlplane"
+	ControlPlaneLabel = "unikorn-cloud.org/controlplane"
 
 	// KubernetesClusterLabel is applied to resources to indicate it belongs
 	// to a specific cluster.
-	KubernetesClusterLabel = "unikorn.spjmurray.co.uk/cluster"
+	KubernetesClusterLabel = "unikorn-cloud.org/cluster"
 
 	// ApplicationLabel is applied to ArgoCD applications to differentiate
 	// between them.
-	ApplicationLabel = "unikorn.spjmurray.co.uk/application"
+	ApplicationLabel = "unikorn-cloud.org/application"
 
 	// ApplicationIDLabel is used to lookup applications based on their ID.
-	ApplicationIDLabel = "unikorn.spjmurray.co.uk/application-id"
+	ApplicationIDLabel = "unikorn-cloud.org/application-id"
 
 	// IngressEndpointAnnotation helps us find the ingress IP address.
-	IngressEndpointAnnotation = "unikorn.spjmurray.co.uk/ingress-endpoint"
+	IngressEndpointAnnotation = "unikorn-cloud.org/ingress-endpoint"
 
 	// ConfigurationHashAnnotation is used where application owners refuse to
 	// poll configuration updates and we (and all other users) are forced into
 	// manually restarting services based on a Deployment/DaemonSet changing.
-	ConfigurationHashAnnotation = "unikorn.spjmurray.co.uk/config-hash"
+	ConfigurationHashAnnotation = "unikorn-cloud.org/config-hash"
 
 	// Finalizer is applied to resources that need to be deleted manually
 	// and do other complex logic.

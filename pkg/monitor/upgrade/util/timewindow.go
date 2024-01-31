@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,7 +22,7 @@ import (
 	"crypto/sha256"
 	"time"
 
-	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )

@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,19 +23,19 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/certmanager"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/clusterapi"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/vcluster"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/certmanager"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusterapi"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/vcluster"
 
-	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
-	coreclient "github.com/spjmurray/unikorn-core/pkg/client"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/concurrent"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/remotecluster"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/resource"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/serial"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/util"
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
+	coreclient "github.com/unikorn-cloud/core/pkg/client"
+	"github.com/unikorn-cloud/core/pkg/provisioners"
+	"github.com/unikorn-cloud/core/pkg/provisioners/concurrent"
+	"github.com/unikorn-cloud/core/pkg/provisioners/remotecluster"
+	"github.com/unikorn-cloud/core/pkg/provisioners/resource"
+	"github.com/unikorn-cloud/core/pkg/provisioners/serial"
+	"github.com/unikorn-cloud/core/pkg/provisioners/util"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -72,7 +73,7 @@ func newApplicationReferenceGetter(controlPlane *unikornv1.ControlPlane) *Applic
 	}
 }
 
-func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name string) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name string) (*unikornv1core.ApplicationReference, error) {
 	cli := coreclient.StaticClientFromContext(ctx)
 
 	key := client.ObjectKey{
@@ -88,15 +89,15 @@ func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name st
 	return bundle.Spec.GetApplication(name)
 }
 
-func (a *ApplicationReferenceGetter) vCluster(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) vCluster(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "vcluster")
 }
 
-func (a *ApplicationReferenceGetter) certManager(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) certManager(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "cert-manager")
 }
 
-func (a *ApplicationReferenceGetter) clusterAPI(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) clusterAPI(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "cluster-api")
 }
 
@@ -116,7 +117,7 @@ func New() provisioners.ManagerProvisioner {
 // Ensure the ManagerProvisioner interface is implemented.
 var _ provisioners.ManagerProvisioner = &Provisioner{}
 
-func (p *Provisioner) Object() coreunikornv1.ManagableResourceInterface {
+func (p *Provisioner) Object() unikornv1core.ManagableResourceInterface {
 	return &p.controlPlane
 }
 

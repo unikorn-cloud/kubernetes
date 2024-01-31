@@ -29,7 +29,7 @@ import (
 
 	"github.com/spf13/pflag"
 
-	"github.com/spjmurray/unikorn-core/pkg/util/retry"
+	"github.com/unikorn-cloud/core/pkg/util/retry"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"

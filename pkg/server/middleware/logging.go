@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +29,7 @@ import (
 	"go.opentelemetry.io/otel/semconv/v1.18.0/httpconv"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/spjmurray/unikorn/pkg/constants"
+	"github.com/unikorn-cloud/unikorn/pkg/constants"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )

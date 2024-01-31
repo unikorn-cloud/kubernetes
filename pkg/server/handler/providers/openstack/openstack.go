@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,11 +30,11 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/applicationcredentials"
 	lru "github.com/hashicorp/golang-lru/v2"
 
-	"github.com/spjmurray/unikorn/pkg/providers/openstack"
-	"github.com/spjmurray/unikorn/pkg/server/authorization"
-	"github.com/spjmurray/unikorn/pkg/server/authorization/oauth2"
-	"github.com/spjmurray/unikorn/pkg/server/errors"
-	"github.com/spjmurray/unikorn/pkg/server/generated"
+	"github.com/unikorn-cloud/unikorn/pkg/providers/openstack"
+	"github.com/unikorn-cloud/unikorn/pkg/server/authorization"
+	"github.com/unikorn-cloud/unikorn/pkg/server/authorization/oauth2"
+	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
+	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 )
 
 var (

@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,33 +20,33 @@ package cluster
 import (
 	"context"
 
-	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/certmanager"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/certmanagerissuers"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/cilium"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/clusterautoscaler"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/clusterautoscaleropenstack"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/ingressnginx"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/kubernetesdashboard"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/longhorn"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/metricsserver"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/nvidiagpuoperator"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/openstackcloudprovider"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/openstackplugincindercsi"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/prometheus"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/vcluster"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/certmanager"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/certmanagerissuers"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/cilium"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusterautoscaler"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusterautoscaleropenstack"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/ingressnginx"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/kubernetesdashboard"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/longhorn"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/metricsserver"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/nvidiagpuoperator"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/openstackcloudprovider"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/openstackplugincindercsi"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/prometheus"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/vcluster"
 
-	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
-	coreclient "github.com/spjmurray/unikorn-core/pkg/client"
-	"github.com/spjmurray/unikorn-core/pkg/constants"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/concurrent"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/conditional"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/remotecluster"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/serial"
-	provisionersutil "github.com/spjmurray/unikorn-core/pkg/provisioners/util"
-	"github.com/spjmurray/unikorn-core/pkg/util"
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
+	coreclient "github.com/unikorn-cloud/core/pkg/client"
+	"github.com/unikorn-cloud/core/pkg/constants"
+	"github.com/unikorn-cloud/core/pkg/provisioners"
+	"github.com/unikorn-cloud/core/pkg/provisioners/concurrent"
+	"github.com/unikorn-cloud/core/pkg/provisioners/conditional"
+	"github.com/unikorn-cloud/core/pkg/provisioners/remotecluster"
+	"github.com/unikorn-cloud/core/pkg/provisioners/serial"
+	provisionersutil "github.com/unikorn-cloud/core/pkg/provisioners/util"
+	"github.com/unikorn-cloud/core/pkg/util"
 
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -62,7 +63,7 @@ func newApplicationReferenceGetter(cluster *unikornv1.KubernetesCluster) *Applic
 	}
 }
 
-func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name string) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name string) (*unikornv1core.ApplicationReference, error) {
 	// TODO: we could cache this, it's from a cache anyway, so quite cheap...
 	cli := coreclient.StaticClientFromContext(ctx)
 
@@ -79,59 +80,59 @@ func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name st
 	return bundle.Spec.GetApplication(name)
 }
 
-func (a *ApplicationReferenceGetter) certManager(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) certManager(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "cert-manager")
 }
 
-func (a *ApplicationReferenceGetter) certManagerIssuers(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) certManagerIssuers(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "cert-manager-issuers")
 }
 
-func (a *ApplicationReferenceGetter) clusterOpenstack(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) clusterOpenstack(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "cluster-openstack")
 }
 
-func (a *ApplicationReferenceGetter) cilium(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) cilium(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "cilium")
 }
 
-func (a *ApplicationReferenceGetter) openstackCloudProvider(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) openstackCloudProvider(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "openstack-cloud-provider")
 }
 
-func (a *ApplicationReferenceGetter) openstackPluginCinderCSI(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) openstackPluginCinderCSI(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "openstack-plugin-cinder-csi")
 }
 
-func (a *ApplicationReferenceGetter) metricsServer(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) metricsServer(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "metrics-server")
 }
 
-func (a *ApplicationReferenceGetter) nvidiaGPUOperator(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) nvidiaGPUOperator(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "nvidia-gpu-operator")
 }
 
-func (a *ApplicationReferenceGetter) clusterAutoscaler(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) clusterAutoscaler(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "cluster-autoscaler")
 }
 
-func (a *ApplicationReferenceGetter) clusterAutoscalerOpenstack(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) clusterAutoscalerOpenstack(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "cluster-autoscaler-openstack")
 }
 
-func (a *ApplicationReferenceGetter) ingressNginx(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) ingressNginx(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "ingress-nginx")
 }
 
-func (a *ApplicationReferenceGetter) kubernetesDashboard(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) kubernetesDashboard(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "kubernetes-dashboard")
 }
 
-func (a *ApplicationReferenceGetter) longhorn(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) longhorn(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "longhorn")
 }
 
-func (a *ApplicationReferenceGetter) prometheus(ctx context.Context) (*coreunikornv1.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) prometheus(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "prometheus")
 }
 
@@ -151,7 +152,7 @@ func New() provisioners.ManagerProvisioner {
 // Ensure the ManagerProvisioner interface is implemented.
 var _ provisioners.ManagerProvisioner = &Provisioner{}
 
-func (p *Provisioner) Object() coreunikornv1.ManagableResourceInterface {
+func (p *Provisioner) Object() unikornv1core.ManagableResourceInterface {
 	return &p.cluster
 }
 

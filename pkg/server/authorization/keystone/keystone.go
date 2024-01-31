@@ -29,7 +29,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
 	"github.com/spf13/pflag"
 
-	"github.com/spjmurray/unikorn/pkg/providers/openstack"
+	"github.com/unikorn-cloud/unikorn/pkg/providers/openstack"
 )
 
 var (

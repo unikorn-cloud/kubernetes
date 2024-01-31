@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +20,7 @@ package vcluster
 import (
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/application"
+	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )

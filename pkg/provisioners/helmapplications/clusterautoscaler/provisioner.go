@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,10 +20,10 @@ package clusterautoscaler
 import (
 	"context"
 
-	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/spjmurray/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
 
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/application"
+	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 )
 
 // Provisioner encapsulates provisioning.

@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/spjmurray/unikorn/pkg/server/generated"
+	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 )
 
 //nolint:gochecknoglobals

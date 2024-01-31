@@ -30,9 +30,9 @@ import (
 	spdx_common "github.com/spdx/tools-golang/spdx/v2/common"
 	spdx "github.com/spdx/tools-golang/spdx/v2/v2_3"
 
-	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 
-	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 
 	"sigs.k8s.io/yaml"
 )
@@ -67,7 +67,7 @@ func parseResourceFile[T any](path string) ([]T, error) {
 
 // parseResources loads all the manifest files, and returns list types of application bundles
 // and helm applications.
-func parseResources() (*unikornv1.ControlPlaneApplicationBundleList, *unikornv1.KubernetesClusterApplicationBundleList, *coreunikornv1.HelmApplicationList, error) {
+func parseResources() (*unikornv1.ControlPlaneApplicationBundleList, *unikornv1.KubernetesClusterApplicationBundleList, *unikornv1core.HelmApplicationList, error) {
 	controlPlaneApplicationBundles, err := parseResourceFile[unikornv1.ControlPlaneApplicationBundle]("charts/unikorn/templates/controlplaneapplicationbundles.yaml")
 	if err != nil {
 		return nil, nil, nil, err
@@ -78,16 +78,16 @@ func parseResources() (*unikornv1.ControlPlaneApplicationBundleList, *unikornv1.
 		return nil, nil, nil, err
 	}
 
-	applications, err := parseResourceFile[coreunikornv1.HelmApplication]("charts/unikorn/templates/applications.yaml")
+	applications, err := parseResourceFile[unikornv1core.HelmApplication]("charts/unikorn/templates/applications.yaml")
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	return &unikornv1.ControlPlaneApplicationBundleList{Items: controlPlaneApplicationBundles}, &unikornv1.KubernetesClusterApplicationBundleList{Items: kubernetesClusterApplicationBundles}, &coreunikornv1.HelmApplicationList{Items: applications}, nil
+	return &unikornv1.ControlPlaneApplicationBundleList{Items: controlPlaneApplicationBundles}, &unikornv1.KubernetesClusterApplicationBundleList{Items: kubernetesClusterApplicationBundles}, &unikornv1core.HelmApplicationList{Items: applications}, nil
 }
 
 // getApplication looks up an application by name.
-func getApplication(name string, applications *coreunikornv1.HelmApplicationList) (*coreunikornv1.HelmApplication, error) {
+func getApplication(name string, applications *unikornv1core.HelmApplicationList) (*unikornv1core.HelmApplication, error) {
 	for i, application := range applications.Items {
 		if application.Name == name {
 			return &applications.Items[i], nil
@@ -251,13 +251,13 @@ func generatePackage(repo, chart, version string) ([]*spdx.Package, error) {
 }
 
 // generateSBOM does the actual meat!
-func generateSBOM(name string, spec *unikornv1.ApplicationBundleSpec, applications *coreunikornv1.HelmApplicationList) error {
+func generateSBOM(name string, spec *unikornv1.ApplicationBundleSpec, applications *unikornv1core.HelmApplicationList) error {
 	document := &spdx.Document{
 		SPDXVersion:       spdx.Version,
 		DataLicense:       spdx.DataLicense,
 		SPDXIdentifier:    "DOCUMENT",
 		DocumentName:      name,
-		DocumentNamespace: "unikorn.spjmurray.co.uk",
+		DocumentNamespace: "unikorn-cloud.org",
 		CreationInfo: &spdx.CreationInfo{
 			Creators: []spdx_common.Creator{
 				{

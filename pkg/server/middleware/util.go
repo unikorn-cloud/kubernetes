@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,8 +24,8 @@ import (
 	"github.com/getkin/kin-openapi/routers"
 	"github.com/getkin/kin-openapi/routers/gorillamux"
 
-	"github.com/spjmurray/unikorn/pkg/server/errors"
-	"github.com/spjmurray/unikorn/pkg/server/generated"
+	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
+	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 )
 
 // OpenAPI abstracts schema access and validation.

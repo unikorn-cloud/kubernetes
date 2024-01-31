@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,11 +20,11 @@ package vcluster
 import (
 	"context"
 
-	"github.com/spjmurray/unikorn/pkg/constants"
+	"github.com/unikorn-cloud/unikorn/pkg/constants"
 
-	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
-	"github.com/spjmurray/unikorn-core/pkg/cd"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners"
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/core/pkg/cd"
+	"github.com/unikorn-cloud/core/pkg/provisioners"
 
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
@@ -34,14 +35,14 @@ type RemoteCluster struct {
 
 	// labeller is used to identify the owner of and uniquely identify
 	// a remote cluster instance.
-	labeller coreunikornv1.ResourceLabeller
+	labeller unikornv1core.ResourceLabeller
 }
 
 // Ensure this implements the remotecluster.Generator interface.
 var _ provisioners.RemoteCluster = &RemoteCluster{}
 
 // NewRemoteCluster return a new instance of a remote cluster generator.
-func NewRemoteCluster(namespace string, labeller coreunikornv1.ResourceLabeller) *RemoteCluster {
+func NewRemoteCluster(namespace string, labeller unikornv1core.ResourceLabeller) *RemoteCluster {
 	return &RemoteCluster{
 		namespace: namespace,
 		labeller:  labeller,

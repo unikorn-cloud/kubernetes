@@ -18,7 +18,7 @@ metadata:
 rules:
 # Manage kubernetes clusters (my job).
 - apiGroups:
-  - unikorn.spjmurray.co.uk
+  - unikorn-cloud.org
   resources:
   - kubernetesclusters
   verbs:
@@ -28,14 +28,14 @@ rules:
   - watch
   - update
 - apiGroups:
-  - unikorn.spjmurray.co.uk
+  - unikorn-cloud.org
   resources:
   - kubernetesclusters/status
   verbs:
   - update
 # Get my owning control plane.
 - apiGroups:
-  - unikorn.spjmurray.co.uk
+  - unikorn-cloud.org
   resources:
   - controlplanes
   verbs:
@@ -50,7 +50,7 @@ rules:
   - watch
 # Get application bundles
 - apiGroups:
-  - unikorn.spjmurray.co.uk
+  - unikorn-cloud.org
   resources:
   - helmapplications
   - kubernetesclusterapplicationbundles

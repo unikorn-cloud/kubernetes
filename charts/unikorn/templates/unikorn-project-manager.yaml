@@ -18,7 +18,7 @@ metadata:
 rules:
 # Manage projects (my job).
 - apiGroups:
-  - unikorn.spjmurray.co.uk
+  - unikorn-cloud.org
   resources:
   - projects
   verbs:
@@ -28,7 +28,7 @@ rules:
   - update
   - patch
 - apiGroups:
-  - unikorn.spjmurray.co.uk
+  - unikorn-cloud.org
   resources:
   - projects/status
   verbs:
@@ -46,7 +46,7 @@ rules:
   - update
 # Manage projects (cascading deletion).
 - apiGroups:
-  - unikorn.spjmurray.co.uk
+  - unikorn-cloud.org
   resources:
   - controlplanes
   verbs:

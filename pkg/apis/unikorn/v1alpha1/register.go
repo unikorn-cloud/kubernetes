@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,7 +25,7 @@ import (
 
 const (
 	// GroupName is the Kubernetes API group our resources belong to.
-	GroupName = "unikorn.spjmurray.co.uk"
+	GroupName = "unikorn-cloud.org"
 	// GroupVersion is the version of our custom resources.
 	GroupVersion = "v1alpha1"
 	// Group is group/version of our resources.

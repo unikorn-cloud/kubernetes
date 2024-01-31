@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,11 +26,11 @@ import (
 
 	"github.com/spf13/pflag"
 
-	unikornscheme "github.com/spjmurray/unikorn/generated/clientset/unikorn/scheme"
-	"github.com/spjmurray/unikorn/pkg/monitor"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/monitor"
 
-	coreclient "github.com/spjmurray/unikorn-core/pkg/client"
-	"github.com/spjmurray/unikorn-core/pkg/constants"
+	coreclient "github.com/unikorn-cloud/core/pkg/client"
+	"github.com/unikorn-cloud/core/pkg/constants"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -70,7 +71,7 @@ func main() {
 		cancel()
 	}()
 
-	client, err := coreclient.New(ctx, unikornscheme.AddToScheme)
+	client, err := coreclient.New(ctx, unikornv1.AddToScheme)
 	if err != nil {
 		logger.Error(err, "failed to create client")
 

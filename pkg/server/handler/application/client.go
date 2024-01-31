@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,10 +22,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/spjmurray/unikorn/pkg/server/errors"
-	"github.com/spjmurray/unikorn/pkg/server/generated"
+	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
+	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 
-	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -42,7 +43,7 @@ func NewClient(client client.Client) *Client {
 	}
 }
 
-func convert(in *coreunikornv1.HelmApplication) *generated.Application {
+func convert(in *unikornv1core.HelmApplication) *generated.Application {
 	versions := make(generated.ApplicationVersions, 0, len(in.Spec.Versions))
 
 	for _, version := range in.Spec.Versions {
@@ -91,7 +92,7 @@ func convert(in *coreunikornv1.HelmApplication) *generated.Application {
 	return out
 }
 
-func convertList(in []coreunikornv1.HelmApplication) []*generated.Application {
+func convertList(in []unikornv1core.HelmApplication) []*generated.Application {
 	out := make([]*generated.Application, len(in))
 
 	for i := range in {
@@ -102,7 +103,7 @@ func convertList(in []coreunikornv1.HelmApplication) []*generated.Application {
 }
 
 func (c *Client) List(ctx context.Context) ([]*generated.Application, error) {
-	result := &coreunikornv1.HelmApplicationList{}
+	result := &unikornv1core.HelmApplicationList{}
 
 	if err := c.client.List(ctx, result); err != nil {
 		return nil, errors.OAuth2ServerError("failed to list applications").WithError(err)
@@ -110,7 +111,7 @@ func (c *Client) List(ctx context.Context) ([]*generated.Application, error) {
 
 	exported := result.Exported()
 
-	slices.SortStableFunc(exported.Items, coreunikornv1.CompareHelmApplication)
+	slices.SortStableFunc(exported.Items, unikornv1core.CompareHelmApplication)
 
 	return convertList(exported.Items), nil
 }

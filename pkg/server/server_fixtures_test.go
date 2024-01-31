@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,11 +24,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 
-	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
-	"github.com/spjmurray/unikorn-core/pkg/constants"
-	"github.com/spjmurray/unikorn-core/pkg/util"
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/core/pkg/constants"
+	"github.com/unikorn-cloud/core/pkg/util"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,11 +59,11 @@ func mustCreateProjectFixture(t *testing.T, tc *TestContext, projectID string) *
 		},
 		Status: unikornv1.ProjectStatus{
 			Namespace: namespace.Name,
-			Conditions: []coreunikornv1.Condition{
+			Conditions: []unikornv1core.Condition{
 				{
-					Type:   coreunikornv1.ConditionAvailable,
+					Type:   unikornv1core.ConditionAvailable,
 					Status: corev1.ConditionTrue,
-					Reason: coreunikornv1.ConditionReasonProvisioned,
+					Reason: unikornv1core.ConditionReasonProvisioned,
 				},
 			},
 		},
@@ -105,11 +106,11 @@ func mustCreateControlPlaneFixture(t *testing.T, tc *TestContext, namespace, nam
 		},
 		Status: unikornv1.ControlPlaneStatus{
 			Namespace: ns.Name,
-			Conditions: []coreunikornv1.Condition{
+			Conditions: []unikornv1core.Condition{
 				{
-					Type:   coreunikornv1.ConditionAvailable,
+					Type:   unikornv1core.ConditionAvailable,
 					Status: corev1.ConditionTrue,
-					Reason: coreunikornv1.ConditionReasonProvisioned,
+					Reason: unikornv1core.ConditionReasonProvisioned,
 				},
 			},
 		},
@@ -198,11 +199,11 @@ func mustCreateKubernetesClusterFixture(t *testing.T, tc *TestContext, namespace
 			},
 		},
 		Status: unikornv1.KubernetesClusterStatus{
-			Conditions: []coreunikornv1.Condition{
+			Conditions: []unikornv1core.Condition{
 				{
-					Type:   coreunikornv1.ConditionAvailable,
+					Type:   unikornv1core.ConditionAvailable,
 					Status: corev1.ConditionTrue,
-					Reason: coreunikornv1.ConditionReasonProvisioned,
+					Reason: unikornv1core.ConditionReasonProvisioned,
 				},
 			},
 		},
@@ -268,18 +269,18 @@ const (
 func mustCreateHelmApplicationFixture(t *testing.T, tc *TestContext) {
 	t.Helper()
 
-	app := &coreunikornv1.HelmApplication{
+	app := &unikornv1core.HelmApplication{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: applicationName,
 		},
-		Spec: coreunikornv1.HelmApplicationSpec{
+		Spec: unikornv1core.HelmApplicationSpec{
 			Name:          util.ToPointer(applicationHumanReadableName),
 			Description:   util.ToPointer(applicationDescription),
 			Documentation: util.ToPointer(applicationDocumentation),
 			License:       util.ToPointer(applicationLicense),
 			Icon:          []byte(applicationIcon),
 			Exported:      util.ToPointer(true),
-			Versions: []coreunikornv1.HelmApplicationVersion{
+			Versions: []unikornv1core.HelmApplicationVersion{
 				{
 					Version: util.ToPointer(applicationVersion),
 				},

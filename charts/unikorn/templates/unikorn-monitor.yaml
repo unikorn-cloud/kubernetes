@@ -18,7 +18,7 @@ metadata:
 rules:
 # Manage kubernetes clusters and control planes (my job).
 - apiGroups:
-  - unikorn.spjmurray.co.uk
+  - unikorn-cloud.org
   resources:
   - controlplanes
   - kubernetesclusters
@@ -28,7 +28,7 @@ rules:
   - update
 # Get application bundles
 - apiGroups:
-  - unikorn.spjmurray.co.uk
+  - unikorn-cloud.org
   resources:
   - controlplaneapplicationbundles
   - kubernetesclusterapplicationbundles

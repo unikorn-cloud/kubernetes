@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,10 +23,10 @@ import (
 	"slices"
 	"time"
 
-	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/spjmurray/unikorn/pkg/constants"
-	"github.com/spjmurray/unikorn/pkg/monitor/upgrade/errors"
-	"github.com/spjmurray/unikorn/pkg/monitor/upgrade/util"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/constants"
+	"github.com/unikorn-cloud/unikorn/pkg/monitor/upgrade/errors"
+	"github.com/unikorn-cloud/unikorn/pkg/monitor/upgrade/util"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"

@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,12 +21,12 @@ import (
 	"context"
 	"errors"
 
-	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 
-	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/resource"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/util"
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/core/pkg/provisioners"
+	"github.com/unikorn-cloud/core/pkg/provisioners/resource"
+	"github.com/unikorn-cloud/core/pkg/provisioners/util"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,7 +52,7 @@ func New() provisioners.ManagerProvisioner {
 // Ensure the ManagerProvisioner interface is implemented.
 var _ provisioners.ManagerProvisioner = &Provisioner{}
 
-func (p *Provisioner) Object() coreunikornv1.ManagableResourceInterface {
+func (p *Provisioner) Object() unikornv1core.ManagableResourceInterface {
 	return &p.project
 }
 

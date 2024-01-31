@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,14 +18,13 @@ limitations under the License.
 package project
 
 import (
-	unikornscheme "github.com/spjmurray/unikorn/generated/clientset/unikorn/scheme"
-	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/spjmurray/unikorn/pkg/provisioners/managers/project"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/managers/project"
 
-	coreclient "github.com/spjmurray/unikorn-core/pkg/client"
-	"github.com/spjmurray/unikorn-core/pkg/constants"
-	coremanager "github.com/spjmurray/unikorn-core/pkg/manager"
-	"github.com/spjmurray/unikorn-core/pkg/manager/options"
+	coreclient "github.com/unikorn-cloud/core/pkg/client"
+	"github.com/unikorn-cloud/core/pkg/constants"
+	coremanager "github.com/unikorn-cloud/core/pkg/manager"
+	"github.com/unikorn-cloud/core/pkg/manager/options"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -70,6 +70,6 @@ func (*Factory) Upgrade(_ client.Client) error {
 // the defaults defined in this repository.
 func (*Factory) Schemes() []coreclient.SchemeAdder {
 	return []coreclient.SchemeAdder{
-		unikornscheme.AddToScheme,
+		unikornv1.AddToScheme,
 	}
 }

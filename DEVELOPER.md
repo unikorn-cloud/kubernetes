@@ -47,14 +47,14 @@ When operating in the Cloud, you'll want to push images to a public registry:
 
 ```shell
 docker login
-make images-push -e DOCKER_ORG=spjmurray VERSION=$(git rev-parse HEAD)
+make images-push -e DOCKER_ORG=unikorn-cloud VERSION=$(git rev-parse HEAD)
 ```
 
 Please note, you are using a "non-standard" organization, so will need to alter installation later on.
 Additionally, we typically use unique "versions" aka tags for each build, thus avoiding caching.
 You may want to just change the image pull policy in the Helm chart (i.e. write said functionality).
 
-Your Helm configuration later should look like `--set repository=null --set organization=spjmurray --set tag=$(git rev-parse HEAD)`.
+Your Helm configuration later should look like `--set repository=null --set organization=unikorn-cloud --set tag=$(git rev-parse HEAD)`.
 
 #### Local Development
 

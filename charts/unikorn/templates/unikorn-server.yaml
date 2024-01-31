@@ -19,7 +19,7 @@ metadata:
 rules:
 # Orchestrate Unikorn resources (my job).
 - apiGroups:
-  - unikorn.spjmurray.co.uk
+  - unikorn-cloud.org
   resources:
   - projects
   - controlplanes
@@ -32,7 +32,7 @@ rules:
   - patch
   - delete
 - apiGroups:
-  - unikorn.spjmurray.co.uk
+  - unikorn-cloud.org
   resources:
   - controlplaneapplicationbundles
   - kubernetesclusterapplicationbundles
@@ -170,7 +170,7 @@ spec:
         {{- end }}
         volumeMounts:
         - name: unikorn-server-jose-tls
-          mountPath: /var/lib/secrets/unikorn.spjmurray.co.uk/jose
+          mountPath: /var/lib/secrets/unikorn-cloud.org/jose
           readOnly: true
         ports:
         - name: http

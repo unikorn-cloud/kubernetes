@@ -1,4 +1,4 @@
-apiVersion: unikorn.spjmurray.co.uk/v1alpha1
+apiVersion: unikorn-cloud.org/v1alpha1
 kind: ControlPlaneApplicationBundle
 metadata:
   name: control-plane-1.2.0

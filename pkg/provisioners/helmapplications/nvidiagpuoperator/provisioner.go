@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,8 +20,8 @@ package nvidiagpuoperator
 import (
 	"context"
 
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/application"
-	"github.com/spjmurray/unikorn-core/pkg/provisioners/util"
+	"github.com/unikorn-cloud/core/pkg/provisioners/application"
+	"github.com/unikorn-cloud/core/pkg/provisioners/util"
 )
 
 const (

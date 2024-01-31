@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,16 +22,16 @@ import (
 	goerrors "errors"
 	"slices"
 
-	unikornv1 "github.com/spjmurray/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/spjmurray/unikorn/pkg/server/errors"
-	"github.com/spjmurray/unikorn/pkg/server/generated"
-	"github.com/spjmurray/unikorn/pkg/server/handler/applicationbundle"
-	"github.com/spjmurray/unikorn/pkg/server/handler/common"
-	"github.com/spjmurray/unikorn/pkg/server/handler/project"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
+	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/common"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/project"
 
-	coreunikornv1 "github.com/spjmurray/unikorn-core/pkg/apis/unikorn/v1alpha1"
-	"github.com/spjmurray/unikorn-core/pkg/constants"
-	"github.com/spjmurray/unikorn-core/pkg/util/retry"
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/core/pkg/constants"
+	"github.com/unikorn-cloud/core/pkg/util/retry"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -242,7 +243,7 @@ func (c *Client) convert(ctx context.Context, in *unikornv1.ControlPlane) (*gene
 		out.Status.DeletionTime = &in.DeletionTimestamp.Time
 	}
 
-	if condition, err := in.StatusConditionRead(coreunikornv1.ConditionAvailable); err == nil {
+	if condition, err := in.StatusConditionRead(unikornv1core.ConditionAvailable); err == nil {
 		out.Status.Status = string(condition.Reason)
 	}
 

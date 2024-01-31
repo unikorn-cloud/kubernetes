@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,8 +45,8 @@ var (
 )
 
 const (
-	tlsKeyPathDefault  = "/var/lib/secrets/unikorn.spjmurray.co.uk/jose/tls.key"
-	tlsCertPathDefault = "/var/lib/secrets/unikorn.spjmurray.co.uk/jose/tls.crt"
+	tlsKeyPathDefault  = "/var/lib/secrets/unikorn-cloud.org/jose/tls.key"
+	tlsCertPathDefault = "/var/lib/secrets/unikorn-cloud.org/jose/tls.crt"
 )
 
 type Options struct {

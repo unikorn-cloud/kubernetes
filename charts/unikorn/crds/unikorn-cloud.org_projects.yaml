@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.12.1
-  name: projects.unikorn.spjmurray.co.uk
+  name: projects.unikorn-cloud.org
 spec:
-  group: unikorn.spjmurray.co.uk
+  group: unikorn-cloud.org
   names:
     categories:
     - unikorn
