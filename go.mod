@@ -3,11 +3,9 @@ module github.com/unikorn-cloud/unikorn
 go 1.21.1
 
 require (
-	github.com/coreos/go-oidc/v3 v3.9.0
 	github.com/deepmap/oapi-codegen v1.16.2
 	github.com/getkin/kin-openapi v0.123.0
 	github.com/go-chi/chi/v5 v5.0.11
-	github.com/go-jose/go-jose/v3 v3.0.1
 	github.com/go-logr/logr v1.4.1
 	github.com/google/uuid v1.6.0
 	github.com/gophercloud/gophercloud v1.8.0
@@ -18,6 +16,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
 	github.com/unikorn-cloud/core v0.1.0
+	github.com/unikorn-cloud/identity v0.1.0
 	go.opentelemetry.io/otel v1.22.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.22.0
 	go.opentelemetry.io/otel/sdk v1.22.0
@@ -50,6 +49,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
+	github.com/coreos/go-oidc/v3 v3.9.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/evanphx/json-patch v5.7.0+incompatible // indirect
@@ -61,6 +61,7 @@ require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.9.1 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-logr/zapr v1.3.0 // indirect
 	github.com/go-openapi/jsonpointer v0.20.2 // indirect

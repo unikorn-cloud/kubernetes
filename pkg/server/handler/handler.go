@@ -23,7 +23,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/unikorn-cloud/unikorn/pkg/server/authorization"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/application"
@@ -41,9 +40,6 @@ type Handler struct {
 	// client gives cached access to Kubernetes.
 	client client.Client
 
-	// authenticator gives access to authentication and token handling functions.
-	authenticator *authorization.Authenticator
-
 	// options allows behaviour to be defined on the CLI.
 	options *Options
 
@@ -51,17 +47,16 @@ type Handler struct {
 	openstack *openstack.Openstack
 }
 
-func New(client client.Client, authenticator *authorization.Authenticator, options *Options) (*Handler, error) {
-	o, err := openstack.New(&options.Openstack, authenticator)
+func New(client client.Client, options *Options) (*Handler, error) {
+	o, err := openstack.New(&options.Openstack)
 	if err != nil {
 		return nil, err
 	}
 
 	h := &Handler{
-		client:        client,
-		authenticator: authenticator,
-		options:       options,
-		openstack:     o,
+		client:    client,
+		options:   options,
+		openstack: o,
 	}
 
 	return h, nil
@@ -74,54 +69,6 @@ func (h *Handler) setCacheable(w http.ResponseWriter) {
 
 func (h *Handler) setUncacheable(w http.ResponseWriter) {
 	w.Header().Add("Cache-Control", "no-cache")
-}
-
-func (h *Handler) GetApiV1AuthOauth2Authorization(w http.ResponseWriter, r *http.Request) {
-	h.authenticator.OAuth2.Authorization(w, r)
-}
-
-func (h *Handler) PostApiV1AuthOauth2Tokens(w http.ResponseWriter, r *http.Request) {
-	result, err := h.authenticator.OAuth2.Token(w, r)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setUncacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
-}
-
-func (h *Handler) GetApiV1AuthOidcCallback(w http.ResponseWriter, r *http.Request) {
-	h.authenticator.OAuth2.OIDCCallback(w, r)
-}
-
-func (h *Handler) PostApiV1AuthTokensToken(w http.ResponseWriter, r *http.Request) {
-	scope := &generated.TokenScope{}
-
-	if err := util.ReadJSONBody(r, scope); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := h.authenticator.Token(r, scope)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setUncacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusCreated, result)
-}
-
-func (h *Handler) GetApiV1AuthJwks(w http.ResponseWriter, r *http.Request) {
-	result, err := h.authenticator.JWKS()
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setUncacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
 func (h *Handler) PostApiV1Project(w http.ResponseWriter, r *http.Request) {
@@ -211,7 +158,7 @@ func (h *Handler) PutApiV1ControlplanesControlPlaneName(w http.ResponseWriter, r
 }
 
 func (h *Handler) GetApiV1ControlplanesControlPlaneNameClusters(w http.ResponseWriter, r *http.Request, controlPlaneName generated.ControlPlaneNameParameter) {
-	result, err := cluster.NewClient(h.client, r, h.authenticator, h.openstack).List(r.Context(), controlPlaneName)
+	result, err := cluster.NewClient(h.client, r, h.openstack).List(r.Context(), controlPlaneName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -229,7 +176,7 @@ func (h *Handler) PostApiV1ControlplanesControlPlaneNameClusters(w http.Response
 		return
 	}
 
-	if err := cluster.NewClient(h.client, r, h.authenticator, h.openstack).Create(r.Context(), controlPlaneName, request); err != nil {
+	if err := cluster.NewClient(h.client, r, h.openstack).Create(r.Context(), controlPlaneName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -239,7 +186,7 @@ func (h *Handler) PostApiV1ControlplanesControlPlaneNameClusters(w http.Response
 }
 
 func (h *Handler) DeleteApiV1ControlplanesControlPlaneNameClustersClusterName(w http.ResponseWriter, r *http.Request, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
-	if err := cluster.NewClient(h.client, r, h.authenticator, h.openstack).Delete(r.Context(), controlPlaneName, clusterName); err != nil {
+	if err := cluster.NewClient(h.client, r, h.openstack).Delete(r.Context(), controlPlaneName, clusterName); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -249,7 +196,7 @@ func (h *Handler) DeleteApiV1ControlplanesControlPlaneNameClustersClusterName(w 
 }
 
 func (h *Handler) GetApiV1ControlplanesControlPlaneNameClustersClusterName(w http.ResponseWriter, r *http.Request, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
-	result, err := cluster.NewClient(h.client, r, h.authenticator, h.openstack).Get(r.Context(), controlPlaneName, clusterName)
+	result, err := cluster.NewClient(h.client, r, h.openstack).Get(r.Context(), controlPlaneName, clusterName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -267,7 +214,7 @@ func (h *Handler) PutApiV1ControlplanesControlPlaneNameClustersClusterName(w htt
 		return
 	}
 
-	if err := cluster.NewClient(h.client, r, h.authenticator, h.openstack).Update(r.Context(), controlPlaneName, clusterName, request); err != nil {
+	if err := cluster.NewClient(h.client, r, h.openstack).Update(r.Context(), controlPlaneName, clusterName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -277,7 +224,7 @@ func (h *Handler) PutApiV1ControlplanesControlPlaneNameClustersClusterName(w htt
 }
 
 func (h *Handler) GetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfig(w http.ResponseWriter, r *http.Request, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
-	result, err := cluster.NewClient(h.client, r, h.authenticator, h.openstack).GetKubeconfig(r.Context(), controlPlaneName, clusterName)
+	result, err := cluster.NewClient(h.client, r, h.openstack).GetKubeconfig(r.Context(), controlPlaneName, clusterName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

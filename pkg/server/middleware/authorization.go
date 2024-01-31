@@ -21,11 +21,18 @@ import (
 	"net/http"
 	"strings"
 
+	//"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/getkin/kin-openapi/openapi3"
+	//"golang.org/x/oauth2"
+
+	"github.com/unikorn-cloud/identity/pkg/oauth2"
 
 	"github.com/unikorn-cloud/unikorn/pkg/server/authorization"
-	"github.com/unikorn-cloud/unikorn/pkg/server/authorization/jose"
-	"github.com/unikorn-cloud/unikorn/pkg/server/authorization/oauth2"
+
+	/*
+		"github.com/unikorn-cloud/unikorn/pkg/server/authorization/jose"
+		"github.com/unikorn-cloud/unikorn/pkg/server/authorization/oauth2"
+	*/
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 )
 
@@ -42,20 +49,19 @@ type authorizationContext struct {
 
 // Authorizer provides OpenAPI based authorization middleware.
 type Authorizer struct {
-	// issuer allows creation and validation of JWT bearer tokens.
-	issuer *jose.JWTIssuer
+	issuer string
 }
 
 // NewAuthorizer returns a new authorizer with required parameters.
-func NewAuthorizer(issuer *jose.JWTIssuer) *Authorizer {
+func NewAuthorizer() *Authorizer {
 	return &Authorizer{
-		issuer: issuer,
+		issuer: "https://identity.spjmurray.co.uk",
 	}
 }
 
 // authorizeOAuth2 checks APIs that require and oauth2 bearer token.
 func (a *Authorizer) authorizeOAuth2(ctx *authorizationContext, r *http.Request, scopes []string) error {
-	authorizationScheme, token, err := authorization.GetHTTPAuthenticationScheme(r)
+	authorizationScheme, _ /*token*/, err := authorization.GetHTTPAuthenticationScheme(r)
 	if err != nil {
 		return err
 	}
@@ -64,21 +70,28 @@ func (a *Authorizer) authorizeOAuth2(ctx *authorizationContext, r *http.Request,
 		return errors.OAuth2InvalidRequest("authorization scheme not allowed").WithValues("scheme", authorizationScheme)
 	}
 
-	// Check the token is from us, for us, and in date.
-	claims, err := oauth2.Verify(a.issuer, r, token)
-	if err != nil {
-		return errors.OAuth2AccessDenied("token validation failed").WithError(err)
-	}
-
-	// Check the token is authorized to do what the schema says.
-	for _, scope := range scopes {
-		if !claims.Scope.Includes(oauth2.APIScope(scope)) {
-			return errors.OAuth2InvalidScope("token missing required scope").WithValues("scope", scope)
+	/*
+		provider, err := oidc.NewProvider(r.Context(), a.issuer)
+		if err != nil {
+			return errors.OAuth2ServerError("failed to perform OIDC discovery").WithError(err)
 		}
-	}
 
-	// Set the claims in the context for use by the handlers.
-	ctx.claims = claims
+		// Check the token is from us, for us, and in date.
+		claims, err := oauth2.Verify(provider.Issuer, r, token)
+		if err != nil {
+			return errors.OAuth2AccessDenied("token validation failed").WithError(err)
+		}
+
+		// Check the token is authorized to do what the schema says.
+		for _, scope := range scopes {
+			if !claims.Scope.Includes(oauth2.APIScope(scope)) {
+				return errors.OAuth2InvalidScope("token missing required scope").WithValues("scope", scope)
+			}
+		}
+
+		// Set the claims in the context for use by the handlers.
+		ctx.claims = claims
+	*/
 
 	return nil
 }

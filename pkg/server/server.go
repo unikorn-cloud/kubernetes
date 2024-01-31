@@ -28,10 +28,6 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/sdk/trace"
 
-	"github.com/unikorn-cloud/unikorn/pkg/server/authorization"
-	"github.com/unikorn-cloud/unikorn/pkg/server/authorization/jose"
-	"github.com/unikorn-cloud/unikorn/pkg/server/authorization/keystone"
-	"github.com/unikorn-cloud/unikorn/pkg/server/authorization/oauth2"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler"
 	"github.com/unikorn-cloud/unikorn/pkg/server/middleware"
@@ -50,15 +46,6 @@ type Server struct {
 
 	// HandlerOptions sets options for the HTTP handler.
 	HandlerOptions handler.Options
-
-	// JoseOptions sets options for JWE.
-	JoseOptions jose.Options
-
-	// KeystoneOptions sets options for OpenStack Keystone.
-	KeystoneOptions keystone.Options
-
-	// OAuth2Options sets options for the oauth2/oidc authenticator.
-	OAuth2Options oauth2.Options
 }
 
 func (s *Server) AddFlags(goflags *flag.FlagSet, flags *pflag.FlagSet) {
@@ -66,9 +53,6 @@ func (s *Server) AddFlags(goflags *flag.FlagSet, flags *pflag.FlagSet) {
 
 	s.Options.AddFlags(flags)
 	s.HandlerOptions.AddFlags(flags)
-	s.JoseOptions.AddFlags(flags)
-	s.KeystoneOptions.AddFlags(flags)
-	s.OAuth2Options.AddFlags(flags)
 }
 
 func (s *Server) SetupLogging() {
@@ -111,14 +95,8 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 	router.NotFound(http.HandlerFunc(handler.NotFound))
 	router.MethodNotAllowed(http.HandlerFunc(handler.MethodNotAllowed))
 
-	// Setup authn/authz
-	issuer := jose.NewJWTIssuer(&s.JoseOptions)
-	keystone := keystone.New(&s.KeystoneOptions)
-	oauth2 := oauth2.New(&s.OAuth2Options, issuer, keystone)
-	authenticator := authorization.NewAuthenticator(issuer, oauth2, keystone)
-
 	// Setup middleware.
-	authorizer := middleware.NewAuthorizer(issuer)
+	authorizer := middleware.NewAuthorizer()
 
 	openapi, err := middleware.NewOpenAPI()
 	if err != nil {
@@ -135,7 +113,7 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 		},
 	}
 
-	handlerInterface, err := handler.New(client, authenticator, &s.HandlerOptions)
+	handlerInterface, err := handler.New(client, &s.HandlerOptions)
 	if err != nil {
 		return nil, err
 	}

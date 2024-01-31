@@ -31,8 +31,6 @@ import (
 	lru "github.com/hashicorp/golang-lru/v2"
 
 	"github.com/unikorn-cloud/unikorn/pkg/providers/openstack"
-	"github.com/unikorn-cloud/unikorn/pkg/server/authorization"
-	"github.com/unikorn-cloud/unikorn/pkg/server/authorization/oauth2"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 )
@@ -79,7 +77,7 @@ type Openstack struct {
 }
 
 // New returns a new initialized Openstack handler.
-func New(options *Options, authenticator *authorization.Authenticator) (*Openstack, error) {
+func New(options *Options) (*Openstack, error) {
 	identityClientCache, err := lru.New[string, *openstack.IdentityClient](1024)
 	if err != nil {
 		return nil, err
@@ -107,7 +105,6 @@ func New(options *Options, authenticator *authorization.Authenticator) (*Opensta
 
 	o := &Openstack{
 		options:                 options,
-		endpoint:                authenticator.Keystone.Endpoint(),
 		identityClientCache:     identityClientCache,
 		computeClientCache:      computeClientCache,
 		blockStorageClientCache: blockStorageClientCache,
@@ -123,29 +120,35 @@ func (o *Openstack) ApplicationCredentialRoles() []string {
 }
 
 func getToken(r *http.Request) (string, error) {
-	claims, err := oauth2.ClaimsFromContext(r.Context())
-	if err != nil {
-		return "", errors.OAuth2ServerError("failed get token claims").WithError(err)
-	}
+	/*
+		claims, err := oauth2.ClaimsFromContext(r.Context())
+		if err != nil {
+			return "", errors.OAuth2ServerError("failed get token claims").WithError(err)
+		}
 
-	if claims.UnikornClaims == nil {
-		return "", errors.OAuth2ServerError("failed get token claim")
-	}
+		if claims.UnikornClaims == nil {
+			return "", errors.OAuth2ServerError("failed get token claim")
+		}
 
-	return claims.UnikornClaims.Token, nil
+		return claims.UnikornClaims.Token, nil
+	*/
+	return "", nil
 }
 
 func getUser(r *http.Request) (string, error) {
-	claims, err := oauth2.ClaimsFromContext(r.Context())
-	if err != nil {
-		return "", errors.OAuth2ServerError("failed get token claims").WithError(err)
-	}
+	/*
+		claims, err := oauth2.ClaimsFromContext(r.Context())
+		if err != nil {
+			return "", errors.OAuth2ServerError("failed get token claims").WithError(err)
+		}
 
-	if claims.UnikornClaims == nil {
-		return "", errors.OAuth2ServerError("failed get token claim")
-	}
+		if claims.UnikornClaims == nil {
+			return "", errors.OAuth2ServerError("failed get token claim")
+		}
 
-	return claims.UnikornClaims.User, nil
+		return claims.UnikornClaims.User, nil
+	*/
+	return "", nil
 }
 
 func (o *Openstack) IdentityClient(r *http.Request) (*openstack.IdentityClient, error) {

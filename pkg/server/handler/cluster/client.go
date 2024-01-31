@@ -27,7 +27,6 @@ import (
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/vcluster"
-	"github.com/unikorn-cloud/unikorn/pkg/server/authorization"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/controlplane"
@@ -51,19 +50,15 @@ type Client struct {
 	// request is the http request that invoked this client.
 	request *http.Request
 
-	// authenticator provides access to authentication services.
-	authenticator *authorization.Authenticator
-
 	openstack *openstack.Openstack
 }
 
 // NewClient returns a new client with required parameters.
-func NewClient(client client.Client, request *http.Request, authenticator *authorization.Authenticator, openstack *openstack.Openstack) *Client {
+func NewClient(client client.Client, request *http.Request, openstack *openstack.Openstack) *Client {
 	return &Client{
-		client:        client,
-		request:       request,
-		authenticator: authenticator,
-		openstack:     openstack,
+		client:    client,
+		request:   request,
+		openstack: openstack,
 	}
 }
 
@@ -206,7 +201,7 @@ func (c *Client) createClientConfig(controlPlane *controlplane.Meta, name string
 			cloud: {
 				AuthType: clientconfig.AuthV3ApplicationCredential,
 				AuthInfo: &clientconfig.AuthInfo{
-					AuthURL:                     c.authenticator.Keystone.Endpoint(),
+					AuthURL:                     "", /*c.authenticator.Keystone.Endpoint()*/
 					ApplicationCredentialID:     ac.ID,
 					ApplicationCredentialSecret: ac.Secret,
 				},

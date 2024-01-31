@@ -12,16 +12,6 @@ info:
 # This allows the documentation engine to combine API endpoints into related groups
 # and also defines the order of appearance.
 x-documentation-groups:
-- id: auth
-  name: Authentication and Authorisation API
-  description: |-
-    The authentication and authorisation API grants access to all other APIs.  Authentication
-    is based on the industry standard OAuth2 protocol.  Access to other APIs defined in this
-    specification will be with the HTTP bearer token method using the opaque JWT access
-    token returned by an OAuth2 authentication flow.  The initial access token will be
-    unscoped, meaning that you will need to use it to list available projects with
-    the relevant provider API.  Then you must scope the token to a specific project
-    before accessing further core and provider specific APIs.
 - id: main
   name: Core API
   description: |-
@@ -43,102 +33,6 @@ x-documentation-groups:
     core API, it is recommended that you first consult the platform provider APIs in
     order to get an up to date list of resources that are available for consumption.
 paths:
-  /api/v1/auth/oauth2/authorization:
-    x-documentation-group: auth
-    description: |-
-      Implements OAuth2 authorisation grants.
-    get:
-      x-no-security-requirements: true
-      description: |-
-        Provides authentication and authorisation as per the OAuth2 specification.
-        This particular implementation requires a "code" type response, and PKCE.
-        You may specify the "openid" scope in order to have an OpenID Connect
-        identity token returned during code exchange.
-      responses:
-        '302':
-          description: A redirect to the specified identity provider URI.
-        # TODO: returns HTML not JSON
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/auth/oauth2/tokens:
-    x-documentation-group: auth
-    description: |-
-      Implements OAuth2 code exchange.
-    post:
-      x-no-security-requirements: true
-      description: |-
-        Provides authorisation code to access token exchange as per the OAuth2
-        specification with the "authorization_code" grant. If requested during
-        authentication, and OpenID Connect identity token will also be returned.  
-        The "password" grant type is also supported for applications where using
-        a web browser in the authentication flow would be impractical, for example
-        with automated command line client based tooling, however this is not
-        recommended as it exposes credentials to the API, and not only with a trusted
-        3rd party identity provider.
-      requestBody:
-        $ref: '#/components/requestBodies/tokenRequest'
-      responses:
-        '200':
-          $ref: '#/components/responses/tokenResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/auth/oidc/callback:
-    x-documentation-group: auth
-    description: |-
-      Implements the OIDC response code callback.
-    get:
-      x-no-security-requirements: true
-      description: |-
-        The Kubernetes Service OAuth2 implementation does not provide any direct
-        authentication or authorisation.  It instead delegates to a 3rd party
-        identity provider.  This endpoint allows a 3rd party authorisation code
-        to be returned to the Kubernetes Service and exchanged for an identity token.
-      responses:
-        '302':
-          description: A redirect back to the browser with an authorisation code.
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/auth/tokens/token:
-    x-documentation-group: auth
-    description: |-
-      Implements token project scoping.
-    post:
-      description: |-
-        Creates a new authorisation token scoped to a specific project. This must be
-        called in order to implicitly grant the "project" OAuth2 scope and allow
-        access to other APIs offered by the Kubernetes Service.
-      security:
-      - oauth2Authentication: []
-      requestBody:
-        $ref: '#/components/requestBodies/tokenScopeRequest'
-      responses:
-        '201':
-          $ref: '#/components/responses/tokenResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/auth/jwks:
-    x-documentation-group: auth
-    description: JSON web key set endpoint.
-    get:
-      description: |-
-        Returns an array of public keys used to verify JWT tokens issued by
-        this server, for example identity or authorisation tokens.
-      x-no-security-requirements: true
-      responses:
-        '200':
-          $ref: '#/components/responses/jwksResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
   /api/v1/project:
     x-documentation-group: main
     description: |-
@@ -664,110 +558,6 @@ components:
         error_description:
           description: Verbose message describing the error.
           type: string
-    tokenRequestOptions:
-      description: oauth2 token endpoint.
-      type: object
-      required:
-      - grant_type
-      properties:
-        grant_type:
-          description: Supported grant type.  Must be either "code" or "password".
-          type: string
-        code:
-          description: Authorization code. Required with the "code" grant type.
-          type: string
-          nullable: true
-        client_id:
-          description: Client ID. Required with the "code" grant type.
-          type: string
-          nullable: true
-        redirect_uri:
-          description: Client redirect URI. Required with the "code" grant type.
-          type: string
-          nullable: true
-        code_verifier:
-          description: Client code verifier. Required with the "code" grant type.
-          type: string
-          nullable: true
-        username:
-          description: Resource owner username. Required with the "password" grant type.
-          type: string
-          nullable: true
-        password:
-          description: Resource owner password. Required with the "password" grant type.
-          type: string
-          nullable: true
-      oneOf:
-      - required:
-        - code
-        - client_id
-        - redirect_uri
-        - code_verifier
-        properties:
-          grant_type:
-            enum:
-            - authorization_code
-      - required:
-        - username
-        - password
-        properties:
-          grant_type:
-            enum:
-            - password
-    tokenScope:
-      description: OpenStack token scope.
-      type: object
-      required:
-      - project
-      properties:
-        project:
-          $ref: '#/components/schemas/tokenScopeProject'
-    tokenScopeProject:
-      description: OpenStack token project scope.
-      type: object
-      required:
-      - id
-      properties:
-        id:
-          description: OpenStack project ID.
-          type: string
-      additionalProperties: false
-    token:
-      description: Oauth2 token result.
-      type: object
-      required:
-      - token_type
-      - access_token
-      - expires_in
-      properties:
-        token_type:
-          description: How the access token is to be presented to the resource server.
-          type: string
-        access_token:
-          description: The opaque access token.
-          type: string
-        id_token:
-          description: An OIDC ID token.
-          type: string
-        expires_in:
-          description: The time in seconds the token will last for.
-          type: integer
-    jsonWebKeySet:
-      description: |-
-        JSON web key set. This data type is defined by an external 3rd party standards
-        committee. Consult the relevant documentation for further details.
-      type: object
-      properties:
-        keys:
-          type: array
-          items:
-            $ref: '#/components/schemas/jsonWebKey'
-    jsonWebKey:
-      description: JSON web key. See the relevant JWKS documentation for further details.
-      type: object
-      items:
-        description: JSON web key.
-        type: object
     kubernetesResourceStatus:
       description: A Kubernetes resource status.
       type: object
@@ -1338,29 +1128,6 @@ components:
       items:
         $ref: '#/components/schemas/openstackAvailabilityZone'
   requestBodies:
-    tokenRequest:
-      description: OAuth2 token request, consult the relevant OAuth2 and OIDC specifications for further details.
-      required: true
-      content:
-        application/x-www-form-urlencoded:
-          schema:
-            $ref: '#/components/schemas/tokenRequestOptions'
-          example:
-            grant_type: authorization_code
-            client_id: e58d490e-62f8-49a3-b7d0-b9beb615dabb
-            redirect_uri: https://example.com/oauth2/callback
-            code: eyJhbGciOiJFQ0RILUVTIiwiY3R5IjoiSldUIiwiZW5jIjoiQTI1NkdDTSIsImVwayI6eyJrdHkiOiJFQyIsImNydiI6IlAtNTIxIiwieCI6IkFic05hU1ByY3Y5RVJsWmFrOHVDc2V0T2F2aTJ4bS1taXFPWjVvQmFNR2ptc05Cbi04aE84QU9DbGR2OVM3dDlydTBEbDhabzFEcThxOEM5WUp0WGJfa0YiLCJ5IjoiQWU3VS1DcktsY3RJOXYzM0RsTWFsS0ZBZk9YcC1QeV9zZ0Y5Tjdaa05NQkRDRkVKb0FrRy1FTnhTczI2ME5memg4SnJnSnBRbUFFWHhvZ0poWHp2YWZMQSJ9LCJraWQiOiIxZHh3c29KUlZEQmxTYmxvSm93dDlJTkJwdGJTb21XUlBZck5LeWNFQV9RIiwidHlwIjoiSldUIn0..urRmbxH2_bn8LMla.Yw0a3qstHMAKnxawkIYntHcvOCjaxjzvV1JlmYM-2CTbC1i2VtAsNIKoOlFJ56H2N08pMY9OpZ2cukCHP1BQxsKMsc41VwlIZYvjFrzWIEeDoF92FmpCRGWztuwchBWd7PEQYpfeJFJ2BegacGheQqfRXX35RNDy-ZOc4dWkuvFrV8ISuA8-7_ce7Ha25SrRuSRarTfM_BLA1uDA_P9AWjhsyGKOK2FkuaDU0XmXlLWDz6dKdKy9RJtR_nUUcsljtaImJXjNNPAmJq10nJ501EK_I6M9B3TRUrqalOBm4ks7-vmF_gcE1saOv2AciE9P2BMkc635kaD3C5HlyWT95Skd6C_FwppjQUvYUY0y7Eq2NpnVfkX4uSPm8fUD4brSjGWnHMNE8z4M2_PlM4KSZAieLRmMAjY5xW8XY_uCXr5nb-8SmA_P-ljCVOPPAXDXExa2xSxbAJvrYqWeuG2IvAkC0ab6pojlqUmkRWvOX5tnXQav5vO2qOAgCYUhSIWXz0-Y8hczRUSgDTyQm59yU7xqVqCiywChgXlO32KwhhnrfLxNlrMB45XOlzhJP1c3DCg7ZW7bO_Q7A08GjvrXxTm7gUDr-jsdW9hTSiNJQu__zSMFPVVNTqnz1MDFIeusi6GJi9VC0A_ouXsdhcNKn6jeIDV9dnMxCcjbQT5qsCEqo-UcCGvH0_w4aChpldMg8HGPeUSZhaBSL1yns_I0C9AADFe9dmXN6wCHBu8JCy-T4FoeXRlVSKVuG2GJi8sfzAFFh6iKhQXxHm5KNA_iorBJVEOSX3dL6KOUXfdsBfTzg3aMoEyp2bJ9NaactGmFyJZM9e6MxS8UxgN6KHe7Gduc0NGFyBru3ClMq2BzchOxbzDQ_oi5YoSuxLpgGl3xiJfNnClqFTqXMJ75uSk0_OkKgvmHea9QGRaasx5XALSpap_ckCZvNYjG_oZh404-KTjpa2iJgENczeUT2F4jq59rCCAUFZVfyu3qtBAeJme4VghnbTvaITJbpFeBUySgYKcuGQ.uvQMjilUi8JcdyGe3Lbatg
-            code_verifier: ZWQ0MGJjZGYyNThkZDYyM2QwNzQyOTY0NGM0ZWZjMzU5ZjRmMDkzZjVkNDJkNjVhNjAxZDYzZTVkYzY0MmNjZQo
-    tokenScopeRequest:
-      description: OpenStack authentication scoping request. This allows an authenticated user to issue am authorisation token scoped to a specific project. Project scoping is required by most API endpoints.
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/tokenScope'
-          example:
-            project:
-              id: 64a9e4371d1d481da99f2f907180b4ea
     createControlPlaneRequest:
       description: Control plane request parameters.
       required: true
@@ -1484,36 +1251,6 @@ components:
           example:
             error: server_error
             error_description: failed to token claim
-    tokenResponse:
-      description: |-
-        Authentication was successful and returns an authorisation token. The response
-        may optionally include an OIDC identity token if that scope was requested.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/token'
-          example:
-            access_token: eyJhbGciOiJFQ0RILUVTIiwiY3R5IjoiSldUIiwiZW5jIjoiQTI1NkdDTSIsImVwayI6eyJrdHkiOiJFQyIsImNydiI6IlAtNTIxIiwieCI6IkFic05hU1ByY3Y5RVJsWmFrOHVDc2V0T2F2aTJ4bS1taXFPWjVvQmFNR2ptc05Cbi04aE84QU9DbGR2OVM3dDlydTBEbDhabzFEcThxOEM5WUp0WGJfa0YiLCJ5IjoiQWU3VS1DcktsY3RJOXYzM0RsTWFsS0ZBZk9YcC1QeV9zZ0Y5Tjdaa05NQkRDRkVKb0FrRy1FTnhTczI2ME5memg4SnJnSnBRbUFFWHhvZ0poWHp2YWZMQSJ9LCJraWQiOiIxZHh3c29KUlZEQmxTYmxvSm93dDlJTkJwdGJTb21XUlBZck5LeWNFQV9RIiwidHlwIjoiSldUIn0..urRmbxH2_bn8LMla.Yw0a3qstHMAKnxawkIYntHcvOCjaxjzvV1JlmYM-2CTbC1i2VtAsNIKoOlFJ56H2N08pMY9OpZ2cukCHP1BQxsKMsc41VwlIZYvjFrzWIEeDoF92FmpCRGWztuwchBWd7PEQYpfeJFJ2BegacGheQqfRXX35RNDy-ZOc4dWkuvFrV8ISuA8-7_ce7Ha25SrRuSRarTfM_BLA1uDA_P9AWjhsyGKOK2FkuaDU0XmXlLWDz6dKdKy9RJtR_nUUcsljtaImJXjNNPAmJq10nJ501EK_I6M9B3TRUrqalOBm4ks7-vmF_gcE1saOv2AciE9P2BMkc635kaD3C5HlyWT95Skd6C_FwppjQUvYUY0y7Eq2NpnVfkX4uSPm8fUD4brSjGWnHMNE8z4M2_PlM4KSZAieLRmMAjY5xW8XY_uCXr5nb-8SmA_P-ljCVOPPAXDXExa2xSxbAJvrYqWeuG2IvAkC0ab6pojlqUmkRWvOX5tnXQav5vO2qOAgCYUhSIWXz0-Y8hczRUSgDTyQm59yU7xqVqCiywChgXlO32KwhhnrfLxNlrMB45XOlzhJP1c3DCg7ZW7bO_Q7A08GjvrXxTm7gUDr-jsdW9hTSiNJQu__zSMFPVVNTqnz1MDFIeusi6GJi9VC0A_ouXsdhcNKn6jeIDV9dnMxCcjbQT5qsCEqo-UcCGvH0_w4aChpldMg8HGPeUSZhaBSL1yns_I0C9AADFe9dmXN6wCHBu8JCy-T4FoeXRlVSKVuG2GJi8sfzAFFh6iKhQXxHm5KNA_iorBJVEOSX3dL6KOUXfdsBfTzg3aMoEyp2bJ9NaactGmFyJZM9e6MxS8UxgN6KHe7Gduc0NGFyBru3ClMq2BzchOxbzDQ_oi5YoSuxLpgGl3xiJfNnClqFTqXMJ75uSk0_OkKgvmHea9QGRaasx5XALSpap_ckCZvNYjG_oZh404-KTjpa2iJgENczeUT2F4jq59rCCAUFZVfyu3qtBAeJme4VghnbTvaITJbpFeBUySgYKcuGQ.uvQMjilUi8JcdyGe3Lbatg
-            token_type: Bearer
-            id_token: eyJhbGciOiJFUzUxMiJ9.eyJhdF9oYXNoIjoidGJHNlFHek5WZE5fcjZ6Y0EzRlFyQzllNmVPbUpPN3lrSjFsTFBxNUJ0RSIsImF1ZCI6WyI5YTcxOWUxZS1hYTg1LTRhMjEtYTIyMS0zMjRlNzg3ZWZkNzgiXSwiZW1haWwiOiJqb2huLmRvZUBlbWFpbC5jb20iLCJleHAiOjE2OTE1NzM4NzEsImlhdCI6MTY5MTQ4NzQ3MSwiaXNzIjoiaHR0cHM6Ly9rdWJlcm5ldGVzLmVzY2hlcmNsb3VkLmNvbSIsInBpY3R1cmUiOiJodHRwczovL3d3dy5ncmF2YXRhci5jb20vYXZhdGFyLzhmNmU5NjI3NGMyYWJmNjE3YTM5ODdlNzRlOWU3NTdlIiwic3ViIjoiam9obi5kb2VAZW1haWwuY29tIn0.AYxSoAwkuKfBpp5o1spmAyqzhkSR76hbjF1OCKe4iLS6BCP9ySZYeV-kBCd0t3cd6VxbO5FVQJPRt8k0q88rc21JATyV8kScNnr-1jFmAJuXO6ga021KTRQnG68D8zZN9LwmMSRh3HPFtOq4LCcmQES2adeJysoG998mmtuTwp4fArwa
-            expires_in: 3600
-    jwksResponse:
-      description: |-
-        A JSON web key set. This is a set of named public keys that are referenced by JSON
-        web tokens. The public key can be used to verify that a token was signed by this
-        service.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/jsonWebKeySet'
-          example:
-            keys:
-            - use: sig
-              kty: EC
-              kid: 1dxwsoJRVDBlSbloJowt9INBptbSomWRPYrNKycEA_Q
-              crv: P-521
-              x: AGWAbuKBnn0qXsj8iddWhZj5-ZTM4F4d5rJeKbblOGVc-5nJNURsPb7k-MhEqr9QAi5jKnd7lkmkHU2mnalwsQPK
-              y: AAepClWS8MoLLCzqMQ2bl3KwzF7eSYLhcSrsk8kYuRaNN45mnVuQsH43QOILEB5XXaHhySSRgVCamMwZWUwArv1k
     controlPlaneResponse:
       description: A control plane.
       content:

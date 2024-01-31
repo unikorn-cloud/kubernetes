@@ -333,6 +333,10 @@ github.com/ugorji/go/codec v1.2.12 h1:9LC83zGrHhuUA9l16C9AHXAqEV/2wBQ4nkvumAE65E
 github.com/ugorji/go/codec v1.2.12/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
 github.com/unikorn-cloud/core v0.1.0 h1:ofYrp3hG3kw9ueahfCLk7b9qQa436aOmSMksmPJM5gY=
 github.com/unikorn-cloud/core v0.1.0/go.mod h1:UWOSy9DObfBXmsCZMbHh/YqEU//6b3DNQs9k+D73boo=
+github.com/unikorn-cloud/identity v0.0.0-20240130171555-3cc53a1366c8 h1:QR7HygI/ScaKLhEsaVFZfhy++b8DMM6a4F+/FGqZTj4=
+github.com/unikorn-cloud/identity v0.0.0-20240130171555-3cc53a1366c8/go.mod h1:exshSMX5IssPr30Kk8oygWrWvpEa1UHww+uCLUd02EQ=
+github.com/unikorn-cloud/identity v0.1.0 h1:8lQJIMtwK6hjdup2c9tN+NOPA3ZggEcKU38Z8W8ohwE=
+github.com/unikorn-cloud/identity v0.1.0/go.mod h1:exshSMX5IssPr30Kk8oygWrWvpEa1UHww+uCLUd02EQ=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasttemplate v1.2.1/go.mod h1:KHLXt3tVN2HBp8eijSv/kGJopbvo7S+qRAEEKiv+SiQ=

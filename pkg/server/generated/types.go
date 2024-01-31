@@ -4,11 +4,7 @@
 package generated
 
 import (
-	"encoding/json"
-	"fmt"
 	"time"
-
-	"github.com/deepmap/oapi-codegen/pkg/runtime"
 )
 
 const (
@@ -174,15 +170,6 @@ type ControlPlanes = []ControlPlane
 
 // Hour An hour of the day in UTC.
 type Hour = int
-
-// JsonWebKey JSON web key. See the relevant JWKS documentation for further details.
-type JsonWebKey = map[string]interface{}
-
-// JsonWebKeySet JSON web key set. This data type is defined by an external 3rd party standards
-// committee. Consult the relevant documentation for further details.
-type JsonWebKeySet struct {
-	Keys *[]JsonWebKey `json:"keys,omitempty"`
-}
 
 // KubernetesCluster Kubernetes cluster creation parameters.
 type KubernetesCluster struct {
@@ -492,68 +479,6 @@ type TimeWindow struct {
 	Start Hour `json:"start"`
 }
 
-// Token Oauth2 token result.
-type Token struct {
-	// AccessToken The opaque access token.
-	AccessToken string `json:"access_token"`
-
-	// ExpiresIn The time in seconds the token will last for.
-	ExpiresIn int `json:"expires_in"`
-
-	// IdToken An OIDC ID token.
-	IdToken *string `json:"id_token,omitempty"`
-
-	// TokenType How the access token is to be presented to the resource server.
-	TokenType string `json:"token_type"`
-}
-
-// TokenRequestOptions oauth2 token endpoint.
-type TokenRequestOptions struct {
-	// ClientId Client ID. Required with the "code" grant type.
-	ClientId *string `json:"client_id"`
-
-	// Code Authorization code. Required with the "code" grant type.
-	Code *string `json:"code"`
-
-	// CodeVerifier Client code verifier. Required with the "code" grant type.
-	CodeVerifier *string `json:"code_verifier"`
-
-	// GrantType Supported grant type.  Must be either "code" or "password".
-	GrantType string `json:"grant_type"`
-
-	// Password Resource owner password. Required with the "password" grant type.
-	Password *string `json:"password"`
-
-	// RedirectUri Client redirect URI. Required with the "code" grant type.
-	RedirectUri *string `json:"redirect_uri"`
-
-	// Username Resource owner username. Required with the "password" grant type.
-	Username *string `json:"username"`
-	union    json.RawMessage
-}
-
-// TokenRequestOptions0 defines model for .
-type TokenRequestOptions0 struct {
-	GrantType *interface{} `json:"grant_type,omitempty"`
-}
-
-// TokenRequestOptions1 defines model for .
-type TokenRequestOptions1 struct {
-	GrantType *interface{} `json:"grant_type,omitempty"`
-}
-
-// TokenScope OpenStack token scope.
-type TokenScope struct {
-	// Project OpenStack token project scope.
-	Project TokenScopeProject `json:"project"`
-}
-
-// TokenScopeProject OpenStack token project scope.
-type TokenScopeProject struct {
-	// Id OpenStack project ID.
-	Id string `json:"id"`
-}
-
 // ClusterNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type ClusterNameParameter = KubernetesNameParameter
 
@@ -583,10 +508,6 @@ type ForbiddenResponse = Oauth2Error
 
 // InternalServerErrorResponse Generic error message.
 type InternalServerErrorResponse = Oauth2Error
-
-// JwksResponse JSON web key set. This data type is defined by an external 3rd party standards
-// committee. Consult the relevant documentation for further details.
-type JwksResponse = JsonWebKeySet
 
 // KubernetesClusterResponse Kubernetes cluster creation parameters.
 type KubernetesClusterResponse = KubernetesCluster
@@ -618,9 +539,6 @@ type OpenstackKeyPairsResponse = OpenstackKeyPairs
 // OpenstackProjectsResponse A list of OpenStack projects.
 type OpenstackProjectsResponse = OpenstackProjects
 
-// TokenResponse Oauth2 token result.
-type TokenResponse = Token
-
 // UnauthorizedResponse Generic error message.
 type UnauthorizedResponse = Oauth2Error
 
@@ -629,15 +547,6 @@ type CreateControlPlaneRequest = ControlPlane
 
 // CreateKubernetesClusterRequest Kubernetes cluster creation parameters.
 type CreateKubernetesClusterRequest = KubernetesCluster
-
-// TokenScopeRequest OpenStack token scope.
-type TokenScopeRequest = TokenScope
-
-// PostApiV1AuthOauth2TokensFormdataRequestBody defines body for PostApiV1AuthOauth2Tokens for application/x-www-form-urlencoded ContentType.
-type PostApiV1AuthOauth2TokensFormdataRequestBody = TokenRequestOptions
-
-// PostApiV1AuthTokensTokenJSONRequestBody defines body for PostApiV1AuthTokensToken for application/json ContentType.
-type PostApiV1AuthTokensTokenJSONRequestBody = TokenScope
 
 // PostApiV1ControlplanesJSONRequestBody defines body for PostApiV1Controlplanes for application/json ContentType.
 type PostApiV1ControlplanesJSONRequestBody = ControlPlane
@@ -650,181 +559,3 @@ type PostApiV1ControlplanesControlPlaneNameClustersJSONRequestBody = KubernetesC
 
 // PutApiV1ControlplanesControlPlaneNameClustersClusterNameJSONRequestBody defines body for PutApiV1ControlplanesControlPlaneNameClustersClusterName for application/json ContentType.
 type PutApiV1ControlplanesControlPlaneNameClustersClusterNameJSONRequestBody = KubernetesCluster
-
-// AsTokenRequestOptions0 returns the union data inside the TokenRequestOptions as a TokenRequestOptions0
-func (t TokenRequestOptions) AsTokenRequestOptions0() (TokenRequestOptions0, error) {
-	var body TokenRequestOptions0
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromTokenRequestOptions0 overwrites any union data inside the TokenRequestOptions as the provided TokenRequestOptions0
-func (t *TokenRequestOptions) FromTokenRequestOptions0(v TokenRequestOptions0) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeTokenRequestOptions0 performs a merge with any union data inside the TokenRequestOptions, using the provided TokenRequestOptions0
-func (t *TokenRequestOptions) MergeTokenRequestOptions0(v TokenRequestOptions0) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JsonMerge(b, t.union)
-	t.union = merged
-	return err
-}
-
-// AsTokenRequestOptions1 returns the union data inside the TokenRequestOptions as a TokenRequestOptions1
-func (t TokenRequestOptions) AsTokenRequestOptions1() (TokenRequestOptions1, error) {
-	var body TokenRequestOptions1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromTokenRequestOptions1 overwrites any union data inside the TokenRequestOptions as the provided TokenRequestOptions1
-func (t *TokenRequestOptions) FromTokenRequestOptions1(v TokenRequestOptions1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeTokenRequestOptions1 performs a merge with any union data inside the TokenRequestOptions, using the provided TokenRequestOptions1
-func (t *TokenRequestOptions) MergeTokenRequestOptions1(v TokenRequestOptions1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JsonMerge(b, t.union)
-	t.union = merged
-	return err
-}
-
-func (t TokenRequestOptions) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-	object := make(map[string]json.RawMessage)
-	if t.union != nil {
-		err = json.Unmarshal(b, &object)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if t.ClientId != nil {
-		object["client_id"], err = json.Marshal(t.ClientId)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'client_id': %w", err)
-		}
-	}
-
-	if t.Code != nil {
-		object["code"], err = json.Marshal(t.Code)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'code': %w", err)
-		}
-	}
-
-	if t.CodeVerifier != nil {
-		object["code_verifier"], err = json.Marshal(t.CodeVerifier)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'code_verifier': %w", err)
-		}
-	}
-
-	object["grant_type"], err = json.Marshal(t.GrantType)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'grant_type': %w", err)
-	}
-
-	if t.Password != nil {
-		object["password"], err = json.Marshal(t.Password)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'password': %w", err)
-		}
-	}
-
-	if t.RedirectUri != nil {
-		object["redirect_uri"], err = json.Marshal(t.RedirectUri)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'redirect_uri': %w", err)
-		}
-	}
-
-	if t.Username != nil {
-		object["username"], err = json.Marshal(t.Username)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'username': %w", err)
-		}
-	}
-	b, err = json.Marshal(object)
-	return b, err
-}
-
-func (t *TokenRequestOptions) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	if err != nil {
-		return err
-	}
-	object := make(map[string]json.RawMessage)
-	err = json.Unmarshal(b, &object)
-	if err != nil {
-		return err
-	}
-
-	if raw, found := object["client_id"]; found {
-		err = json.Unmarshal(raw, &t.ClientId)
-		if err != nil {
-			return fmt.Errorf("error reading 'client_id': %w", err)
-		}
-	}
-
-	if raw, found := object["code"]; found {
-		err = json.Unmarshal(raw, &t.Code)
-		if err != nil {
-			return fmt.Errorf("error reading 'code': %w", err)
-		}
-	}
-
-	if raw, found := object["code_verifier"]; found {
-		err = json.Unmarshal(raw, &t.CodeVerifier)
-		if err != nil {
-			return fmt.Errorf("error reading 'code_verifier': %w", err)
-		}
-	}
-
-	if raw, found := object["grant_type"]; found {
-		err = json.Unmarshal(raw, &t.GrantType)
-		if err != nil {
-			return fmt.Errorf("error reading 'grant_type': %w", err)
-		}
-	}
-
-	if raw, found := object["password"]; found {
-		err = json.Unmarshal(raw, &t.Password)
-		if err != nil {
-			return fmt.Errorf("error reading 'password': %w", err)
-		}
-	}
-
-	if raw, found := object["redirect_uri"]; found {
-		err = json.Unmarshal(raw, &t.RedirectUri)
-		if err != nil {
-			return fmt.Errorf("error reading 'redirect_uri': %w", err)
-		}
-	}
-
-	if raw, found := object["username"]; found {
-		err = json.Unmarshal(raw, &t.Username)
-		if err != nil {
-			return fmt.Errorf("error reading 'username': %w", err)
-		}
-	}
-
-	return err
-}
