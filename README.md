@@ -42,51 +42,6 @@ Unikorn is split up into domain specific micro-services:
 
 ## Installation
 
-### Installing the Management Binary
-
-**NOTE**: You are better off installing Unikorn Server/UI as a shell, see below for details.
-
-Download the official binary (update the version as appropriate):
-
-```shell
-wget -O ~/bin/unikornctl https://github.com/unikorn-cloud/unikorn/releases/download/v0.4.1/unikornctl-linux-amd64
-```
-
-### Set up shell completion
-
-`unikornctl` has a large amount of convenience and contextual awareness built into its various subcommands.  It's strongly recommended to set up shell completion to make your life a lot easier.
-
-<details>
-<summary>BASH</summary>
-
-```shell
-export TEMP=$(mktemp)
-unikornctl completion bash > ${TEMP}
-source ${TEMP}
-```
-
-For the more adventurous, you can add it to `/etc/bash_completion.d/` or whatever you use.
-</details>
-
-<details>
-<summary>ZSH</summary>
-
-With zsh, the [recommendation](https://jzelinskie.com/posts/dont-recommend-sourcing-shell-completion/) is to do the following:
-
-```shell
-autoload -U +X compinit && compinit
-unikornctl completion zsh > $fpath/_unikornctl
-```
-
-If you have a set of existing paths in `$fpath`, create the `_unikornctl` in your own custom completion function directory.  For example, if you had custom functions in `~/.zshfunc` then you would add the following to your `~/.zshenv`:
-
-```
-fpath=( ~/.zshfunc "${fpath[@]}" )
-```
-
-And then redirect the output of `unikornctl completion zsh` to `~/.zshfunc/_unikornctl`.
-</details>
-
 ### Installing the Service
 
 Is all done via Helm, which means we can also deploy using ArgoCD.
@@ -212,7 +167,7 @@ spec:
   source:
     repoURL: https://unikorn-cloud.github.io/unikorn
     chart: unikorn
-    targetRevision: v0.4.1
+    targetRevision: v0.1.0
   destination:
     namespace: unikorn
     server: https://kubernetes.default.svc
@@ -238,23 +193,17 @@ A typical `values.yaml` that uses ACME could look like:
 ```yaml
 server:
   enabled: true
-  host: kubernetes.my-domain.com
-  acme:
-    email: spam@my-domain.com
-    server: https://acme-v02.api.letsencrypt.org/directory
-    cloudflare:
-      email: cloudflare-user@my-domain.com
-      apiToken: bW92ZV9hbG9uZ19jbGV2ZXJfZGljaw==
+  ingress:
+    host: unikorn.unikorn-cloud.org
+  oidc:
+    issuer: https://identity.unikorn-cloud.org
 ```
 
 The host defines the X.509 SAN, and indeed the host the Ingress will respond to.
 There is no automated DDNS yet, so you will need to manually add the A record when the ingress comes up.
 
-The server shown is the production server, and will be trusted by browsers.
-You can use the `acme-staging-v02` host if just playing around as it's not as badly rate limited.
-
-Finally the API token you will need to configure to allow editing of records in your domain.
-It's base64 encoded e.g. `echo -n MY_TOKEN | base64 -w0`.
+Unikorn Server uses OIDC (oauth2) to authenticate API requests.
+YOu must deploy [Unikorn Identity](https://github.com/unikorn-cloud/identity) first in order to use it.
 
 #### Installing Unikorn UI
 
@@ -271,15 +220,6 @@ It **must** be installed in the same namespace as Unikorn server in order for th
 See the [monitoring & logging](docs/monitoring.md) documentation from more information on configuring those services in the first instance..
 
 ## Documentation
-
-### CLI
-
-All the best tools document themselves, try:
-
-```shell
-unikornctl --help
-unikornctl create --help
-```
 
 ### API (Unikorn Server)
 
