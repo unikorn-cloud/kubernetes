@@ -337,6 +337,8 @@ github.com/unikorn-cloud/identity v0.0.0-20240130171555-3cc53a1366c8 h1:QR7HygI/
 github.com/unikorn-cloud/identity v0.0.0-20240130171555-3cc53a1366c8/go.mod h1:exshSMX5IssPr30Kk8oygWrWvpEa1UHww+uCLUd02EQ=
 github.com/unikorn-cloud/identity v0.1.0 h1:8lQJIMtwK6hjdup2c9tN+NOPA3ZggEcKU38Z8W8ohwE=
 github.com/unikorn-cloud/identity v0.1.0/go.mod h1:exshSMX5IssPr30Kk8oygWrWvpEa1UHww+uCLUd02EQ=
+github.com/unikorn-cloud/identity v0.1.2 h1:TTXQzW2eoNOku2YSUTdwDE0PEUmleeqRLy1zk3t1k4k=
+github.com/unikorn-cloud/identity v0.1.2/go.mod h1:exshSMX5IssPr30Kk8oygWrWvpEa1UHww+uCLUd02EQ=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasttemplate v1.2.1/go.mod h1:KHLXt3tVN2HBp8eijSv/kGJopbvo7S+qRAEEKiv+SiQ=

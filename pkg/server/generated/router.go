@@ -149,7 +149,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1Applications(w http.ResponseWriter, r
 func (siw *ServerInterfaceWrapper) GetApiV1Controlplanes(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiV1Controlplanes(w, r)
@@ -166,7 +166,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1Controlplanes(w http.ResponseWriter, 
 func (siw *ServerInterfaceWrapper) PostApiV1Controlplanes(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.PostApiV1Controlplanes(w, r)
@@ -194,7 +194,7 @@ func (siw *ServerInterfaceWrapper) DeleteApiV1ControlplanesControlPlaneName(w ht
 		return
 	}
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.DeleteApiV1ControlplanesControlPlaneName(w, r, controlPlaneName)
@@ -222,7 +222,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1ControlplanesControlPlaneName(w http.
 		return
 	}
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiV1ControlplanesControlPlaneName(w, r, controlPlaneName)
@@ -250,7 +250,7 @@ func (siw *ServerInterfaceWrapper) PutApiV1ControlplanesControlPlaneName(w http.
 		return
 	}
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.PutApiV1ControlplanesControlPlaneName(w, r, controlPlaneName)
@@ -278,7 +278,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1ControlplanesControlPlaneNameClusters
 		return
 	}
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiV1ControlplanesControlPlaneNameClusters(w, r, controlPlaneName)
@@ -306,7 +306,7 @@ func (siw *ServerInterfaceWrapper) PostApiV1ControlplanesControlPlaneNameCluster
 		return
 	}
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.PostApiV1ControlplanesControlPlaneNameClusters(w, r, controlPlaneName)
@@ -343,7 +343,7 @@ func (siw *ServerInterfaceWrapper) DeleteApiV1ControlplanesControlPlaneNameClust
 		return
 	}
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.DeleteApiV1ControlplanesControlPlaneNameClustersClusterName(w, r, controlPlaneName, clusterName)
@@ -380,7 +380,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1ControlplanesControlPlaneNameClusters
 		return
 	}
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiV1ControlplanesControlPlaneNameClustersClusterName(w, r, controlPlaneName, clusterName)
@@ -417,7 +417,7 @@ func (siw *ServerInterfaceWrapper) PutApiV1ControlplanesControlPlaneNameClusters
 		return
 	}
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.PutApiV1ControlplanesControlPlaneNameClustersClusterName(w, r, controlPlaneName, clusterName)
@@ -454,7 +454,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1ControlplanesControlPlaneNameClusters
 		return
 	}
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfig(w, r, controlPlaneName, clusterName)
@@ -471,7 +471,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1ControlplanesControlPlaneNameClusters
 func (siw *ServerInterfaceWrapper) DeleteApiV1Project(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.DeleteApiV1Project(w, r)
@@ -488,7 +488,7 @@ func (siw *ServerInterfaceWrapper) DeleteApiV1Project(w http.ResponseWriter, r *
 func (siw *ServerInterfaceWrapper) PostApiV1Project(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.PostApiV1Project(w, r)
@@ -505,7 +505,7 @@ func (siw *ServerInterfaceWrapper) PostApiV1Project(w http.ResponseWriter, r *ht
 func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage(w, r)
@@ -522,7 +522,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackAvailabilityZonesBl
 func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackAvailabilityZonesCompute(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiV1ProvidersOpenstackAvailabilityZonesCompute(w, r)
@@ -539,7 +539,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackAvailabilityZonesCo
 func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackExternalNetworks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiV1ProvidersOpenstackExternalNetworks(w, r)
@@ -556,7 +556,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackExternalNetworks(w 
 func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackFlavors(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiV1ProvidersOpenstackFlavors(w, r)
@@ -573,7 +573,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackFlavors(w http.Resp
 func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackImages(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiV1ProvidersOpenstackImages(w, r)
@@ -590,7 +590,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackImages(w http.Respo
 func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackKeyPairs(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{"project"})
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiV1ProvidersOpenstackKeyPairs(w, r)

@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -261,7 +262,7 @@ func generateSBOM(name string, spec *unikornv1.ApplicationBundleSpec, applicatio
 		CreationInfo: &spdx.CreationInfo{
 			Creators: []spdx_common.Creator{
 				{
-					Creator:     "EscherCloud AI",
+					Creator:     "The Unikorn Authors",
 					CreatorType: "Organization",
 				},
 				{

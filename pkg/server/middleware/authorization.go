@@ -18,21 +18,19 @@ limitations under the License.
 package middleware
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"net/http"
+	"slices"
 	"strings"
 
-	//"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/getkin/kin-openapi/openapi3"
-	//"golang.org/x/oauth2"
+	"github.com/spf13/pflag"
 
 	"github.com/unikorn-cloud/identity/pkg/oauth2"
 
 	"github.com/unikorn-cloud/unikorn/pkg/server/authorization"
-
-	/*
-		"github.com/unikorn-cloud/unikorn/pkg/server/authorization/jose"
-		"github.com/unikorn-cloud/unikorn/pkg/server/authorization/oauth2"
-	*/
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 )
 
@@ -44,24 +42,38 @@ type authorizationContext struct {
 	err error
 
 	// claims contains all claims defined in the token.
-	claims *oauth2.Claims
+	claims oauth2.Claims
+}
+
+type AuthorizerOptions struct {
+	// issuer is used to perform OIDC discovery and verify access tokens
+	// using the JWKS endpoint.
+	issuer string
+
+	// issuerCA is the root CA of the identity endpoint.
+	issuerCA []byte
+}
+
+func (o *AuthorizerOptions) AddFlags(f *pflag.FlagSet) {
+	f.StringVar(&o.issuer, "oidc-issuer", "", "OIDC issuer URL to use for token validation.")
+	f.BytesBase64Var(&o.issuerCA, "oidc-issuer-ca", nil, "base64 OIDC endpoint CA certificate.")
 }
 
 // Authorizer provides OpenAPI based authorization middleware.
 type Authorizer struct {
-	issuer string
+	options *AuthorizerOptions
 }
 
 // NewAuthorizer returns a new authorizer with required parameters.
-func NewAuthorizer() *Authorizer {
+func NewAuthorizer(options *AuthorizerOptions) *Authorizer {
 	return &Authorizer{
-		issuer: "https://identity.spjmurray.co.uk",
+		options: options,
 	}
 }
 
 // authorizeOAuth2 checks APIs that require and oauth2 bearer token.
-func (a *Authorizer) authorizeOAuth2(ctx *authorizationContext, r *http.Request, scopes []string) error {
-	authorizationScheme, _ /*token*/, err := authorization.GetHTTPAuthenticationScheme(r)
+func (a *Authorizer) authorizeOAuth2(authContext *authorizationContext, r *http.Request, scopes []string) error {
+	authorizationScheme, rawToken, err := authorization.GetHTTPAuthenticationScheme(r)
 	if err != nil {
 		return err
 	}
@@ -70,28 +82,63 @@ func (a *Authorizer) authorizeOAuth2(ctx *authorizationContext, r *http.Request,
 		return errors.OAuth2InvalidRequest("authorization scheme not allowed").WithValues("scheme", authorizationScheme)
 	}
 
-	/*
-		provider, err := oidc.NewProvider(r.Context(), a.issuer)
-		if err != nil {
-			return errors.OAuth2ServerError("failed to perform OIDC discovery").WithError(err)
+	// Handle non-public CA certiifcates used in development.
+	ctx := r.Context()
+
+	if a.options.issuerCA != nil {
+		certPool := x509.NewCertPool()
+
+		if ok := certPool.AppendCertsFromPEM(a.options.issuerCA); !ok {
+			return errors.OAuth2InvalidRequest("failed to parse oidc issuer CA cert")
 		}
 
-		// Check the token is from us, for us, and in date.
-		claims, err := oauth2.Verify(provider.Issuer, r, token)
-		if err != nil {
-			return errors.OAuth2AccessDenied("token validation failed").WithError(err)
+		client := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					RootCAs: certPool,
+				},
+			},
 		}
 
-		// Check the token is authorized to do what the schema says.
-		for _, scope := range scopes {
-			if !claims.Scope.Includes(oauth2.APIScope(scope)) {
-				return errors.OAuth2InvalidScope("token missing required scope").WithValues("scope", scope)
-			}
-		}
+		ctx = oidc.ClientContext(ctx, client)
+	}
 
-		// Set the claims in the context for use by the handlers.
-		ctx.claims = claims
-	*/
+	// Note: although we are talking about ID tokens, the identity service uses
+	// the same data structures and algorithms for access tokens.  The raitonale here
+	// is to avoid sending sensitive information in the token, and avoid using JWE as
+	// we'd need to get access to the private key in order to decrypt it, which brings
+	// it's own challenges.
+	provider, err := oidc.NewProvider(ctx, a.options.issuer)
+	if err != nil {
+		return errors.OAuth2ServerError("oidc service discovery failed").WithError(err)
+	}
+
+	config := &oidc.Config{
+		SkipClientIDCheck: true,
+	}
+
+	verifier := provider.Verifier(config)
+
+	token, err := verifier.Verify(ctx, rawToken)
+	if err != nil {
+		return errors.OAuth2AccessDenied("access token validation failed").WithError(err)
+	}
+
+	var claims oauth2.Claims
+
+	if err := token.Claims(&claims); err != nil {
+		return errors.OAuth2ServerError("access token claims extraction failed").WithError(err)
+	}
+
+	// Check the token is authorized to do what the schema says.
+	for _, scope := range scopes {
+		if !slices.Contains(claims.Scope, scope) {
+			return errors.OAuth2InvalidScope("token missing required scope").WithValues("scope", scope)
+		}
+	}
+
+	// Set the claims in the context for use by the handlers.
+	authContext.claims = claims
 
 	return nil
 }

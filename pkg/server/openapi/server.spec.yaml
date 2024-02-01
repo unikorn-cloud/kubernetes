@@ -46,8 +46,7 @@ paths:
         Creates a new project resource associated with the authenticated user's
         scoped authorisation token.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '202':
           $ref: '#/components/responses/acceptedResponse'
@@ -65,8 +64,7 @@ paths:
         authorisation token. This is a cascading operation and will delete all
         contained control planes and clusters.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '202':
           $ref: '#/components/responses/acceptedResponse'
@@ -91,8 +89,7 @@ paths:
       description: |-
         Lists control planes within the scoped project.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '200':
           $ref: '#/components/responses/controlPlanesResponse'
@@ -108,8 +105,7 @@ paths:
       description: |-
         Creates a new control plane within the scoped project.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       requestBody:
         $ref: '#/components/requestBodies/createControlPlaneRequest'
       responses:
@@ -138,8 +134,7 @@ paths:
       description: |-
         Gets a control plane from within the scoped project.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '200':
           $ref: '#/components/responses/controlPlaneResponse'
@@ -155,8 +150,7 @@ paths:
       description: |-
         Updates a control plane within the scoped project.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       requestBody:
         $ref: '#/components/requestBodies/createControlPlaneRequest'
       responses:
@@ -175,8 +169,7 @@ paths:
         Deletes a control plane from within the scoped project.
         This is a cascading operation and will delete all contained clusters.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '202':
           $ref: '#/components/responses/acceptedResponse'
@@ -197,8 +190,7 @@ paths:
       description: |-
         List all clusters within the selected control plane.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '200':
           $ref: '#/components/responses/kubernetesClustersResponse'
@@ -214,8 +206,7 @@ paths:
       description: |-
         Creates a new cluster within the selected control plane.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       requestBody:
         $ref: '#/components/requestBodies/createKubernetesClusterRequest'
       responses:
@@ -241,8 +232,7 @@ paths:
       description: |-
         Get a cluster from within the selected control plane.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '200':
           $ref: '#/components/responses/kubernetesClusterResponse'
@@ -258,8 +248,7 @@ paths:
       description: |-
         Update a cluster within the selected control plane.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       requestBody:
         $ref: '#/components/requestBodies/createKubernetesClusterRequest'
       responses:
@@ -277,8 +266,7 @@ paths:
       description: |-
         Delete a cluster from within a the selected control plane.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '202':
           $ref: '#/components/responses/acceptedResponse'
@@ -300,8 +288,7 @@ paths:
       description: |-
         Get a cluster's Kubernetes configuration.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '200':
           $ref: '#/components/responses/kubernetesClusterKubeconfigResponse'
@@ -391,8 +378,7 @@ paths:
         Lists all OpenStack compute flavors that the authenticated user has access
         to within the scope of the OpenStack project.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '200':
           $ref: '#/components/responses/openstackFlavorsResponse'
@@ -410,8 +396,7 @@ paths:
         Lists all OpenStack compute images that the authenticated user has access
         to within the scope of the OpenStack project.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '200':
           $ref: '#/components/responses/openstackImagesResponse'
@@ -429,8 +414,7 @@ paths:
         Lists all OpenStack compute availability zones the authenticated user has
         access to within the scope of the OpenStack project.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '200':
           $ref: '#/components/responses/openstackComputeAvailabilityZonesResponse'
@@ -448,8 +432,7 @@ paths:
         Lists all OpenStack volume availability zones the authenticated user has
         access to within the scope of the OpenStack project.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '200':
           $ref: '#/components/responses/openstackBlockStorageAvailabilityZonesResponse'
@@ -467,8 +450,7 @@ paths:
         Lists all OpenStack external networks the authenticated user has access to
         within the scope of the OpenStack project.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '200':
           $ref: '#/components/responses/openstackExternalNetworksResponse'
@@ -486,8 +468,7 @@ paths:
         Lists all OpenStack key pairs the authenticated user has access to within
         the scope of the OpenStack project.
       security:
-      - oauth2Authentication:
-        - project
+      - oauth2Authentication: []
       responses:
         '200':
           $ref: '#/components/responses/openstackKeyPairsResponse'
@@ -1494,11 +1475,6 @@ components:
       type: oauth2
       flows:
         authorizationCode:
-          authorizationUrl: https://kubernetes.eschercloud.com/api/v1/tokens/password"
-          tokenUrl: https://kubernetes.eschercloud.com/api/v1/tokens/token"
-          scopes:
-            project: Token is scoped to an OpenStack project
-        password:
-          tokenUrl: https://kubernetes.eschercloud.com/api/v1/tokens/token"
-          scopes:
-            project: Token is scoped to an OpenStack project
+          authorizationUrl: https://identity.unikorn-cloud.org/oauth2/v2/authorization
+          tokenUrl: https://identity.unikorn-cloud.org/oauth2/v2/token
+          scopes: {}

@@ -57,73 +57,22 @@ server:
     # want something like the following e.g. a shared cluster issuer, and external-dns
     # to define the DNS address via DDNS and keep the IP address in sync.
     # annotations:
-    #   external-dns.alpha.kubernetes.io/hostname=kubernetes.eschercloud.com
-    #   cert-manager.io/issuer: my-cluster-issuer
+    #   external-dns.alpha.kubernetes.io/hostname=unikorn.unikorn-cloud.org
+    #   cert-manager.io/issuer: letsencrypt-prod
 
     # Sets the DNS hosts/X.509 Certs.
-    host: kubernetes.eschercloud.com
+    host: unikorn.unikorn-cloud.org
+
+  oidc:
+    # OIDC issuer used to discover OIDC configuration and verify access tokens.
+    issuer: https://identity.unikorn-cloud.org
+
+    # CA certificate to use to verify connections to the issuer, used in development only.
+    # This is a base64 encoded PEM file.
+    # issuerCA:
 
   # Sets the OTLP endpoint for shipping spans.
   # otlpEndpoint: jaeger-collector.default:4318
-
-  # Allow configuration of application credentials.
-  applicationCredentials:
-    # Sets the roles to grant to credentials.  It is up to the Openstack administrator
-    # to ensure users have these roles so they can grant them to the credential.
-    roles:
-    - _member_
-    - member
-    - load-balancer_member
-
-  # imageSigningKey allows the ESCDA key to be set and images to be filtered based
-  # on signature.
-  # TODO: this is only temporary, we'd probably expect this to come from a secret
-  # managed by vault.
-  imageSigningKey: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUhZd0VBWUhLb1pJemowQ0FRWUZLNEVFQUNJRFlnQUVmOGs4RVY1TUg4M1BncThYd0JGUTd5YkU2NTEzRlh0awpHaG1jalp4WmYzbU5QOE0vb3VBbE0vZHdYWGpFeXZTNlJhVHdoT3A0aTdHL3VvbE5ZL0RJSCt1elc2VXNxR3VHClFpSW11Tm9BdzFSS1NQcEtyNWlJVXU2eEc1cDR3U3E5Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=
-
-  # Whether to filter based on the 'k8s' and 'gpu' image properties used to derive versions
-  imageProperties:
-  - k8s
-  - gpu
-
-  keystone:
-    endpoint: "https://nl1.eschercloud.com:5000"
-    userDomain: "Default"
-
-  flavors:
-    # Reject any flavors with the following properties.
-    excludeProperties:
-    - resources:CUSTOM_BAREMETAL
-    # Extract GPU counts from the following properties using the
-    # provided regular expressions.
-    gpuDescriptors:
-    - property: resources:VGPU
-      expression: '^(\d+)$'
-    - property: pci_passthrough:alias
-      expression: '^a100:(\d+)$'
-
-  # SSO authorization configuration.
-  # authorization:
-  #   backend:
-  #     OIDC authentication backend.
-  #     oidc:
-  #       # Client ID issued by the authorization server.
-  #       clientID: ""
-  #       # Issuer that creates id_tokens for validation.
-  #       issuer: ""
-  #       # Where to redirect to in order to get a code.
-  #       authorizationEndpoint: ""
-  #       # Where to call to exchange a code for a token.
-  #       tokenEndpoint: ""
-  #       # Where to get the java web key set for validation of id_tokens.
-  #       jwksURL: ""
-  #   frontend:
-  #     OAuth2 authorization frontend.
-  #     oauth2:
-  #       # Client ID of the UI (or another client).
-  #       clientID: ""
-  #       # Secure redirect URI of the client that does the code exchange.
-  #       redirectURI: ""
 
 # UI that works with the server.
 ui:

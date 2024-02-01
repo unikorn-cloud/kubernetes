@@ -66,16 +66,6 @@ roleRef:
   kind: ClusterRole
   name: unikorn-server
 ---
-# This issuer is responsible for creating certificates to be used by
-# JWS and JWE.  The certificates themselves can be shared among all
-# pods in the delopyment to provide scale out.
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: unikorn-server-jose
-spec:
-  selfSigned: {}
----
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -111,7 +101,15 @@ spec:
       - name: unikorn-server
         image: {{ include "unikorn.serverImage" . }}
         args:
+        {{- with $oidc := .Values.server.oidc }}
+        - --oidc-issuer={{ $oidc.issuer }}
+          {{- if $oidc.issuerCA }}
+          {{ printf "- --oidc-issuer-ca=%s" $oidc.issuerCA | nindent 8 }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.server.imageSigningKey }}
         - --image-signing-key={{ .Values.server.imageSigningKey }}
+        {{- end }}
         {{- with $properties := .Values.server.imageProperties -}}
           {{ printf "- --image-properties=%s" (join "," $properties) | nindent 8 }}
         {{- end }}
@@ -123,55 +121,6 @@ spec:
         {{- if .Values.server.otlpEndpoint }}
           {{ printf "- --otlp-endpoint=%s" .Values.server.otlpEndpoint | nindent 8 }}
         {{- end }}
-        {{- if .Values.server.keystone.endpoint -}}
-          {{ printf "- --keystone-endpoint=%s" .Values.server.keystone.endpoint | nindent 8 }}
-        {{- end }}
-        {{- if .Values.server.keystone.userDomain -}}
-          {{ printf "- --keystone-user-domain-name=%s" .Values.server.keystone.userDomain | nindent 8 }}
-        {{- end }}
-        {{- with $flavors := .Values.server.flavors }}
-          {{- range $excludedProperty := $flavors.excludeProperties }}
-            {{ printf "- --flavors-exclude-property=%s" $excludedProperty | nindent 8 }}
-          {{- end }}
-          {{- range $gpuDescriptor := $flavors.gpuDescriptors }}
-            {{ printf "- --flavors-gpu-descriptor=property=%s,expression=%s" $gpuDescriptor.property $gpuDescriptor.expression | nindent 8 }}
-          {{- end }}
-        {{- end }}
-        {{- with $auth := .Values.server.authorization }}
-          {{- with $backend := $auth.backend }}
-            {{- with $oidc := $backend.oidc }}
-              {{- if $oidc.clientID }}
-                {{ printf "- --oidc-client-id=%s" $oidc.clientID | nindent 8 }}
-              {{- end }}
-              {{- if $oidc.issuer }}
-                {{ printf "- --oidc-issuer=%s" $oidc.issuer | nindent 8 }}
-              {{- end }}
-              {{- if $oidc.authorizationEndpoint }}
-                {{ printf "- --oidc-autorization-endpoint=%s" $oidc.authorizationEndpoint | nindent 8 }}
-              {{- end }}
-              {{- if $oidc.tokenEndpoint }}
-                {{ printf "- --oidc-token-endpoint=%s" $oidc.tokenEndpoint | nindent 8 }}
-              {{- end }}
-              {{- if $oidc.jwksURL }}
-                {{ printf "- --oidc-jwks-url=%s" $oidc.jwksURL | nindent 8 }}
-              {{- end }}
-            {{- end }}
-          {{- end }}
-          {{- with $frontend := $auth.frontend }}
-            {{- with $oauth2 := $frontend.oauth2 }}
-              {{- if $oauth2.clientID }}
-                {{ printf "- --oauth2-client-id=%s" $oauth2.clientID| nindent 8 }}
-              {{- end }}
-              {{- if $oauth2.redirectURI }}
-                {{ printf "- --oauth2-redirect-uri=%s" $oauth2.redirectURI | nindent 8 }}
-              {{- end }}
-            {{- end }}
-          {{- end }}
-        {{- end }}
-        volumeMounts:
-        - name: unikorn-server-jose-tls
-          mountPath: /var/lib/secrets/unikorn-cloud.org/jose
-          readOnly: true
         ports:
         - name: http
           containerPort: 6080
@@ -191,10 +140,6 @@ spec:
       serviceAccountName: unikorn-server
       securityContext:
         runAsNonRoot: true
-      volumes:
-      - name: unikorn-server-jose-tls
-        secret:
-          secretName: unikorn-server-jose-tls
 ---
 apiVersion: v1
 kind: Service

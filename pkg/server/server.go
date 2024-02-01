@@ -46,6 +46,8 @@ type Server struct {
 
 	// HandlerOptions sets options for the HTTP handler.
 	HandlerOptions handler.Options
+
+	AuthorizerOptions middleware.AuthorizerOptions
 }
 
 func (s *Server) AddFlags(goflags *flag.FlagSet, flags *pflag.FlagSet) {
@@ -53,6 +55,7 @@ func (s *Server) AddFlags(goflags *flag.FlagSet, flags *pflag.FlagSet) {
 
 	s.Options.AddFlags(flags)
 	s.HandlerOptions.AddFlags(flags)
+	s.AuthorizerOptions.AddFlags(flags)
 }
 
 func (s *Server) SetupLogging() {
@@ -96,7 +99,7 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 	router.MethodNotAllowed(http.HandlerFunc(handler.MethodNotAllowed))
 
 	// Setup middleware.
-	authorizer := middleware.NewAuthorizer()
+	authorizer := middleware.NewAuthorizer(&s.AuthorizerOptions)
 
 	openapi, err := middleware.NewOpenAPI()
 	if err != nil {
