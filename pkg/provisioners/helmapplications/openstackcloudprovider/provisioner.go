@@ -26,11 +26,10 @@ import (
 	"github.com/gophercloud/utils/openstack/clientconfig"
 	ini "gopkg.in/ini.v1"
 
-	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 	"github.com/unikorn-cloud/core/pkg/provisioners/util"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 
 	"sigs.k8s.io/yaml"
 )

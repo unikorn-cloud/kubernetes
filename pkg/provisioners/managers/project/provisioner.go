@@ -21,12 +21,11 @@ import (
 	"context"
 	"errors"
 
-	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/core/pkg/provisioners"
 	"github.com/unikorn-cloud/core/pkg/provisioners/resource"
 	"github.com/unikorn-cloud/core/pkg/provisioners/util"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

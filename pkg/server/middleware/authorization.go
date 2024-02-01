@@ -29,7 +29,6 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/unikorn-cloud/identity/pkg/oauth2"
-
 	"github.com/unikorn-cloud/unikorn/pkg/server/authorization"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 )
@@ -95,7 +94,8 @@ func (a *Authorizer) authorizeOAuth2(authContext *authorizationContext, r *http.
 		client := &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
-					RootCAs: certPool,
+					RootCAs:    certPool,
+					MinVersion: tls.VersionTLS13,
 				},
 			},
 		}

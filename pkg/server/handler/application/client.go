@@ -22,10 +22,9 @@ import (
 	"slices"
 	"strings"
 
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
-
-	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

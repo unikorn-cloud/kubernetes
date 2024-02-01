@@ -20,11 +20,10 @@ package vcluster
 import (
 	"context"
 
-	"github.com/unikorn-cloud/unikorn/pkg/constants"
-
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/core/pkg/cd"
 	"github.com/unikorn-cloud/core/pkg/provisioners"
+	"github.com/unikorn-cloud/unikorn/pkg/constants"
 
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )

@@ -18,9 +18,8 @@ limitations under the License.
 package main
 
 import (
-	"github.com/unikorn-cloud/unikorn/pkg/managers/controlplane"
-
 	"github.com/unikorn-cloud/core/pkg/manager"
+	"github.com/unikorn-cloud/unikorn/pkg/managers/controlplane"
 )
 
 func main() {

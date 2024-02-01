@@ -20,10 +20,9 @@ package clusterautoscaler
 import (
 	"context"
 
+	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
-
-	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 )
 
 // Provisioner encapsulates provisioning.

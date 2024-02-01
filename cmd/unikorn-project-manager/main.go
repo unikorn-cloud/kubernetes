@@ -18,9 +18,8 @@ limitations under the License.
 package main
 
 import (
-	"github.com/unikorn-cloud/unikorn/pkg/managers/project"
-
 	"github.com/unikorn-cloud/core/pkg/manager"
+	"github.com/unikorn-cloud/unikorn/pkg/managers/project"
 )
 
 func main() {

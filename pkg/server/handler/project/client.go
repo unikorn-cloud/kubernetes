@@ -21,11 +21,10 @@ import (
 	"context"
 	goerrors "errors"
 
-	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
-
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/util/retry"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,7 +48,6 @@ func NewClient(client client.Client) *Client {
 
 // NameFromContext translates an Openstack project ID to one we an use.
 func NameFromContext(ctx context.Context) (string, error) {
-	return "", nil
 	/*
 		claims, err := oauth2.ClaimsFromContext(ctx)
 		if err != nil {
@@ -58,6 +56,7 @@ func NameFromContext(ctx context.Context) (string, error) {
 
 		return fmt.Sprintf("unikorn-server-%s", claims.UnikornClaims.Project), nil
 	*/
+	return "", nil
 }
 
 // Meta describes the project.

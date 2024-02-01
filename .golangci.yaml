@@ -34,8 +34,7 @@ linters-settings:
     sections:
     - standard
     - default
-    - prefix(github.com/unikorn-cloud/unikorn)
-    - prefix(github.com/unikorn-cloud/core)
+    - prefix(github.com/unikorn-cloud)
     - prefix(k8s.io)
     - prefix(sigs.k8s.io)
     skip-generated: true
