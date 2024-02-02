@@ -47,6 +47,73 @@ server:
   # Allows override of the global default image.
   image:
 
+  # Define the cloud provider credentials.
+  provider:
+    # OpenStack is an open-source cloud solution, allowing on-premise
+    # deployments of public or private clouds.
+    openstack:
+      # The Keystone service endpoint.
+      endpoint: https://openstack.acme.com
+
+      # Defines the service account credentials.  Unikorn uses federated
+      # identity via OIDC, and while OpenStack can be configured to do so
+      # we use application credentials to allow clusters to self manage.
+      # OpenStack does not allow federated application credentials because
+      # it cannot know when a user is revoked and propagate this to an
+      # application credential.
+      serviceAccount:
+        # The secret must exist in the same namespace as Unikorn, and contain
+        # the key applicationcredentialid (as this is globally unique) and secret.
+        # This must be a full admin account in order to provision projects and
+        # other RBAC related items, and be unrestricted so it can create other
+        # application credentials for individual clusters under management.
+        secret:
+          name: openstack-applicationcredential
+
+      identity:
+        # Define the roles that are required for Cluster API to function
+        # correctly, typically this will include compute, networking and
+        # LBaaS.
+        applicationCredentialRoles:
+        - member
+        - load-balancer_member
+
+      compute:
+        # Unikorn uses OpenStack anti-affinity rules to provision Kubernetes
+        # control plane nodes as Cluster API is awful and yields broken clusters.
+        serverGroupPolicy: soft-anti-affinity
+
+        # # Allows filtering of flavors with defined properties.
+        # flavorPropertiesExclude:
+        # - resources:CUSTOM_BAREMETAL
+
+        # Allows GPU metadata to be extracted from the flavor extra specs.
+        # If the property exists, then apply the expression to extract the number
+        # of GPUs.
+        flavorGpuDescriptors:
+        - property: resources:PGPU
+          expression: ^(\d+)$
+        - property: resources:VGPU
+          expression: ^(\d+)$
+
+      # image:
+      #   # If defined this will filter compute images based on whether all the
+      #   # given properies exist on an image.  One particular use that is hightly
+      #   # recommended is to use the property "k8s" that defines the preinstalled
+      #   # version of Kubernetes to improve cluster provisioning time.
+      #   # properties:
+      #   - k8s
+      #
+      #   # If defined this will filter compute images based on whether or not
+      #   # the image is signed by an external authority.  This is userful on
+      #   # multi tenant clouds where other non-unikorn images may exist.
+      #   # Signatures are attached to an image via the "digest" metadata property
+      #   # and the value is a base64 encoded ECDSA hash over the image ID, that
+      #   # cannot be manually overriden by a user in order to resuse an existing
+      #   # signature.  Public key types other that eliptic curve are not currently
+      #   # supported.
+      #   signingKey: ~
+
   ingress:
     # Sets the ingress class to use.
     ingressClass: nginx
