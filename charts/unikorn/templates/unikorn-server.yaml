@@ -107,6 +107,37 @@ spec:
           {{ printf "- --oidc-issuer-ca=%s" $oidc.issuerCA | nindent 8 }}
           {{- end }}
         {{- end }}
+        {{- with $openstack := .Values.server.provider.openstack }}
+          {{ printf "- --openstack-endpoint=%s" $openstack.endpoint | nindent 8 }}
+          {{- with $secret := $openstack.serviceAccount.secret }}
+            {{ printf "- --openstack-serviceaccount-secret=%s" $secret.name | nindent 8 }}
+          {{- end }}
+          {{- with $identity := $openstack.identity }}
+            {{- range $roles := $identity.applicationCredentialRoles }}
+              {{ printf "- --openstack-identity-application-credential-roles=%s" (join "," $roles) | nindent 8 }}
+            {{- end }}
+          {{- end }}
+          {{- with $compute := $openstack.compute }}
+            {{- with $policy := $compute.serverGroupPolicy }}
+              {{ printf "- --openstack-servergroup-policy=%s" $policy | nindent 8 }}
+            {{- end }}
+            {{- with $props := $compute.flavorPropertiesExclude }}
+              {{ printf "- --openstack-flavor-properties-exclude=%s" (join "," $props) | nindent 8 }}
+            {{- end }}
+            {{- range $desc := $compute.flavorGpuDescriptors }}
+              {{ printf "- --openstack-flavor-gpu-descriptor=property=%s,expression=%s" $desc.property $desc.expression | nindent 8 }}
+            {{- end }}
+          {{- end }}
+          {{- with $image := $openstack.image }}
+            {{ with $props := $image.properties }}
+              {{ printf "- --openstack-image-properties=%s" (join "," $props) | nindent 8 }}
+            {{- end }}
+            {{- with $key := $image.signingKey }}
+              {{ printf "- --openstack-image-signing-key=%s" $key | nindent 8 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+
         {{- if .Values.server.imageSigningKey }}
         - --image-signing-key={{ .Values.server.imageSigningKey }}
         {{- end }}

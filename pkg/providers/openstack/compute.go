@@ -106,6 +106,8 @@ func (v *flavorsGPUDescriptorVar) String() string {
 
 // ComputeOptions allows things like filtering to be configured.
 type ComputeOptions struct {
+	// serverGroupPolicy allows setting of server anti-affinity.
+	serverGroupPolicy string
 	// flavorsExclusions allow exclusion of certain flavors e.g. baremetal nodes.
 	flavorsExclusions []string
 	// flavorsGPUDescriptors allows the extraction of GPU information from a flavor.
@@ -113,8 +115,9 @@ type ComputeOptions struct {
 }
 
 func (o *ComputeOptions) AddFlags(f *pflag.FlagSet) {
-	f.StringSliceVar(&o.flavorsExclusions, "flavors-exclude-property", nil, "Exclude flavours with the selected property key.  May be specified more than once.")
-	f.Var(&o.flavorsGPUDescriptors, "flavors-gpu-descriptor", "Defines how to extract GPU information from a flavor.  Expects the value to be in the form property=foo,expression=bar, where property is the property name to look for, and expression defines how to extract the number of GPUs e.g. ^(\\d+)$.  Exactly one sub string match is required in the expression.  May be specified more than once.")
+	f.StringVar(&o.serverGroupPolicy, "openstack-servergroup-policy", "soft-anti-affinity", "Scheduling policy to use for server groups")
+	f.StringSliceVar(&o.flavorsExclusions, "openstack-flavor-properties-exclude", nil, "Exclude flavours with the selected property key.  May be specified more than once.")
+	f.Var(&o.flavorsGPUDescriptors, "openstack-flavor-gpu-descriptor", "Defines how to extract GPU information from a flavor.  Expects the value to be in the form property=foo,expression=bar, where property is the property name to look for, and expression defines how to extract the number of GPUs e.g. ^(\\d+)$.  Exactly one sub string match is required in the expression.  May be specified more than once.")
 }
 
 // ComputeClient wraps the generic client because gophercloud is unsafe.
@@ -366,7 +369,7 @@ func (c *ComputeClient) ListServerGroups(ctx context.Context) ([]servergroups.Se
 
 // CreateServerGroup creates the named server group with the given policy and returns
 // the result.
-func (c *ComputeClient) CreateServerGroup(ctx context.Context, name, policy string) (*servergroups.ServerGroup, error) {
+func (c *ComputeClient) CreateServerGroup(ctx context.Context, name string) (*servergroups.ServerGroup, error) {
 	tracer := otel.GetTracerProvider().Tracer(constants.Application)
 
 	_, span := tracer.Start(ctx, "/compute/v2/os-server-groups", trace.WithSpanKind(trace.SpanKindClient))
@@ -374,7 +377,7 @@ func (c *ComputeClient) CreateServerGroup(ctx context.Context, name, policy stri
 
 	opts := &servergroups.CreateOpts{
 		Name:   name,
-		Policy: policy,
+		Policy: c.options.serverGroupPolicy,
 	}
 
 	return servergroups.Create(c.client, opts).Extract()

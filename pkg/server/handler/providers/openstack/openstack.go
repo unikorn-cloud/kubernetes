@@ -241,7 +241,7 @@ func (o *Openstack) ImageClient(r *http.Request) (*openstack.ImageClient, error)
 		return client, nil
 	}
 
-	client, err := openstack.NewImageClient(openstack.NewTokenProvider(o.endpoint, token))
+	client, err := openstack.NewImageClient(openstack.NewTokenProvider(o.endpoint, token), &o.options.ImageOptions)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get image client").WithError(err)
 	}
@@ -443,7 +443,7 @@ func (o *Openstack) ListImages(r *http.Request) (generated.OpenstackImages, erro
 		return nil, errors.OAuth2ServerError("failed get image client").WithError(err)
 	}
 
-	result, err := client.Images(r.Context(), o.options.Key.key, o.options.Properties)
+	result, err := client.Images(r.Context())
 	if err != nil {
 		return nil, covertError(err)
 	}
@@ -660,7 +660,7 @@ func (o *Openstack) CreateServerGroup(r *http.Request, name string) (*servergrou
 		return nil, errors.OAuth2ServerError("failed get compute client").WithError(err)
 	}
 
-	result, err := client.CreateServerGroup(r.Context(), name, o.options.ServerGroupPolicy)
+	result, err := client.CreateServerGroup(r.Context(), name)
 	if err != nil {
 		return nil, covertError(err)
 	}
