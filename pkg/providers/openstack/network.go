@@ -36,8 +36,8 @@ type NetworkClient struct {
 }
 
 // NewNetworkClient provides a simple one-liner to start networking.
-func NewNetworkClient(provider Provider) (*NetworkClient, error) {
-	providerClient, err := provider.Client()
+func NewNetworkClient(ctx context.Context, provider Provider) (*NetworkClient, error) {
+	providerClient, err := provider.Client(ctx)
 	if err != nil {
 		return nil, err
 	}

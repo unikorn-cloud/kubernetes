@@ -27,6 +27,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/unikorn-cloud/identity/pkg/oauth2"
 	"github.com/unikorn-cloud/unikorn/pkg/constants"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 
@@ -186,10 +187,8 @@ func (v *OpenAPIValidator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	/*
-		// Add any contextual information to bubble up to the handler.
-		r = r.WithContext(oauth2.NewContextWithClaims(r.Context(), authContext.claims))
-	*/
+	// Add any contextual information to bubble up to the handler.
+	r = r.WithContext(oauth2.NewContextWithClaims(r.Context(), &authContext.claims))
 
 	// Override the writer so we can inspect the contents and status.
 	writer := &bufferingResponseWriter{

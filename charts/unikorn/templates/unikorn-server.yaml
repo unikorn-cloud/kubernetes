@@ -157,6 +157,11 @@ spec:
           containerPort: 6080
         - name: prometheus
           containerPort: 8080
+        env:
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         # Note, this is quite CPU intensive, especially when going wide!
         # TODO: profile me.
         resources:

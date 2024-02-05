@@ -1,5 +1,6 @@
 /*
 Copyright 2022-2024 EscherCloud.
+Copyright 2024 the Unikorn Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,9 +18,22 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"os"
+
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/utils/openstack/clientconfig"
+
+	corev1 "k8s.io/api/core/v1"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+var (
+	ErrKeyUndefined = errors.New("a required key was not defined")
 )
 
 // authenticatedClient returns a provider client used to initialize service clients.
@@ -38,7 +52,68 @@ func authenticatedClient(options gophercloud.AuthOptions) (*gophercloud.Provider
 // Provider abstracts authentication methods.
 type Provider interface {
 	// Client returns a new provider client.
-	Client() (*gophercloud.ProviderClient, error)
+	Client(context.Context) (*gophercloud.ProviderClient, error)
+}
+
+// ApplicationCredentialProvider allows use of an application credential.
+type ApplicationCredentialProvider struct {
+	client client.Client
+
+	// endpoint is the Keystone endpoint to hit to get access to tokens
+	// and the service catalog.
+	endpoint string
+
+	secretName string
+}
+
+// Ensure the interface is implemented.
+var _ Provider = &ApplicationCredentialProvider{}
+
+// NewApplicationCredentialProvider creates a client that comsumes application
+// credentials for authentication.
+// NOTE: The intent here, by passing around the client and secret name is to
+// ride through credential rotation, however, gophercloud caches this information.
+// However, given ACs should be rotated leaving the old one in place while the
+// new one comes on line, and the limited lifespan of OIDC access tokens (that
+// cached clients are keyed to) means it should work well enough.
+func NewApplicationCredentialProvider(client client.Client, endpoint, secretName string) *ApplicationCredentialProvider {
+	return &ApplicationCredentialProvider{
+		client:     client,
+		endpoint:   endpoint,
+		secretName: secretName,
+	}
+}
+
+// Client implements the Provider interface.
+func (p *ApplicationCredentialProvider) Client(ctx context.Context) (*gophercloud.ProviderClient, error) {
+	key := client.ObjectKey{
+		Namespace: os.Getenv("KUBERNETES_NAMESPACE"),
+		Name:      p.secretName,
+	}
+
+	var secret corev1.Secret
+
+	if err := p.client.Get(ctx, key, &secret); err != nil {
+		return nil, err
+	}
+
+	acID, ok := secret.Data["applicationcredentialid"]
+	if !ok {
+		return nil, fmt.Errorf("%w: applicationcredentialid", ErrKeyUndefined)
+	}
+
+	acSecret, ok := secret.Data["secret"]
+	if !ok {
+		return nil, fmt.Errorf("%w: secret", ErrKeyUndefined)
+	}
+
+	options := gophercloud.AuthOptions{
+		IdentityEndpoint:            p.endpoint,
+		ApplicationCredentialID:     string(acID),
+		ApplicationCredentialSecret: string(acSecret),
+	}
+
+	return authenticatedClient(options)
 }
 
 // TokenProvider creates a client from an endpoint and token.
@@ -63,7 +138,7 @@ func NewTokenProvider(endpoint, token string) *TokenProvider {
 }
 
 // Client implements the Provider interface.
-func (p *TokenProvider) Client() (*gophercloud.ProviderClient, error) {
+func (p *TokenProvider) Client(_ context.Context) (*gophercloud.ProviderClient, error) {
 	options := gophercloud.AuthOptions{
 		IdentityEndpoint: p.endpoint,
 		TokenID:          p.token,
@@ -89,7 +164,7 @@ func NewCloudsProvider(cloud string) *CloudsProvider {
 }
 
 // Client implements the Provider interface.
-func (p *CloudsProvider) Client() (*gophercloud.ProviderClient, error) {
+func (p *CloudsProvider) Client(_ context.Context) (*gophercloud.ProviderClient, error) {
 	clientOpts := &clientconfig.ClientOpts{
 		Cloud: p.cloud,
 	}
@@ -120,7 +195,7 @@ func NewUnauthenticatedProvider(endpoint string) *UnauthenticatedProvider {
 }
 
 // Client implements the Provider interface.
-func (p *UnauthenticatedProvider) Client() (*gophercloud.ProviderClient, error) {
+func (p *UnauthenticatedProvider) Client(_ context.Context) (*gophercloud.ProviderClient, error) {
 	client, err := openstack.NewClient(p.endpoint)
 	if err != nil {
 		return nil, err

@@ -48,7 +48,7 @@ type Handler struct {
 }
 
 func New(client client.Client, options *Options) (*Handler, error) {
-	o, err := openstack.New(&options.Openstack)
+	o, err := openstack.New(client, &options.Openstack)
 	if err != nil {
 		return nil, err
 	}
