@@ -35,8 +35,8 @@ type BlockStorageClient struct {
 }
 
 // NewBlockStorageClient provides a simple one-liner to start computing.
-func NewBlockStorageClient(provider Provider) (*BlockStorageClient, error) {
-	providerClient, err := provider.Client()
+func NewBlockStorageClient(ctx context.Context, provider Provider) (*BlockStorageClient, error) {
+	providerClient, err := provider.Client(ctx)
 	if err != nil {
 		return nil, err
 	}

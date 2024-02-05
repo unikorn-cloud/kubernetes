@@ -127,8 +127,8 @@ type ComputeClient struct {
 }
 
 // NewComputeClient provides a simple one-liner to start computing.
-func NewComputeClient(options *ComputeOptions, provider Provider) (*ComputeClient, error) {
-	providerClient, err := provider.Client()
+func NewComputeClient(ctx context.Context, options *ComputeOptions, provider Provider) (*ComputeClient, error) {
+	providerClient, err := provider.Client(ctx)
 	if err != nil {
 		return nil, err
 	}

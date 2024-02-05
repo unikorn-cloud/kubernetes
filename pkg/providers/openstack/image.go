@@ -54,8 +54,8 @@ type ImageClient struct {
 }
 
 // NewImageClient provides a simple one-liner to start computing.
-func NewImageClient(provider Provider, options *ImageOptions) (*ImageClient, error) {
-	providerClient, err := provider.Client()
+func NewImageClient(ctx context.Context, provider Provider, options *ImageOptions) (*ImageClient, error) {
+	providerClient, err := provider.Client(ctx)
 	if err != nil {
 		return nil, err
 	}

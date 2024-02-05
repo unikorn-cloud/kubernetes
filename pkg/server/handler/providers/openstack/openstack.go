@@ -30,9 +30,12 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/applicationcredentials"
 	lru "github.com/hashicorp/golang-lru/v2"
 
+	"github.com/unikorn-cloud/identity/pkg/oauth2"
 	"github.com/unikorn-cloud/unikorn/pkg/providers/openstack"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -64,9 +67,9 @@ func covertError(err error) error {
 
 // Openstack provides an HTTP handler for Openstack resources.
 type Openstack struct {
-	options *Options
+	client client.Client
 
-	endpoint string
+	options *Options
 
 	// Cache clients as that's quite expensive.
 	identityClientCache     *lru.Cache[string, *openstack.IdentityClient]
@@ -77,7 +80,7 @@ type Openstack struct {
 }
 
 // New returns a new initialized Openstack handler.
-func New(options *Options) (*Openstack, error) {
+func New(client client.Client, options *Options) (*Openstack, error) {
 	identityClientCache, err := lru.New[string, *openstack.IdentityClient](1024)
 	if err != nil {
 		return nil, err
@@ -104,6 +107,7 @@ func New(options *Options) (*Openstack, error) {
 	}
 
 	o := &Openstack{
+		client:                  client,
 		options:                 options,
 		identityClientCache:     identityClientCache,
 		computeClientCache:      computeClientCache,
@@ -115,35 +119,24 @@ func New(options *Options) (*Openstack, error) {
 	return o, nil
 }
 
-func (o *Openstack) ApplicationCredentialRoles() []string {
-	return o.options.ApplicationCredentialRoles
-}
+func cacheKey(r *http.Request) (string, error) {
+	claims, err := oauth2.ClaimsFromContext(r.Context())
+	if err != nil {
+		return "", errors.OAuth2ServerError("failed get cacheKe claims").WithError(err)
+	}
 
-func getToken(r *http.Request) (string, error) {
-	/*
-		claims, err := oauth2.ClaimsFromContext(r.Context())
-		if err != nil {
-			return "", errors.OAuth2ServerError("failed get token claims").WithError(err)
-		}
-
-		if claims.UnikornClaims == nil {
-			return "", errors.OAuth2ServerError("failed get token claim")
-		}
-
-		return claims.UnikornClaims.Token, nil
-	*/
-	return "", nil
+	return claims.ID, nil
 }
 
 func getUser(r *http.Request) (string, error) {
 	/*
 		claims, err := oauth2.ClaimsFromContext(r.Context())
 		if err != nil {
-			return "", errors.OAuth2ServerError("failed get token claims").WithError(err)
+			return "", errors.OAuth2ServerError("failed get cacheKe claims").WithError(err)
 		}
 
 		if claims.UnikornClaims == nil {
-			return "", errors.OAuth2ServerError("failed get token claim")
+			return "", errors.OAuth2ServerError("failed get cacheKe claim")
 		}
 
 		return claims.UnikornClaims.User, nil
@@ -151,102 +144,106 @@ func getUser(r *http.Request) (string, error) {
 	return "", nil
 }
 
+func (o *Openstack) providerClient() openstack.Provider {
+	return openstack.NewApplicationCredentialProvider(o.client, o.options.Endpoint, o.options.ServiceAccountSecret)
+}
+
 func (o *Openstack) IdentityClient(r *http.Request) (*openstack.IdentityClient, error) {
-	token, err := getToken(r)
+	cacheKey, err := cacheKey(r)
 	if err != nil {
 		return nil, err
 	}
 
-	if client, ok := o.identityClientCache.Get(token); ok {
+	if client, ok := o.identityClientCache.Get(cacheKey); ok {
 		return client, nil
 	}
 
-	client, err := openstack.NewIdentityClient(openstack.NewTokenProvider(o.endpoint, token))
+	client, err := openstack.NewIdentityClient(r.Context(), o.providerClient())
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get identity client").WithError(err)
 	}
 
-	o.identityClientCache.Add(token, client)
+	o.identityClientCache.Add(cacheKey, client)
 
 	return client, nil
 }
 
 func (o *Openstack) ComputeClient(r *http.Request) (*openstack.ComputeClient, error) {
-	token, err := getToken(r)
+	cacheKe, err := cacheKey(r)
 	if err != nil {
 		return nil, err
 	}
 
-	if client, ok := o.computeClientCache.Get(token); ok {
+	if client, ok := o.computeClientCache.Get(cacheKe); ok {
 		return client, nil
 	}
 
-	client, err := openstack.NewComputeClient(&o.options.ComputeOptions, openstack.NewTokenProvider(o.endpoint, token))
+	client, err := openstack.NewComputeClient(r.Context(), &o.options.ComputeOptions, o.providerClient())
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get compute client").WithError(err)
 	}
 
-	o.computeClientCache.Add(token, client)
+	o.computeClientCache.Add(cacheKe, client)
 
 	return client, nil
 }
 
 func (o *Openstack) BlockStorageClient(r *http.Request) (*openstack.BlockStorageClient, error) {
-	token, err := getToken(r)
+	cacheKe, err := cacheKey(r)
 	if err != nil {
 		return nil, err
 	}
 
-	if client, ok := o.blockStorageClientCache.Get(token); ok {
+	if client, ok := o.blockStorageClientCache.Get(cacheKe); ok {
 		return client, nil
 	}
 
-	client, err := openstack.NewBlockStorageClient(openstack.NewTokenProvider(o.endpoint, token))
+	client, err := openstack.NewBlockStorageClient(r.Context(), o.providerClient())
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get block storage client").WithError(err)
 	}
 
-	o.blockStorageClientCache.Add(token, client)
+	o.blockStorageClientCache.Add(cacheKe, client)
 
 	return client, nil
 }
 
 func (o *Openstack) NetworkClient(r *http.Request) (*openstack.NetworkClient, error) {
-	token, err := getToken(r)
+	cacheKe, err := cacheKey(r)
 	if err != nil {
 		return nil, err
 	}
 
-	if client, ok := o.networkClientCache.Get(token); ok {
+	if client, ok := o.networkClientCache.Get(cacheKe); ok {
 		return client, nil
 	}
 
-	client, err := openstack.NewNetworkClient(openstack.NewTokenProvider(o.endpoint, token))
+	client, err := openstack.NewNetworkClient(r.Context(), o.providerClient())
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get network client").WithError(err)
 	}
 
-	o.networkClientCache.Add(token, client)
+	o.networkClientCache.Add(cacheKe, client)
 
 	return client, nil
 }
 
 func (o *Openstack) ImageClient(r *http.Request) (*openstack.ImageClient, error) {
-	token, err := getToken(r)
+	cacheKe, err := cacheKey(r)
 	if err != nil {
 		return nil, err
 	}
 
-	if client, ok := o.imageClientCache.Get(token); ok {
+	if client, ok := o.imageClientCache.Get(cacheKe); ok {
 		return client, nil
 	}
 
-	client, err := openstack.NewImageClient(openstack.NewTokenProvider(o.endpoint, token), &o.options.ImageOptions)
+	client, err := openstack.NewImageClient(r.Context(), o.providerClient(), &o.options.ImageOptions)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get image client").WithError(err)
 	}
 
-	o.imageClientCache.Add(token, client)
+	o.imageClientCache.Add(cacheKe, client)
 
 	return client, nil
 }
@@ -487,7 +484,7 @@ func (o *Openstack) GetImage(r *http.Request, name string) (*generated.Openstack
 	return nil, errors.HTTPNotFound().WithError(fmt.Errorf("%w: image %s", ErrResourceNotFound, name))
 }
 
-// ListAvailableProjects lists projects that the token has roles associated with.
+// ListAvailableProjects lists projects that the cacheKe has roles associated with.
 func (o *Openstack) ListAvailableProjects(r *http.Request) (generated.OpenstackProjects, error) {
 	client, err := o.IdentityClient(r)
 	if err != nil {
@@ -580,7 +577,7 @@ func (o *Openstack) GetApplicationCredential(r *http.Request, name string) (*app
 	return match, nil
 }
 
-func (o *Openstack) CreateApplicationCredential(r *http.Request, name string, roles []string) (*applicationcredentials.ApplicationCredential, error) {
+func (o *Openstack) CreateApplicationCredential(r *http.Request, name string) (*applicationcredentials.ApplicationCredential, error) {
 	user, err := getUser(r)
 	if err != nil {
 		return nil, err
@@ -593,7 +590,7 @@ func (o *Openstack) CreateApplicationCredential(r *http.Request, name string, ro
 
 	description := "Automatically generated by platform service [DO NOT DELETE]."
 
-	result, err := client.CreateApplicationCredential(r.Context(), user, name, description, roles)
+	result, err := client.CreateApplicationCredential(r.Context(), user, name, description, o.options.ApplicationCredentialRoles)
 	if err != nil {
 		return nil, covertError(err)
 	}

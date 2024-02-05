@@ -188,7 +188,7 @@ func (c *Client) createClientConfig(controlPlane *controlplane.Meta, name string
 		}
 	}
 
-	ac, err := c.openstack.CreateApplicationCredential(c.request, applicationCredentialName, c.openstack.ApplicationCredentialRoles())
+	ac, err := c.openstack.CreateApplicationCredential(c.request, applicationCredentialName)
 	if err != nil {
 		return nil, "", err
 	}
