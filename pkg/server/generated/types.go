@@ -405,14 +405,17 @@ type OpenstackImage struct {
 	Name string `json:"name"`
 
 	// Versions Image version metadata.
-	Versions struct {
-		// Kubernetes The kubernetes semantic version.  This should be used directly when specifying
-		// Kubernetes control planes and workload pools in a cluster specification.
-		Kubernetes string `json:"kubernetes"`
+	Versions OpenstackImageVersions `json:"versions"`
+}
 
-		// NvidiaDriver The nvidia driver version.
-		NvidiaDriver string `json:"nvidiaDriver"`
-	} `json:"versions"`
+// OpenstackImageVersions Image version metadata.
+type OpenstackImageVersions struct {
+	// Kubernetes The kubernetes semantic version.  This should be used directly when specifying
+	// Kubernetes control planes and workload pools in a cluster specification.
+	Kubernetes string `json:"kubernetes"`
+
+	// NvidiaDriver The nvidia driver version.
+	NvidiaDriver string `json:"nvidiaDriver"`
 }
 
 // OpenstackImages A list of OpenStack images that are compatible with this platform.
@@ -446,21 +449,6 @@ type OpenstackMachinePool struct {
 	Version string `json:"version"`
 }
 
-// OpenstackProject An OpenStack project.
-type OpenstackProject struct {
-	// Description A verbose description of the project.
-	Description *string `json:"description,omitempty"`
-
-	// Id The unique project ID.
-	Id string `json:"id"`
-
-	// Name The name of the project.
-	Name string `json:"name"`
-}
-
-// OpenstackProjects A list of OpenStack projects.
-type OpenstackProjects = []OpenstackProject
-
 // OpenstackVolume An OpenStack volume.
 type OpenstackVolume struct {
 	// AvailabilityZone Volume availability zone. Overrides the cluster default.
@@ -469,6 +457,15 @@ type OpenstackVolume struct {
 	// Size Disk size in GiB.
 	Size int `json:"size"`
 }
+
+// Region A region.
+type Region struct {
+	// Name The region name.
+	Name string `json:"name"`
+}
+
+// Regions A list of regions.
+type Regions = []Region
 
 // TimeWindow A time window that wraps into the next day if required.
 type TimeWindow struct {
@@ -484,6 +481,9 @@ type ClusterNameParameter = KubernetesNameParameter
 
 // ControlPlaneNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type ControlPlaneNameParameter = KubernetesNameParameter
+
+// RegionNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
+type RegionNameParameter = KubernetesNameParameter
 
 // ApplicationBundleResponse A list of application bundles.
 type ApplicationBundleResponse = ApplicationBundles
@@ -536,8 +536,8 @@ type OpenstackImagesResponse = OpenstackImages
 // OpenstackKeyPairsResponse A list of OpenStack key pairs.
 type OpenstackKeyPairsResponse = OpenstackKeyPairs
 
-// OpenstackProjectsResponse A list of OpenStack projects.
-type OpenstackProjectsResponse = OpenstackProjects
+// RegionsResponse A list of regions.
+type RegionsResponse = Regions
 
 // UnauthorizedResponse Generic error message.
 type UnauthorizedResponse = Oauth2Error

@@ -21,40 +21,43 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"crypto/sha256"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
+	"errors"
+	"fmt"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
-	"github.com/spf13/pflag"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/exp/slices"
 
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/util"
-	"github.com/unikorn-cloud/unikorn/pkg/flags"
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 )
 
-// ImageOptions allows things like filtering to be configured.
-type ImageOptions struct {
-	Properties []string
-	SigningKey flags.PublicKeyVar
-}
+var (
+	// ErrPEMDecode is raised when the PEM decode failed for some reason.
+	ErrPEMDecode = errors.New("PEM decode error")
 
-func (o *ImageOptions) AddFlags(f *pflag.FlagSet) {
-	f.StringSliceVar(&o.Properties, "openstack-image-properties", nil, "Properties an image must possess in order to be exposed")
-	f.Var(&o.SigningKey, "openstack-image-signing-key", "Public key used to verify valid images for use with the platform")
-}
+	// ErrPEMType is raised when the encounter the wrong PEM type, e.g. PKCS#1.
+	ErrPEMType = errors.New("PEM type unsupported")
+
+	// ErrKeyType is raised when we encounter an unsupported key type.
+	ErrKeyType = errors.New("key type unsupported")
+)
 
 // ImageClient wraps the generic client because gophercloud is unsafe.
 type ImageClient struct {
 	client  *gophercloud.ServiceClient
-	options *ImageOptions
+	options *unikornv1.RegionOpenstackImageSpec
 }
 
 // NewImageClient provides a simple one-liner to start computing.
-func NewImageClient(ctx context.Context, provider Provider, options *ImageOptions) (*ImageClient, error) {
+func NewImageClient(ctx context.Context, provider Provider, options *unikornv1.RegionOpenstackImageSpec) (*ImageClient, error) {
 	providerClient, err := provider.Client(ctx)
 	if err != nil {
 		return nil, err
@@ -74,7 +77,11 @@ func NewImageClient(ctx context.Context, provider Provider, options *ImageOption
 }
 
 func (c *ImageClient) validateProperties(image *images.Image) bool {
-	for _, r := range c.options.Properties {
+	if c.options == nil {
+		return true
+	}
+
+	for _, r := range c.options.PropertiesInclude {
 		if !slices.Contains(util.Keys(image.Properties), r) {
 			return false
 		}
@@ -83,36 +90,64 @@ func (c *ImageClient) validateProperties(image *images.Image) bool {
 	return true
 }
 
+func (c *ImageClient) decodeSigningKey() (*ecdsa.PublicKey, error) {
+	pemBlock, _ := pem.Decode(c.options.SigningKey)
+	if pemBlock == nil {
+		return nil, ErrPEMDecode
+	}
+
+	if pemBlock.Type != "PUBLIC KEY" {
+		return nil, fmt.Errorf("%w: %s", ErrPEMType, pemBlock.Type)
+	}
+
+	key, err := x509.ParsePKIXPublicKey(pemBlock.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	ecKey, ok := key.(*ecdsa.PublicKey)
+	if !ok {
+		return nil, ErrKeyType
+	}
+
+	return ecKey, nil
+}
+
 // verifyImage asserts the image is trustworthy for use with our goodselves.
 func (c *ImageClient) verifyImage(image *images.Image) bool {
+	if c.options == nil || c.options.SigningKey == nil {
+		return true
+	}
+
 	if image.Properties == nil {
 		return false
 	}
 
-	if c.options.SigningKey.Key != nil {
-		// These will be digitally signed by Baski when created, so we only trust
-		// those images.
-		signatureRaw, ok := image.Properties["digest"]
-		if !ok {
-			return false
-		}
-
-		signatureB64, ok := signatureRaw.(string)
-		if !ok {
-			return false
-		}
-
-		signature, err := base64.StdEncoding.DecodeString(signatureB64)
-		if err != nil {
-			return false
-		}
-
-		hash := sha256.Sum256([]byte(image.ID))
-
-		return ecdsa.VerifyASN1(c.options.SigningKey.Key, hash[:], signature)
+	// These will be digitally signed by Baski when created, so we only trust
+	// those images.
+	signatureRaw, ok := image.Properties["digest"]
+	if !ok {
+		return false
 	}
 
-	return true
+	signatureB64, ok := signatureRaw.(string)
+	if !ok {
+		return false
+	}
+
+	signature, err := base64.StdEncoding.DecodeString(signatureB64)
+	if err != nil {
+		return false
+	}
+
+	hash := sha256.Sum256([]byte(image.ID))
+
+	signingKey, err := c.decodeSigningKey()
+	if err != nil {
+		return false
+	}
+
+	return ecdsa.VerifyASN1(signingKey, hash[:], signature)
 }
 
 // Images returns a list of images.

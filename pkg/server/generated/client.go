@@ -145,26 +145,26 @@ type ClientInterface interface {
 	// PostApiV1Project request
 	PostApiV1Project(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage request
-	GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetApiV1Regions request
+	GetApiV1Regions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetApiV1ProvidersOpenstackAvailabilityZonesCompute request
-	GetApiV1ProvidersOpenstackAvailabilityZonesCompute(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage request
+	GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetApiV1ProvidersOpenstackExternalNetworks request
-	GetApiV1ProvidersOpenstackExternalNetworks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetApiV1RegionsRegionNameAvailabilityZonesCompute request
+	GetApiV1RegionsRegionNameAvailabilityZonesCompute(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetApiV1ProvidersOpenstackFlavors request
-	GetApiV1ProvidersOpenstackFlavors(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetApiV1RegionsRegionNameExternalNetworks request
+	GetApiV1RegionsRegionNameExternalNetworks(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetApiV1ProvidersOpenstackImages request
-	GetApiV1ProvidersOpenstackImages(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetApiV1RegionsRegionNameFlavors request
+	GetApiV1RegionsRegionNameFlavors(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetApiV1ProvidersOpenstackKeyPairs request
-	GetApiV1ProvidersOpenstackKeyPairs(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetApiV1RegionsRegionNameImages request
+	GetApiV1RegionsRegionNameImages(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetApiV1ProvidersOpenstackProjects request
-	GetApiV1ProvidersOpenstackProjects(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetApiV1RegionsRegionNameKeyPairs request
+	GetApiV1RegionsRegionNameKeyPairs(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetApiV1ApplicationbundlesCluster(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -407,8 +407,8 @@ func (c *Client) PostApiV1Project(ctx context.Context, reqEditors ...RequestEdit
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageRequest(c.Server)
+func (c *Client) GetApiV1Regions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1RegionsRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -419,8 +419,8 @@ func (c *Client) GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage(ctx con
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetApiV1ProvidersOpenstackAvailabilityZonesCompute(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1ProvidersOpenstackAvailabilityZonesComputeRequest(c.Server)
+func (c *Client) GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1RegionsRegionNameAvailabilityZonesBlockStorageRequest(c.Server, regionName)
 	if err != nil {
 		return nil, err
 	}
@@ -431,8 +431,8 @@ func (c *Client) GetApiV1ProvidersOpenstackAvailabilityZonesCompute(ctx context.
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetApiV1ProvidersOpenstackExternalNetworks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1ProvidersOpenstackExternalNetworksRequest(c.Server)
+func (c *Client) GetApiV1RegionsRegionNameAvailabilityZonesCompute(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1RegionsRegionNameAvailabilityZonesComputeRequest(c.Server, regionName)
 	if err != nil {
 		return nil, err
 	}
@@ -443,8 +443,8 @@ func (c *Client) GetApiV1ProvidersOpenstackExternalNetworks(ctx context.Context,
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetApiV1ProvidersOpenstackFlavors(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1ProvidersOpenstackFlavorsRequest(c.Server)
+func (c *Client) GetApiV1RegionsRegionNameExternalNetworks(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1RegionsRegionNameExternalNetworksRequest(c.Server, regionName)
 	if err != nil {
 		return nil, err
 	}
@@ -455,8 +455,8 @@ func (c *Client) GetApiV1ProvidersOpenstackFlavors(ctx context.Context, reqEdito
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetApiV1ProvidersOpenstackImages(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1ProvidersOpenstackImagesRequest(c.Server)
+func (c *Client) GetApiV1RegionsRegionNameFlavors(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1RegionsRegionNameFlavorsRequest(c.Server, regionName)
 	if err != nil {
 		return nil, err
 	}
@@ -467,8 +467,8 @@ func (c *Client) GetApiV1ProvidersOpenstackImages(ctx context.Context, reqEditor
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetApiV1ProvidersOpenstackKeyPairs(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1ProvidersOpenstackKeyPairsRequest(c.Server)
+func (c *Client) GetApiV1RegionsRegionNameImages(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1RegionsRegionNameImagesRequest(c.Server, regionName)
 	if err != nil {
 		return nil, err
 	}
@@ -479,8 +479,8 @@ func (c *Client) GetApiV1ProvidersOpenstackKeyPairs(ctx context.Context, reqEdit
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetApiV1ProvidersOpenstackProjects(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1ProvidersOpenstackProjectsRequest(c.Server)
+func (c *Client) GetApiV1RegionsRegionNameKeyPairs(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1RegionsRegionNameKeyPairsRequest(c.Server, regionName)
 	if err != nil {
 		return nil, err
 	}
@@ -1066,8 +1066,8 @@ func NewPostApiV1ProjectRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageRequest generates requests for GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage
-func NewGetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageRequest(server string) (*http.Request, error) {
+// NewGetApiV1RegionsRequest generates requests for GetApiV1Regions
+func NewGetApiV1RegionsRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1075,7 +1075,7 @@ func NewGetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageRequest(server st
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/providers/openstack/availability-zones/block-storage")
+	operationPath := fmt.Sprintf("/api/v1/regions")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1093,16 +1093,23 @@ func NewGetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageRequest(server st
 	return req, nil
 }
 
-// NewGetApiV1ProvidersOpenstackAvailabilityZonesComputeRequest generates requests for GetApiV1ProvidersOpenstackAvailabilityZonesCompute
-func NewGetApiV1ProvidersOpenstackAvailabilityZonesComputeRequest(server string) (*http.Request, error) {
+// NewGetApiV1RegionsRegionNameAvailabilityZonesBlockStorageRequest generates requests for GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage
+func NewGetApiV1RegionsRegionNameAvailabilityZonesBlockStorageRequest(server string, regionName RegionNameParameter) (*http.Request, error) {
 	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "regionName", runtime.ParamLocationPath, regionName)
+	if err != nil {
+		return nil, err
+	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/providers/openstack/availability-zones/compute")
+	operationPath := fmt.Sprintf("/api/v1/regions/%s/availability-zones/block-storage", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1120,16 +1127,23 @@ func NewGetApiV1ProvidersOpenstackAvailabilityZonesComputeRequest(server string)
 	return req, nil
 }
 
-// NewGetApiV1ProvidersOpenstackExternalNetworksRequest generates requests for GetApiV1ProvidersOpenstackExternalNetworks
-func NewGetApiV1ProvidersOpenstackExternalNetworksRequest(server string) (*http.Request, error) {
+// NewGetApiV1RegionsRegionNameAvailabilityZonesComputeRequest generates requests for GetApiV1RegionsRegionNameAvailabilityZonesCompute
+func NewGetApiV1RegionsRegionNameAvailabilityZonesComputeRequest(server string, regionName RegionNameParameter) (*http.Request, error) {
 	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "regionName", runtime.ParamLocationPath, regionName)
+	if err != nil {
+		return nil, err
+	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/providers/openstack/external-networks")
+	operationPath := fmt.Sprintf("/api/v1/regions/%s/availability-zones/compute", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1147,16 +1161,23 @@ func NewGetApiV1ProvidersOpenstackExternalNetworksRequest(server string) (*http.
 	return req, nil
 }
 
-// NewGetApiV1ProvidersOpenstackFlavorsRequest generates requests for GetApiV1ProvidersOpenstackFlavors
-func NewGetApiV1ProvidersOpenstackFlavorsRequest(server string) (*http.Request, error) {
+// NewGetApiV1RegionsRegionNameExternalNetworksRequest generates requests for GetApiV1RegionsRegionNameExternalNetworks
+func NewGetApiV1RegionsRegionNameExternalNetworksRequest(server string, regionName RegionNameParameter) (*http.Request, error) {
 	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "regionName", runtime.ParamLocationPath, regionName)
+	if err != nil {
+		return nil, err
+	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/providers/openstack/flavors")
+	operationPath := fmt.Sprintf("/api/v1/regions/%s/external-networks", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1174,16 +1195,23 @@ func NewGetApiV1ProvidersOpenstackFlavorsRequest(server string) (*http.Request, 
 	return req, nil
 }
 
-// NewGetApiV1ProvidersOpenstackImagesRequest generates requests for GetApiV1ProvidersOpenstackImages
-func NewGetApiV1ProvidersOpenstackImagesRequest(server string) (*http.Request, error) {
+// NewGetApiV1RegionsRegionNameFlavorsRequest generates requests for GetApiV1RegionsRegionNameFlavors
+func NewGetApiV1RegionsRegionNameFlavorsRequest(server string, regionName RegionNameParameter) (*http.Request, error) {
 	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "regionName", runtime.ParamLocationPath, regionName)
+	if err != nil {
+		return nil, err
+	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/providers/openstack/images")
+	operationPath := fmt.Sprintf("/api/v1/regions/%s/flavors", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1201,16 +1229,23 @@ func NewGetApiV1ProvidersOpenstackImagesRequest(server string) (*http.Request, e
 	return req, nil
 }
 
-// NewGetApiV1ProvidersOpenstackKeyPairsRequest generates requests for GetApiV1ProvidersOpenstackKeyPairs
-func NewGetApiV1ProvidersOpenstackKeyPairsRequest(server string) (*http.Request, error) {
+// NewGetApiV1RegionsRegionNameImagesRequest generates requests for GetApiV1RegionsRegionNameImages
+func NewGetApiV1RegionsRegionNameImagesRequest(server string, regionName RegionNameParameter) (*http.Request, error) {
 	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "regionName", runtime.ParamLocationPath, regionName)
+	if err != nil {
+		return nil, err
+	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/providers/openstack/key-pairs")
+	operationPath := fmt.Sprintf("/api/v1/regions/%s/images", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1228,16 +1263,23 @@ func NewGetApiV1ProvidersOpenstackKeyPairsRequest(server string) (*http.Request,
 	return req, nil
 }
 
-// NewGetApiV1ProvidersOpenstackProjectsRequest generates requests for GetApiV1ProvidersOpenstackProjects
-func NewGetApiV1ProvidersOpenstackProjectsRequest(server string) (*http.Request, error) {
+// NewGetApiV1RegionsRegionNameKeyPairsRequest generates requests for GetApiV1RegionsRegionNameKeyPairs
+func NewGetApiV1RegionsRegionNameKeyPairsRequest(server string, regionName RegionNameParameter) (*http.Request, error) {
 	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "regionName", runtime.ParamLocationPath, regionName)
+	if err != nil {
+		return nil, err
+	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/providers/openstack/projects")
+	operationPath := fmt.Sprintf("/api/v1/regions/%s/key-pairs", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1354,26 +1396,26 @@ type ClientWithResponsesInterface interface {
 	// PostApiV1Project request
 	PostApiV1ProjectWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostApiV1ProjectResponse, error)
 
-	// GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage request
-	GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse, error)
+	// GetApiV1Regions request
+	GetApiV1RegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1RegionsResponse, error)
 
-	// GetApiV1ProvidersOpenstackAvailabilityZonesCompute request
-	GetApiV1ProvidersOpenstackAvailabilityZonesComputeWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse, error)
+	// GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage request
+	GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse, error)
 
-	// GetApiV1ProvidersOpenstackExternalNetworks request
-	GetApiV1ProvidersOpenstackExternalNetworksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackExternalNetworksResponse, error)
+	// GetApiV1RegionsRegionNameAvailabilityZonesCompute request
+	GetApiV1RegionsRegionNameAvailabilityZonesComputeWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse, error)
 
-	// GetApiV1ProvidersOpenstackFlavors request
-	GetApiV1ProvidersOpenstackFlavorsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackFlavorsResponse, error)
+	// GetApiV1RegionsRegionNameExternalNetworks request
+	GetApiV1RegionsRegionNameExternalNetworksWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameExternalNetworksResponse, error)
 
-	// GetApiV1ProvidersOpenstackImages request
-	GetApiV1ProvidersOpenstackImagesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackImagesResponse, error)
+	// GetApiV1RegionsRegionNameFlavors request
+	GetApiV1RegionsRegionNameFlavorsWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameFlavorsResponse, error)
 
-	// GetApiV1ProvidersOpenstackKeyPairs request
-	GetApiV1ProvidersOpenstackKeyPairsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackKeyPairsResponse, error)
+	// GetApiV1RegionsRegionNameImages request
+	GetApiV1RegionsRegionNameImagesWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameImagesResponse, error)
 
-	// GetApiV1ProvidersOpenstackProjects request
-	GetApiV1ProvidersOpenstackProjectsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackProjectsResponse, error)
+	// GetApiV1RegionsRegionNameKeyPairs request
+	GetApiV1RegionsRegionNameKeyPairsWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameKeyPairsResponse, error)
 }
 
 type GetApiV1ApplicationbundlesClusterResponse struct {
@@ -1781,7 +1823,31 @@ func (r PostApiV1ProjectResponse) StatusCode() int {
 	return 0
 }
 
-type GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse struct {
+type GetApiV1RegionsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Regions
+	JSON401      *Oauth2Error
+	JSON500      *Oauth2Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApiV1RegionsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApiV1RegionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *OpenstackAvailabilityZones
@@ -1791,7 +1857,7 @@ type GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse) Status() string {
+func (r GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1799,14 +1865,14 @@ func (r GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse) Status(
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse) StatusCode() int {
+func (r GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse struct {
+type GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *OpenstackAvailabilityZones
@@ -1816,7 +1882,7 @@ type GetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse) Status() string {
+func (r GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1824,14 +1890,14 @@ func (r GetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse) Status() str
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse) StatusCode() int {
+func (r GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetApiV1ProvidersOpenstackExternalNetworksResponse struct {
+type GetApiV1RegionsRegionNameExternalNetworksResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *OpenstackExternalNetworks
@@ -1841,7 +1907,7 @@ type GetApiV1ProvidersOpenstackExternalNetworksResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetApiV1ProvidersOpenstackExternalNetworksResponse) Status() string {
+func (r GetApiV1RegionsRegionNameExternalNetworksResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1849,14 +1915,14 @@ func (r GetApiV1ProvidersOpenstackExternalNetworksResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1ProvidersOpenstackExternalNetworksResponse) StatusCode() int {
+func (r GetApiV1RegionsRegionNameExternalNetworksResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetApiV1ProvidersOpenstackFlavorsResponse struct {
+type GetApiV1RegionsRegionNameFlavorsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *OpenstackFlavors
@@ -1866,7 +1932,7 @@ type GetApiV1ProvidersOpenstackFlavorsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetApiV1ProvidersOpenstackFlavorsResponse) Status() string {
+func (r GetApiV1RegionsRegionNameFlavorsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1874,14 +1940,14 @@ func (r GetApiV1ProvidersOpenstackFlavorsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1ProvidersOpenstackFlavorsResponse) StatusCode() int {
+func (r GetApiV1RegionsRegionNameFlavorsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetApiV1ProvidersOpenstackImagesResponse struct {
+type GetApiV1RegionsRegionNameImagesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *OpenstackImages
@@ -1891,7 +1957,7 @@ type GetApiV1ProvidersOpenstackImagesResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetApiV1ProvidersOpenstackImagesResponse) Status() string {
+func (r GetApiV1RegionsRegionNameImagesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1899,14 +1965,14 @@ func (r GetApiV1ProvidersOpenstackImagesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1ProvidersOpenstackImagesResponse) StatusCode() int {
+func (r GetApiV1RegionsRegionNameImagesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetApiV1ProvidersOpenstackKeyPairsResponse struct {
+type GetApiV1RegionsRegionNameKeyPairsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *OpenstackKeyPairs
@@ -1916,7 +1982,7 @@ type GetApiV1ProvidersOpenstackKeyPairsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetApiV1ProvidersOpenstackKeyPairsResponse) Status() string {
+func (r GetApiV1RegionsRegionNameKeyPairsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1924,32 +1990,7 @@ func (r GetApiV1ProvidersOpenstackKeyPairsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1ProvidersOpenstackKeyPairsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetApiV1ProvidersOpenstackProjectsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *OpenstackProjects
-	JSON400      *Oauth2Error
-	JSON401      *Oauth2Error
-	JSON500      *Oauth2Error
-}
-
-// Status returns HTTPResponse.Status
-func (r GetApiV1ProvidersOpenstackProjectsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1ProvidersOpenstackProjectsResponse) StatusCode() int {
+func (r GetApiV1RegionsRegionNameKeyPairsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2132,67 +2173,67 @@ func (c *ClientWithResponses) PostApiV1ProjectWithResponse(ctx context.Context, 
 	return ParsePostApiV1ProjectResponse(rsp)
 }
 
-// GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageWithResponse request returning *GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse
-func (c *ClientWithResponses) GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse, error) {
-	rsp, err := c.GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage(ctx, reqEditors...)
+// GetApiV1RegionsWithResponse request returning *GetApiV1RegionsResponse
+func (c *ClientWithResponses) GetApiV1RegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1RegionsResponse, error) {
+	rsp, err := c.GetApiV1Regions(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse(rsp)
+	return ParseGetApiV1RegionsResponse(rsp)
 }
 
-// GetApiV1ProvidersOpenstackAvailabilityZonesComputeWithResponse request returning *GetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse
-func (c *ClientWithResponses) GetApiV1ProvidersOpenstackAvailabilityZonesComputeWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse, error) {
-	rsp, err := c.GetApiV1ProvidersOpenstackAvailabilityZonesCompute(ctx, reqEditors...)
+// GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageWithResponse request returning *GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse
+func (c *ClientWithResponses) GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse, error) {
+	rsp, err := c.GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(ctx, regionName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse(rsp)
+	return ParseGetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse(rsp)
 }
 
-// GetApiV1ProvidersOpenstackExternalNetworksWithResponse request returning *GetApiV1ProvidersOpenstackExternalNetworksResponse
-func (c *ClientWithResponses) GetApiV1ProvidersOpenstackExternalNetworksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackExternalNetworksResponse, error) {
-	rsp, err := c.GetApiV1ProvidersOpenstackExternalNetworks(ctx, reqEditors...)
+// GetApiV1RegionsRegionNameAvailabilityZonesComputeWithResponse request returning *GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse
+func (c *ClientWithResponses) GetApiV1RegionsRegionNameAvailabilityZonesComputeWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse, error) {
+	rsp, err := c.GetApiV1RegionsRegionNameAvailabilityZonesCompute(ctx, regionName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetApiV1ProvidersOpenstackExternalNetworksResponse(rsp)
+	return ParseGetApiV1RegionsRegionNameAvailabilityZonesComputeResponse(rsp)
 }
 
-// GetApiV1ProvidersOpenstackFlavorsWithResponse request returning *GetApiV1ProvidersOpenstackFlavorsResponse
-func (c *ClientWithResponses) GetApiV1ProvidersOpenstackFlavorsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackFlavorsResponse, error) {
-	rsp, err := c.GetApiV1ProvidersOpenstackFlavors(ctx, reqEditors...)
+// GetApiV1RegionsRegionNameExternalNetworksWithResponse request returning *GetApiV1RegionsRegionNameExternalNetworksResponse
+func (c *ClientWithResponses) GetApiV1RegionsRegionNameExternalNetworksWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameExternalNetworksResponse, error) {
+	rsp, err := c.GetApiV1RegionsRegionNameExternalNetworks(ctx, regionName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetApiV1ProvidersOpenstackFlavorsResponse(rsp)
+	return ParseGetApiV1RegionsRegionNameExternalNetworksResponse(rsp)
 }
 
-// GetApiV1ProvidersOpenstackImagesWithResponse request returning *GetApiV1ProvidersOpenstackImagesResponse
-func (c *ClientWithResponses) GetApiV1ProvidersOpenstackImagesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackImagesResponse, error) {
-	rsp, err := c.GetApiV1ProvidersOpenstackImages(ctx, reqEditors...)
+// GetApiV1RegionsRegionNameFlavorsWithResponse request returning *GetApiV1RegionsRegionNameFlavorsResponse
+func (c *ClientWithResponses) GetApiV1RegionsRegionNameFlavorsWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameFlavorsResponse, error) {
+	rsp, err := c.GetApiV1RegionsRegionNameFlavors(ctx, regionName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetApiV1ProvidersOpenstackImagesResponse(rsp)
+	return ParseGetApiV1RegionsRegionNameFlavorsResponse(rsp)
 }
 
-// GetApiV1ProvidersOpenstackKeyPairsWithResponse request returning *GetApiV1ProvidersOpenstackKeyPairsResponse
-func (c *ClientWithResponses) GetApiV1ProvidersOpenstackKeyPairsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackKeyPairsResponse, error) {
-	rsp, err := c.GetApiV1ProvidersOpenstackKeyPairs(ctx, reqEditors...)
+// GetApiV1RegionsRegionNameImagesWithResponse request returning *GetApiV1RegionsRegionNameImagesResponse
+func (c *ClientWithResponses) GetApiV1RegionsRegionNameImagesWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameImagesResponse, error) {
+	rsp, err := c.GetApiV1RegionsRegionNameImages(ctx, regionName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetApiV1ProvidersOpenstackKeyPairsResponse(rsp)
+	return ParseGetApiV1RegionsRegionNameImagesResponse(rsp)
 }
 
-// GetApiV1ProvidersOpenstackProjectsWithResponse request returning *GetApiV1ProvidersOpenstackProjectsResponse
-func (c *ClientWithResponses) GetApiV1ProvidersOpenstackProjectsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProvidersOpenstackProjectsResponse, error) {
-	rsp, err := c.GetApiV1ProvidersOpenstackProjects(ctx, reqEditors...)
+// GetApiV1RegionsRegionNameKeyPairsWithResponse request returning *GetApiV1RegionsRegionNameKeyPairsResponse
+func (c *ClientWithResponses) GetApiV1RegionsRegionNameKeyPairsWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameKeyPairsResponse, error) {
+	rsp, err := c.GetApiV1RegionsRegionNameKeyPairs(ctx, regionName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetApiV1ProvidersOpenstackProjectsResponse(rsp)
+	return ParseGetApiV1RegionsRegionNameKeyPairsResponse(rsp)
 }
 
 // ParseGetApiV1ApplicationbundlesClusterResponse parses an HTTP response from a GetApiV1ApplicationbundlesClusterWithResponse call
@@ -2982,15 +3023,55 @@ func ParsePostApiV1ProjectResponse(rsp *http.Response) (*PostApiV1ProjectRespons
 	return response, nil
 }
 
-// ParseGetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse parses an HTTP response from a GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageWithResponse call
-func ParseGetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse(rsp *http.Response) (*GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse, error) {
+// ParseGetApiV1RegionsResponse parses an HTTP response from a GetApiV1RegionsWithResponse call
+func ParseGetApiV1RegionsResponse(rsp *http.Response) (*GetApiV1RegionsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse{
+	response := &GetApiV1RegionsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Regions
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse parses an HTTP response from a GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageWithResponse call
+func ParseGetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse(rsp *http.Response) (*GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -3029,15 +3110,15 @@ func ParseGetApiV1ProvidersOpenstackAvailabilityZonesBlockStorageResponse(rsp *h
 	return response, nil
 }
 
-// ParseGetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse parses an HTTP response from a GetApiV1ProvidersOpenstackAvailabilityZonesComputeWithResponse call
-func ParseGetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse(rsp *http.Response) (*GetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse, error) {
+// ParseGetApiV1RegionsRegionNameAvailabilityZonesComputeResponse parses an HTTP response from a GetApiV1RegionsRegionNameAvailabilityZonesComputeWithResponse call
+func ParseGetApiV1RegionsRegionNameAvailabilityZonesComputeResponse(rsp *http.Response) (*GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse{
+	response := &GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -3076,15 +3157,15 @@ func ParseGetApiV1ProvidersOpenstackAvailabilityZonesComputeResponse(rsp *http.R
 	return response, nil
 }
 
-// ParseGetApiV1ProvidersOpenstackExternalNetworksResponse parses an HTTP response from a GetApiV1ProvidersOpenstackExternalNetworksWithResponse call
-func ParseGetApiV1ProvidersOpenstackExternalNetworksResponse(rsp *http.Response) (*GetApiV1ProvidersOpenstackExternalNetworksResponse, error) {
+// ParseGetApiV1RegionsRegionNameExternalNetworksResponse parses an HTTP response from a GetApiV1RegionsRegionNameExternalNetworksWithResponse call
+func ParseGetApiV1RegionsRegionNameExternalNetworksResponse(rsp *http.Response) (*GetApiV1RegionsRegionNameExternalNetworksResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetApiV1ProvidersOpenstackExternalNetworksResponse{
+	response := &GetApiV1RegionsRegionNameExternalNetworksResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -3123,15 +3204,15 @@ func ParseGetApiV1ProvidersOpenstackExternalNetworksResponse(rsp *http.Response)
 	return response, nil
 }
 
-// ParseGetApiV1ProvidersOpenstackFlavorsResponse parses an HTTP response from a GetApiV1ProvidersOpenstackFlavorsWithResponse call
-func ParseGetApiV1ProvidersOpenstackFlavorsResponse(rsp *http.Response) (*GetApiV1ProvidersOpenstackFlavorsResponse, error) {
+// ParseGetApiV1RegionsRegionNameFlavorsResponse parses an HTTP response from a GetApiV1RegionsRegionNameFlavorsWithResponse call
+func ParseGetApiV1RegionsRegionNameFlavorsResponse(rsp *http.Response) (*GetApiV1RegionsRegionNameFlavorsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetApiV1ProvidersOpenstackFlavorsResponse{
+	response := &GetApiV1RegionsRegionNameFlavorsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -3170,15 +3251,15 @@ func ParseGetApiV1ProvidersOpenstackFlavorsResponse(rsp *http.Response) (*GetApi
 	return response, nil
 }
 
-// ParseGetApiV1ProvidersOpenstackImagesResponse parses an HTTP response from a GetApiV1ProvidersOpenstackImagesWithResponse call
-func ParseGetApiV1ProvidersOpenstackImagesResponse(rsp *http.Response) (*GetApiV1ProvidersOpenstackImagesResponse, error) {
+// ParseGetApiV1RegionsRegionNameImagesResponse parses an HTTP response from a GetApiV1RegionsRegionNameImagesWithResponse call
+func ParseGetApiV1RegionsRegionNameImagesResponse(rsp *http.Response) (*GetApiV1RegionsRegionNameImagesResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetApiV1ProvidersOpenstackImagesResponse{
+	response := &GetApiV1RegionsRegionNameImagesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -3217,15 +3298,15 @@ func ParseGetApiV1ProvidersOpenstackImagesResponse(rsp *http.Response) (*GetApiV
 	return response, nil
 }
 
-// ParseGetApiV1ProvidersOpenstackKeyPairsResponse parses an HTTP response from a GetApiV1ProvidersOpenstackKeyPairsWithResponse call
-func ParseGetApiV1ProvidersOpenstackKeyPairsResponse(rsp *http.Response) (*GetApiV1ProvidersOpenstackKeyPairsResponse, error) {
+// ParseGetApiV1RegionsRegionNameKeyPairsResponse parses an HTTP response from a GetApiV1RegionsRegionNameKeyPairsWithResponse call
+func ParseGetApiV1RegionsRegionNameKeyPairsResponse(rsp *http.Response) (*GetApiV1RegionsRegionNameKeyPairsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetApiV1ProvidersOpenstackKeyPairsResponse{
+	response := &GetApiV1RegionsRegionNameKeyPairsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -3233,53 +3314,6 @@ func ParseGetApiV1ProvidersOpenstackKeyPairsResponse(rsp *http.Response) (*GetAp
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest OpenstackKeyPairs
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetApiV1ProvidersOpenstackProjectsResponse parses an HTTP response from a GetApiV1ProvidersOpenstackProjectsWithResponse call
-func ParseGetApiV1ProvidersOpenstackProjectsResponse(rsp *http.Response) (*GetApiV1ProvidersOpenstackProjectsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetApiV1ProvidersOpenstackProjectsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest OpenstackProjects
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

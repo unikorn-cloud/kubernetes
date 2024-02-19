@@ -19,6 +19,7 @@ endpoint
 endpoints
 flavor
 flavors
+metadata
 multi-tenant
 openid
 unscoped
