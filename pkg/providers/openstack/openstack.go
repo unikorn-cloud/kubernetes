@@ -21,11 +21,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/utils/openstack/clientconfig"
+
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
 
@@ -59,11 +60,7 @@ type Provider interface {
 type ApplicationCredentialProvider struct {
 	client client.Client
 
-	// endpoint is the Keystone endpoint to hit to get access to tokens
-	// and the service catalog.
-	endpoint string
-
-	secretName string
+	options *unikornv1.RegionOpenstackSpec
 }
 
 // Ensure the interface is implemented.
@@ -76,19 +73,18 @@ var _ Provider = &ApplicationCredentialProvider{}
 // However, given ACs should be rotated leaving the old one in place while the
 // new one comes on line, and the limited lifespan of OIDC access tokens (that
 // cached clients are keyed to) means it should work well enough.
-func NewApplicationCredentialProvider(client client.Client, endpoint, secretName string) *ApplicationCredentialProvider {
+func NewApplicationCredentialProvider(client client.Client, options *unikornv1.RegionOpenstackSpec) *ApplicationCredentialProvider {
 	return &ApplicationCredentialProvider{
-		client:     client,
-		endpoint:   endpoint,
-		secretName: secretName,
+		client:  client,
+		options: options,
 	}
 }
 
 // Client implements the Provider interface.
 func (p *ApplicationCredentialProvider) Client(ctx context.Context) (*gophercloud.ProviderClient, error) {
 	key := client.ObjectKey{
-		Namespace: os.Getenv("KUBERNETES_NAMESPACE"),
-		Name:      p.secretName,
+		Namespace: p.options.ServiceAccountSecret.Namespace,
+		Name:      p.options.ServiceAccountSecret.Name,
 	}
 
 	var secret corev1.Secret
@@ -108,7 +104,7 @@ func (p *ApplicationCredentialProvider) Client(ctx context.Context) (*gopherclou
 	}
 
 	options := gophercloud.AuthOptions{
-		IdentityEndpoint:            p.endpoint,
+		IdentityEndpoint:            p.options.Endpoint,
 		ApplicationCredentialID:     string(acID),
 		ApplicationCredentialSecret: string(acSecret),
 	}

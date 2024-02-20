@@ -33,6 +33,11 @@ x-documentation-groups:
     core API, it is recommended that you first consult the platform provider APIs in
     order to get an up to date list of resources that are available for consumption.
 paths:
+  /api/v1/organization:
+    description: |-
+      An organization defines a business entity that contains a set of projects
+      etc. that belong to that organization.  This is the coarsest grain entity
+      for RBAC.
   /api/v1/project:
     x-documentation-group: main
     description: |-
@@ -353,30 +358,34 @@ paths:
           $ref: '#/components/responses/unauthorizedResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/providers/openstack/projects:
-    x-documentation-group: provider-openstack
-    description: OpenStack identity project services.
+  /api/v1/regions:
+    description: |-
+      Regions define a cloud.  This may be geographical or any logical partition.
+      Either way this is the primitive that is used to associate metadata such as
+      geographical locale, an organisation's reserved blob of compute etc.
+      Each region has its own provider associated with it, for example OpenStack, and
+      its own set of credentials so things can be scoped to a specific slice of a
+      shared cloud through whatever mechanism is available on that cloud provider.
     get:
       description: |-
-        Lists all OpenStack projects that the authenticated user is a member of.
+        List all regions.
       security:
       - oauth2Authentication: []
       responses:
         '200':
-          $ref: '#/components/responses/openstackProjectsResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
+          $ref: '#/components/responses/regionsResponse'
         '401':
           $ref: '#/components/responses/unauthorizedResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/providers/openstack/flavors:
+  /api/v1/regions/{regionName}/flavors:
     x-documentation-group: provider-openstack
-    description: OpenStack compute flavor services.
+    description: Compute flavor services.
+    parameters:
+    - $ref: '#/components/parameters/regionNameParameter'
     get:
       description: |-
-        Lists all OpenStack compute flavors that the authenticated user has access
-        to within the scope of the OpenStack project.
+        Lists all compute flavors that the authenticated user has access to
       security:
       - oauth2Authentication: []
       responses:
@@ -388,13 +397,14 @@ paths:
           $ref: '#/components/responses/unauthorizedResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/providers/openstack/images:
+  /api/v1/regions/{regionName}/images:
     x-documentation-group: provider-openstack
-    description: OpenStack compute image services.
+    description: Compute image services.
+    parameters:
+    - $ref: '#/components/parameters/regionNameParameter'
     get:
       description: |-
-        Lists all OpenStack compute images that the authenticated user has access
-        to within the scope of the OpenStack project.
+        Lists all compute images that the authenticated user has access to.
       security:
       - oauth2Authentication: []
       responses:
@@ -406,13 +416,14 @@ paths:
           $ref: '#/components/responses/unauthorizedResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/providers/openstack/availability-zones/compute:
+  /api/v1/regions/{regionName}/availability-zones/compute:
     x-documentation-group: provider-openstack
-    description: OpenStack compute availability zone services.
+    description: Compute availability zone services.
+    parameters:
+    - $ref: '#/components/parameters/regionNameParameter'
     get:
       description: |-
-        Lists all OpenStack compute availability zones the authenticated user has
-        access to within the scope of the OpenStack project.
+        Lists all compute availability zones the authenticated user has access to.
       security:
       - oauth2Authentication: []
       responses:
@@ -424,13 +435,15 @@ paths:
           $ref: '#/components/responses/unauthorizedResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/providers/openstack/availability-zones/block-storage:
+  /api/v1/regions/{regionName}/availability-zones/block-storage:
     x-documentation-group: provider-openstack
-    description: OpenStack block storage availability zone services.
+    description: Block storage availability zone services.
+    parameters:
+    - $ref: '#/components/parameters/regionNameParameter'
     get:
       description: |-
-        Lists all OpenStack volume availability zones the authenticated user has
-        access to within the scope of the OpenStack project.
+        Lists all volume availability zones the authenticated user has
+        access to.
       security:
       - oauth2Authentication: []
       responses:
@@ -442,13 +455,14 @@ paths:
           $ref: '#/components/responses/unauthorizedResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/providers/openstack/external-networks:
+  /api/v1/regions/{regionName}/external-networks:
     x-documentation-group: provider-openstack
-    description: OpenStack external network services.
+    description: External network services.
+    parameters:
+    - $ref: '#/components/parameters/regionNameParameter'
     get:
       description: |-
-        Lists all OpenStack external networks the authenticated user has access to
-        within the scope of the OpenStack project.
+        Lists all external networks the authenticated user has access to.
       security:
       - oauth2Authentication: []
       responses:
@@ -460,13 +474,14 @@ paths:
           $ref: '#/components/responses/unauthorizedResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/providers/openstack/key-pairs:
+  /api/v1/regions/{regionName}/key-pairs:
     x-documentation-group: provider-openstack
-    description: OpenStack key pair services.
+    description: Key pair services.
+    parameters:
+    - $ref: '#/components/parameters/regionNameParameter'
     get:
       description: |-
-        Lists all OpenStack key pairs the authenticated user has access to within
-        the scope of the OpenStack project.
+        Lists all key pairs the authenticated user has access to.
       security:
       - oauth2Authentication: []
       responses:
@@ -499,6 +514,14 @@ components:
         The cluster name. Must be a valid DNS containing only lower case characters,
         numbers or hyphens, start and end with a character or number, and be at most
         63 characters in length.
+      required: true
+      schema:
+        $ref: '#/components/schemas/kubernetesNameParameter'
+    regionNameParameter:
+      name: regionName
+      in: path
+      description: |-
+        The region name.
       required: true
       schema:
         $ref: '#/components/schemas/kubernetesNameParameter'
@@ -568,6 +591,20 @@ components:
             It may also change to "Error" if an unexpected error occurred during any operation.
             Errors may be transient.
           type: string
+    region:
+      description: A region.
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          description: The region name.
+          type: string
+    regions:
+      description: A list of regions.
+      type: array
+      items:
+        $ref: '#/components/schemas/region'
     project:
       description: A project.
       type: object
@@ -983,6 +1020,21 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/openstackProject'
+    openstackImageVersions:
+      description: Image version metadata.
+      type: object
+      required:
+      - kubernetes
+      - nvidiaDriver
+      properties:
+        kubernetes:
+          description: |-
+            The kubernetes semantic version.  This should be used directly when specifying
+            Kubernetes control planes and workload pools in a cluster specification.
+          type: string
+        nvidiaDriver:
+          description: The nvidia driver version.
+          type: string
     openstackImage:
       description: And OpenStack image.
       type: object
@@ -1010,20 +1062,7 @@ components:
           type: string
           format: date-time
         versions:
-          description: Image version metadata.
-          type: object
-          required:
-          - kubernetes
-          - nvidiaDriver
-          properties:
-            kubernetes:
-              description: |-
-                The kubernetes semantic version.  This should be used directly when specifying
-                Kubernetes control planes and workload pools in a cluster specification.
-              type: string
-            nvidiaDriver:
-              description: The nvidia driver version.
-              type: string
+          $ref: '#/components/schemas/openstackImageVersions'
     openstackImages:
       description: A list of OpenStack images that are compatible with this platform.
       type: array
@@ -1232,6 +1271,15 @@ components:
           example:
             error: server_error
             error_description: failed to token claim
+    regionsResponse:
+      description: A list of regions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/regions'
+          example:
+          - name: uk-west
+          - name: uk-east
     controlPlaneResponse:
       description: A control plane.
       content:

@@ -63,26 +63,26 @@ type ServerInterface interface {
 	// (POST /api/v1/project)
 	PostApiV1Project(w http.ResponseWriter, r *http.Request)
 
-	// (GET /api/v1/providers/openstack/availability-zones/block-storage)
-	GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage(w http.ResponseWriter, r *http.Request)
+	// (GET /api/v1/regions)
+	GetApiV1Regions(w http.ResponseWriter, r *http.Request)
 
-	// (GET /api/v1/providers/openstack/availability-zones/compute)
-	GetApiV1ProvidersOpenstackAvailabilityZonesCompute(w http.ResponseWriter, r *http.Request)
+	// (GET /api/v1/regions/{regionName}/availability-zones/block-storage)
+	GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(w http.ResponseWriter, r *http.Request, regionName RegionNameParameter)
 
-	// (GET /api/v1/providers/openstack/external-networks)
-	GetApiV1ProvidersOpenstackExternalNetworks(w http.ResponseWriter, r *http.Request)
+	// (GET /api/v1/regions/{regionName}/availability-zones/compute)
+	GetApiV1RegionsRegionNameAvailabilityZonesCompute(w http.ResponseWriter, r *http.Request, regionName RegionNameParameter)
 
-	// (GET /api/v1/providers/openstack/flavors)
-	GetApiV1ProvidersOpenstackFlavors(w http.ResponseWriter, r *http.Request)
+	// (GET /api/v1/regions/{regionName}/external-networks)
+	GetApiV1RegionsRegionNameExternalNetworks(w http.ResponseWriter, r *http.Request, regionName RegionNameParameter)
 
-	// (GET /api/v1/providers/openstack/images)
-	GetApiV1ProvidersOpenstackImages(w http.ResponseWriter, r *http.Request)
+	// (GET /api/v1/regions/{regionName}/flavors)
+	GetApiV1RegionsRegionNameFlavors(w http.ResponseWriter, r *http.Request, regionName RegionNameParameter)
 
-	// (GET /api/v1/providers/openstack/key-pairs)
-	GetApiV1ProvidersOpenstackKeyPairs(w http.ResponseWriter, r *http.Request)
+	// (GET /api/v1/regions/{regionName}/images)
+	GetApiV1RegionsRegionNameImages(w http.ResponseWriter, r *http.Request, regionName RegionNameParameter)
 
-	// (GET /api/v1/providers/openstack/projects)
-	GetApiV1ProvidersOpenstackProjects(w http.ResponseWriter, r *http.Request)
+	// (GET /api/v1/regions/{regionName}/key-pairs)
+	GetApiV1RegionsRegionNameKeyPairs(w http.ResponseWriter, r *http.Request, regionName RegionNameParameter)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -501,14 +501,14 @@ func (siw *ServerInterfaceWrapper) PostApiV1Project(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage(w http.ResponseWriter, r *http.Request) {
+// GetApiV1Regions operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1Regions(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage(w, r)
+		siw.Handler.GetApiV1Regions(w, r)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -518,14 +518,25 @@ func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackAvailabilityZonesBl
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetApiV1ProvidersOpenstackAvailabilityZonesCompute operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackAvailabilityZonesCompute(w http.ResponseWriter, r *http.Request) {
+// GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "regionName" -------------
+	var regionName RegionNameParameter
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "regionName", runtime.ParamLocationPath, chi.URLParam(r, "regionName"), &regionName)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "regionName", Err: err})
+		return
+	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1ProvidersOpenstackAvailabilityZonesCompute(w, r)
+		siw.Handler.GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(w, r, regionName)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -535,14 +546,25 @@ func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackAvailabilityZonesCo
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetApiV1ProvidersOpenstackExternalNetworks operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackExternalNetworks(w http.ResponseWriter, r *http.Request) {
+// GetApiV1RegionsRegionNameAvailabilityZonesCompute operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionNameAvailabilityZonesCompute(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "regionName" -------------
+	var regionName RegionNameParameter
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "regionName", runtime.ParamLocationPath, chi.URLParam(r, "regionName"), &regionName)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "regionName", Err: err})
+		return
+	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1ProvidersOpenstackExternalNetworks(w, r)
+		siw.Handler.GetApiV1RegionsRegionNameAvailabilityZonesCompute(w, r, regionName)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -552,14 +574,25 @@ func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackExternalNetworks(w 
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetApiV1ProvidersOpenstackFlavors operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackFlavors(w http.ResponseWriter, r *http.Request) {
+// GetApiV1RegionsRegionNameExternalNetworks operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionNameExternalNetworks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "regionName" -------------
+	var regionName RegionNameParameter
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "regionName", runtime.ParamLocationPath, chi.URLParam(r, "regionName"), &regionName)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "regionName", Err: err})
+		return
+	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1ProvidersOpenstackFlavors(w, r)
+		siw.Handler.GetApiV1RegionsRegionNameExternalNetworks(w, r, regionName)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -569,14 +602,25 @@ func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackFlavors(w http.Resp
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetApiV1ProvidersOpenstackImages operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackImages(w http.ResponseWriter, r *http.Request) {
+// GetApiV1RegionsRegionNameFlavors operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionNameFlavors(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "regionName" -------------
+	var regionName RegionNameParameter
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "regionName", runtime.ParamLocationPath, chi.URLParam(r, "regionName"), &regionName)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "regionName", Err: err})
+		return
+	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1ProvidersOpenstackImages(w, r)
+		siw.Handler.GetApiV1RegionsRegionNameFlavors(w, r, regionName)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -586,14 +630,25 @@ func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackImages(w http.Respo
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetApiV1ProvidersOpenstackKeyPairs operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackKeyPairs(w http.ResponseWriter, r *http.Request) {
+// GetApiV1RegionsRegionNameImages operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionNameImages(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "regionName" -------------
+	var regionName RegionNameParameter
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "regionName", runtime.ParamLocationPath, chi.URLParam(r, "regionName"), &regionName)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "regionName", Err: err})
+		return
+	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1ProvidersOpenstackKeyPairs(w, r)
+		siw.Handler.GetApiV1RegionsRegionNameImages(w, r, regionName)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -603,14 +658,25 @@ func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackKeyPairs(w http.Res
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetApiV1ProvidersOpenstackProjects operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1ProvidersOpenstackProjects(w http.ResponseWriter, r *http.Request) {
+// GetApiV1RegionsRegionNameKeyPairs operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionNameKeyPairs(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "regionName" -------------
+	var regionName RegionNameParameter
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "regionName", runtime.ParamLocationPath, chi.URLParam(r, "regionName"), &regionName)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "regionName", Err: err})
+		return
+	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1ProvidersOpenstackProjects(w, r)
+		siw.Handler.GetApiV1RegionsRegionNameKeyPairs(w, r, regionName)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -782,25 +848,25 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/api/v1/project", wrapper.PostApiV1Project)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/providers/openstack/availability-zones/block-storage", wrapper.GetApiV1ProvidersOpenstackAvailabilityZonesBlockStorage)
+		r.Get(options.BaseURL+"/api/v1/regions", wrapper.GetApiV1Regions)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/providers/openstack/availability-zones/compute", wrapper.GetApiV1ProvidersOpenstackAvailabilityZonesCompute)
+		r.Get(options.BaseURL+"/api/v1/regions/{regionName}/availability-zones/block-storage", wrapper.GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/providers/openstack/external-networks", wrapper.GetApiV1ProvidersOpenstackExternalNetworks)
+		r.Get(options.BaseURL+"/api/v1/regions/{regionName}/availability-zones/compute", wrapper.GetApiV1RegionsRegionNameAvailabilityZonesCompute)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/providers/openstack/flavors", wrapper.GetApiV1ProvidersOpenstackFlavors)
+		r.Get(options.BaseURL+"/api/v1/regions/{regionName}/external-networks", wrapper.GetApiV1RegionsRegionNameExternalNetworks)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/providers/openstack/images", wrapper.GetApiV1ProvidersOpenstackImages)
+		r.Get(options.BaseURL+"/api/v1/regions/{regionName}/flavors", wrapper.GetApiV1RegionsRegionNameFlavors)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/providers/openstack/key-pairs", wrapper.GetApiV1ProvidersOpenstackKeyPairs)
+		r.Get(options.BaseURL+"/api/v1/regions/{regionName}/images", wrapper.GetApiV1RegionsRegionNameImages)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/providers/openstack/projects", wrapper.GetApiV1ProvidersOpenstackProjects)
+		r.Get(options.BaseURL+"/api/v1/regions/{regionName}/key-pairs", wrapper.GetApiV1RegionsRegionNameKeyPairs)
 	})
 
 	return r

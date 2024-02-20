@@ -25,7 +25,6 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
-	"strings"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
@@ -34,10 +33,10 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
 	"github.com/gophercloud/gophercloud/pagination"
-	"github.com/spf13/pflag"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
+	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/constants"
 )
 
@@ -52,82 +51,14 @@ var (
 	ErrExpression = errors.New("expression must contain exactly one sub match that yields a number string")
 )
 
-// flavorsGPUDescriptor describes how to determine the number of GPUs from a falvor.
-// At present, this is based on properties, but we could perhaps use the name in
-// future with a "type" parameter.
-type flavorsGPUDescriptor struct {
-	// propertyName is the property to look for.
-	propertyName string
-	// expression defines how to extract the number of GPUs from the chosen field.
-	expression string
-}
-
-type flavorsGPUDescriptorVar struct {
-	descriptors []flavorsGPUDescriptor
-}
-
-func (v *flavorsGPUDescriptorVar) Type() string {
-	return "flavourGPUDescriptor"
-}
-
-func (v *flavorsGPUDescriptorVar) Set(s string) error {
-	pairs := map[string]string{}
-
-	for _, field := range strings.Split(s, ",") {
-		parts := strings.Split(field, "=")
-		if len(parts) != 2 {
-			return fmt.Errorf("%w: expected a key=value pair for %s", ErrFlag, field)
-		}
-
-		pairs[parts[0]] = parts[1]
-	}
-
-	if _, ok := pairs["property"]; !ok {
-		return fmt.Errorf("%w: property name required", ErrFlag)
-	}
-
-	if _, ok := pairs["expression"]; !ok {
-		return fmt.Errorf("%w: expression required", ErrFlag)
-	}
-
-	desc := flavorsGPUDescriptor{
-		propertyName: pairs["property"],
-		expression:   pairs["expression"],
-	}
-
-	v.descriptors = append(v.descriptors, desc)
-
-	return nil
-}
-
-func (v *flavorsGPUDescriptorVar) String() string {
-	return "[]"
-}
-
-// ComputeOptions allows things like filtering to be configured.
-type ComputeOptions struct {
-	// serverGroupPolicy allows setting of server anti-affinity.
-	serverGroupPolicy string
-	// flavorsExclusions allow exclusion of certain flavors e.g. baremetal nodes.
-	flavorsExclusions []string
-	// flavorsGPUDescriptors allows the extraction of GPU information from a flavor.
-	flavorsGPUDescriptors flavorsGPUDescriptorVar
-}
-
-func (o *ComputeOptions) AddFlags(f *pflag.FlagSet) {
-	f.StringVar(&o.serverGroupPolicy, "openstack-servergroup-policy", "soft-anti-affinity", "Scheduling policy to use for server groups")
-	f.StringSliceVar(&o.flavorsExclusions, "openstack-flavor-properties-exclude", nil, "Exclude flavours with the selected property key.  May be specified more than once.")
-	f.Var(&o.flavorsGPUDescriptors, "openstack-flavor-gpu-descriptor", "Defines how to extract GPU information from a flavor.  Expects the value to be in the form property=foo,expression=bar, where property is the property name to look for, and expression defines how to extract the number of GPUs e.g. ^(\\d+)$.  Exactly one sub string match is required in the expression.  May be specified more than once.")
-}
-
 // ComputeClient wraps the generic client because gophercloud is unsafe.
 type ComputeClient struct {
-	options *ComputeOptions
+	options *unikornv1.RegionOpenstackComputeSpec
 	client  *gophercloud.ServiceClient
 }
 
 // NewComputeClient provides a simple one-liner to start computing.
-func NewComputeClient(ctx context.Context, options *ComputeOptions, provider Provider) (*ComputeClient, error) {
+func NewComputeClient(ctx context.Context, options *unikornv1.RegionOpenstackComputeSpec, provider Provider) (*ComputeClient, error) {
 	providerClient, err := provider.Client(ctx)
 	if err != nil {
 		return nil, err
@@ -244,7 +175,11 @@ func (c *ComputeClient) Flavors(ctx context.Context) ([]Flavor, error) {
 			return true
 		}
 
-		for _, exclude := range c.options.flavorsExclusions {
+		if c.options == nil {
+			return true
+		}
+
+		for _, exclude := range c.options.FlavorExtraSpecsExclude {
 			if _, ok := flavor.ExtraSpecs[exclude]; ok {
 				return true
 			}
@@ -267,12 +202,16 @@ type GPUMeta struct {
 // extraSpecToGPUs evaluates the falvor extra spec and tries to derive
 // the number of GPUs, returns -1 if none are found.
 func (c *ComputeClient) extraSpecToGPUs(name, value string) (int, error) {
-	for _, desc := range c.options.flavorsGPUDescriptors.descriptors {
-		if desc.propertyName != name {
+	if c.options == nil {
+		return -1, nil
+	}
+
+	for _, desc := range c.options.GPUDescriptors {
+		if desc.Property != name {
 			continue
 		}
 
-		re, err := regexp.Compile(desc.expression)
+		re, err := regexp.Compile(desc.Expression)
 		if err != nil {
 			return -1, err
 		}
@@ -377,7 +316,11 @@ func (c *ComputeClient) CreateServerGroup(ctx context.Context, name string) (*se
 
 	opts := &servergroups.CreateOpts{
 		Name:   name,
-		Policy: c.options.serverGroupPolicy,
+		Policy: "soft-anti-affinity",
+	}
+
+	if c.options != nil && c.options.ServerGroupPolicy != nil {
+		opts.Policy = *c.options.ServerGroupPolicy
 	}
 
 	return servergroups.Create(c.client, opts).Extract()
