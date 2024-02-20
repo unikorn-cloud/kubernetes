@@ -176,7 +176,7 @@ func (c *ComputeClient) Flavors(ctx context.Context) ([]Flavor, error) {
 		}
 
 		if c.options == nil {
-			return true
+			return false
 		}
 
 		for _, exclude := range c.options.FlavorExtraSpecsExclude {
