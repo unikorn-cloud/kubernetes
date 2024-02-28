@@ -143,7 +143,7 @@ func (c *Client) provisionDefaultControlPlane(ctx context.Context, name string) 
 
 // GetMetadata retrieves the control plane metadata.
 func (c *Client) GetMetadata(ctx context.Context, name string) (*Meta, error) {
-	project, err := project.NewClient(c.client).GetMetadata(ctx)
+	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func (c *Client) GetMetadata(ctx context.Context, name string) (*Meta, error) {
 }
 
 func (c *Client) GetOrCreateMetadata(ctx context.Context, name string) (*Meta, error) {
-	project, err := project.NewClient(c.client).GetMetadata(ctx)
+	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
 	if err != nil {
 		return nil, err
 	}
@@ -229,7 +229,6 @@ func (c *Client) convert(ctx context.Context, in *unikornv1.ControlPlane) (*gene
 
 	out := &generated.ControlPlane{
 		Status: &generated.KubernetesResourceStatus{
-			Name:         in.Name,
 			CreationTime: in.CreationTimestamp.Time,
 			Status:       "Unknown",
 		},
@@ -267,7 +266,7 @@ func (c *Client) convertList(ctx context.Context, in *unikornv1.ControlPlaneList
 
 // List returns all control planes.
 func (c *Client) List(ctx context.Context) ([]*generated.ControlPlane, error) {
-	project, err := project.NewClient(c.client).GetMetadata(ctx)
+	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
 	if err != nil {
 		// If the project hasn't been created, then this will 404, which is
 		// kinda confusing, as the project isn't in the path, so return an empty
@@ -312,7 +311,7 @@ func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.Co
 
 // Get returns the control plane.
 func (c *Client) Get(ctx context.Context, name generated.ControlPlaneNameParameter) (*generated.ControlPlane, error) {
-	project, err := project.NewClient(c.client).GetMetadata(ctx)
+	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
 	if err != nil {
 		return nil, err
 	}
@@ -330,16 +329,17 @@ func (c *Client) Get(ctx context.Context, name generated.ControlPlaneNameParamet
 	return out, nil
 }
 
-// createControlPlane is a common function to create a Kubernetes type from an API one.
-func createControlPlane(project *project.Meta, request *generated.ControlPlane) *unikornv1.ControlPlane {
+// generate is a common function to create a Kubernetes type from an API one.
+func generate(project *project.Meta, request *generated.ControlPlane) *unikornv1.ControlPlane {
 	// TODO: common with CLI tools.
 	controlPlane := &unikornv1.ControlPlane{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      request.Name,
 			Namespace: project.Namespace,
 			Labels: map[string]string{
-				constants.VersionLabel: constants.Version,
-				constants.ProjectLabel: project.Name,
+				constants.VersionLabel:      constants.Version,
+				constants.OrganizationLabel: project.Organization.Name,
+				constants.ProjectLabel:      project.Name,
 			},
 		},
 		Spec: unikornv1.ControlPlaneSpec{
@@ -353,7 +353,7 @@ func createControlPlane(project *project.Meta, request *generated.ControlPlane) 
 
 // Create creates a control plane.
 func (c *Client) Create(ctx context.Context, request *generated.ControlPlane) error {
-	project, err := project.NewClient(c.client).GetOrCreateMetadata(ctx)
+	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
 	if err != nil {
 		return err
 	}
@@ -362,9 +362,9 @@ func (c *Client) Create(ctx context.Context, request *generated.ControlPlane) er
 		return errors.OAuth2InvalidRequest("project is being deleted")
 	}
 
-	controlPlane := createControlPlane(project, request)
+	resource := generate(project, request)
 
-	if err := c.client.Create(ctx, controlPlane); err != nil {
+	if err := c.client.Create(ctx, resource); err != nil {
 		// TODO: we can do a cached lookup to save the API traffic.
 		if kerrors.IsAlreadyExists(err) {
 			return errors.HTTPConflict()
@@ -378,7 +378,7 @@ func (c *Client) Create(ctx context.Context, request *generated.ControlPlane) er
 
 // Delete deletes the control plane.
 func (c *Client) Delete(ctx context.Context, name generated.ControlPlaneNameParameter) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx)
+	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
 	if err != nil {
 		return err
 	}
@@ -407,7 +407,7 @@ func (c *Client) Delete(ctx context.Context, name generated.ControlPlaneNamePara
 
 // Update implements read/modify/write for the control plane.
 func (c *Client) Update(ctx context.Context, name generated.ControlPlaneNameParameter, request *generated.ControlPlane) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx)
+	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
 	if err != nil {
 		return err
 	}
@@ -421,7 +421,7 @@ func (c *Client) Update(ctx context.Context, name generated.ControlPlaneNamePara
 		return err
 	}
 
-	required := createControlPlane(project, request)
+	required := generate(project, request)
 
 	// Experience has taught me that modifying caches by accident is a bad thing
 	// so be extra safe and deep copy the existing resource.

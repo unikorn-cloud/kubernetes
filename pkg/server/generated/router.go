@@ -57,11 +57,20 @@ type ServerInterface interface {
 	// (GET /api/v1/controlplanes/{controlPlaneName}/clusters/{clusterName}/kubeconfig)
 	GetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfig(w http.ResponseWriter, r *http.Request, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter)
 
-	// (DELETE /api/v1/project)
-	DeleteApiV1Project(w http.ResponseWriter, r *http.Request)
+	// (DELETE /api/v1/organization)
+	DeleteApiV1Organization(w http.ResponseWriter, r *http.Request)
 
-	// (POST /api/v1/project)
-	PostApiV1Project(w http.ResponseWriter, r *http.Request)
+	// (POST /api/v1/organization)
+	PostApiV1Organization(w http.ResponseWriter, r *http.Request)
+
+	// (GET /api/v1/projects)
+	GetApiV1Projects(w http.ResponseWriter, r *http.Request)
+
+	// (POST /api/v1/projects)
+	PostApiV1Projects(w http.ResponseWriter, r *http.Request)
+
+	// (DELETE /api/v1/projects/{projectName})
+	DeleteApiV1ProjectsProjectName(w http.ResponseWriter, r *http.Request, projectName ProjectNameParameter)
 
 	// (GET /api/v1/regions)
 	GetApiV1Regions(w http.ResponseWriter, r *http.Request)
@@ -467,14 +476,14 @@ func (siw *ServerInterfaceWrapper) GetApiV1ControlplanesControlPlaneNameClusters
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// DeleteApiV1Project operation middleware
-func (siw *ServerInterfaceWrapper) DeleteApiV1Project(w http.ResponseWriter, r *http.Request) {
+// DeleteApiV1Organization operation middleware
+func (siw *ServerInterfaceWrapper) DeleteApiV1Organization(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteApiV1Project(w, r)
+		siw.Handler.DeleteApiV1Organization(w, r)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -484,14 +493,76 @@ func (siw *ServerInterfaceWrapper) DeleteApiV1Project(w http.ResponseWriter, r *
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// PostApiV1Project operation middleware
-func (siw *ServerInterfaceWrapper) PostApiV1Project(w http.ResponseWriter, r *http.Request) {
+// PostApiV1Organization operation middleware
+func (siw *ServerInterfaceWrapper) PostApiV1Organization(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostApiV1Project(w, r)
+		siw.Handler.PostApiV1Organization(w, r)
+	})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetApiV1Projects operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1Projects(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
+
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetApiV1Projects(w, r)
+	})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PostApiV1Projects operation middleware
+func (siw *ServerInterfaceWrapper) PostApiV1Projects(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
+
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostApiV1Projects(w, r)
+	})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// DeleteApiV1ProjectsProjectName operation middleware
+func (siw *ServerInterfaceWrapper) DeleteApiV1ProjectsProjectName(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName ProjectNameParameter
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "projectName", runtime.ParamLocationPath, chi.URLParam(r, "projectName"), &projectName)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectName", Err: err})
+		return
+	}
+
+	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
+
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteApiV1ProjectsProjectName(w, r, projectName)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -842,10 +913,19 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/api/v1/controlplanes/{controlPlaneName}/clusters/{clusterName}/kubeconfig", wrapper.GetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfig)
 	})
 	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/api/v1/project", wrapper.DeleteApiV1Project)
+		r.Delete(options.BaseURL+"/api/v1/organization", wrapper.DeleteApiV1Organization)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/api/v1/project", wrapper.PostApiV1Project)
+		r.Post(options.BaseURL+"/api/v1/organization", wrapper.PostApiV1Organization)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/v1/projects", wrapper.GetApiV1Projects)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/v1/projects", wrapper.PostApiV1Projects)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/v1/projects/{projectName}", wrapper.DeleteApiV1ProjectsProjectName)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/v1/regions", wrapper.GetApiV1Regions)

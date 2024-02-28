@@ -139,11 +139,22 @@ type ClientInterface interface {
 	// GetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfig request
 	GetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfig(ctx context.Context, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeleteApiV1Project request
-	DeleteApiV1Project(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeleteApiV1Organization request
+	DeleteApiV1Organization(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostApiV1Project request
-	PostApiV1Project(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// PostApiV1Organization request
+	PostApiV1Organization(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetApiV1Projects request
+	GetApiV1Projects(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostApiV1Projects request with any body
+	PostApiV1ProjectsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostApiV1Projects(ctx context.Context, body PostApiV1ProjectsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteApiV1ProjectsProjectName request
+	DeleteApiV1ProjectsProjectName(ctx context.Context, projectName ProjectNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetApiV1Regions request
 	GetApiV1Regions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -383,8 +394,8 @@ func (c *Client) GetApiV1ControlplanesControlPlaneNameClustersClusterNameKubecon
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteApiV1Project(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteApiV1ProjectRequest(c.Server)
+func (c *Client) DeleteApiV1Organization(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteApiV1OrganizationRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -395,8 +406,56 @@ func (c *Client) DeleteApiV1Project(ctx context.Context, reqEditors ...RequestEd
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostApiV1Project(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostApiV1ProjectRequest(c.Server)
+func (c *Client) PostApiV1Organization(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostApiV1OrganizationRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetApiV1Projects(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1ProjectsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostApiV1ProjectsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostApiV1ProjectsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostApiV1Projects(ctx context.Context, body PostApiV1ProjectsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostApiV1ProjectsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteApiV1ProjectsProjectName(ctx context.Context, projectName ProjectNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteApiV1ProjectsProjectNameRequest(c.Server, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -1012,8 +1071,8 @@ func NewGetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfigReques
 	return req, nil
 }
 
-// NewDeleteApiV1ProjectRequest generates requests for DeleteApiV1Project
-func NewDeleteApiV1ProjectRequest(server string) (*http.Request, error) {
+// NewDeleteApiV1OrganizationRequest generates requests for DeleteApiV1Organization
+func NewDeleteApiV1OrganizationRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1021,7 +1080,7 @@ func NewDeleteApiV1ProjectRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/project")
+	operationPath := fmt.Sprintf("/api/v1/organization")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1039,8 +1098,8 @@ func NewDeleteApiV1ProjectRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewPostApiV1ProjectRequest generates requests for PostApiV1Project
-func NewPostApiV1ProjectRequest(server string) (*http.Request, error) {
+// NewPostApiV1OrganizationRequest generates requests for PostApiV1Organization
+func NewPostApiV1OrganizationRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1048,7 +1107,7 @@ func NewPostApiV1ProjectRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/project")
+	operationPath := fmt.Sprintf("/api/v1/organization")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1059,6 +1118,107 @@ func NewPostApiV1ProjectRequest(server string) (*http.Request, error) {
 	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetApiV1ProjectsRequest generates requests for GetApiV1Projects
+func NewGetApiV1ProjectsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/projects")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostApiV1ProjectsRequest calls the generic PostApiV1Projects builder with application/json body
+func NewPostApiV1ProjectsRequest(server string, body PostApiV1ProjectsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostApiV1ProjectsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostApiV1ProjectsRequestWithBody generates requests for PostApiV1Projects with any type of body
+func NewPostApiV1ProjectsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/projects")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteApiV1ProjectsProjectNameRequest generates requests for DeleteApiV1ProjectsProjectName
+func NewDeleteApiV1ProjectsProjectNameRequest(server string, projectName ProjectNameParameter) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "projectName", runtime.ParamLocationPath, projectName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/projects/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1390,11 +1550,22 @@ type ClientWithResponsesInterface interface {
 	// GetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfig request
 	GetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfigWithResponse(ctx context.Context, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfigResponse, error)
 
-	// DeleteApiV1Project request
-	DeleteApiV1ProjectWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DeleteApiV1ProjectResponse, error)
+	// DeleteApiV1Organization request
+	DeleteApiV1OrganizationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DeleteApiV1OrganizationResponse, error)
 
-	// PostApiV1Project request
-	PostApiV1ProjectWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostApiV1ProjectResponse, error)
+	// PostApiV1Organization request
+	PostApiV1OrganizationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostApiV1OrganizationResponse, error)
+
+	// GetApiV1Projects request
+	GetApiV1ProjectsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProjectsResponse, error)
+
+	// PostApiV1Projects request with any body
+	PostApiV1ProjectsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsResponse, error)
+
+	PostApiV1ProjectsWithResponse(ctx context.Context, body PostApiV1ProjectsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsResponse, error)
+
+	// DeleteApiV1ProjectsProjectName request
+	DeleteApiV1ProjectsProjectNameWithResponse(ctx context.Context, projectName ProjectNameParameter, reqEditors ...RequestEditorFn) (*DeleteApiV1ProjectsProjectNameResponse, error)
 
 	// GetApiV1Regions request
 	GetApiV1RegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1RegionsResponse, error)
@@ -1773,7 +1944,7 @@ func (r GetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfigRespon
 	return 0
 }
 
-type DeleteApiV1ProjectResponse struct {
+type DeleteApiV1OrganizationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
@@ -1783,7 +1954,7 @@ type DeleteApiV1ProjectResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r DeleteApiV1ProjectResponse) Status() string {
+func (r DeleteApiV1OrganizationResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1791,14 +1962,14 @@ func (r DeleteApiV1ProjectResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeleteApiV1ProjectResponse) StatusCode() int {
+func (r DeleteApiV1OrganizationResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostApiV1ProjectResponse struct {
+type PostApiV1OrganizationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
@@ -1808,7 +1979,7 @@ type PostApiV1ProjectResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r PostApiV1ProjectResponse) Status() string {
+func (r PostApiV1OrganizationResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1816,7 +1987,81 @@ func (r PostApiV1ProjectResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostApiV1ProjectResponse) StatusCode() int {
+func (r PostApiV1OrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetApiV1ProjectsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Projects
+	JSON401      *Oauth2Error
+	JSON500      *Oauth2Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApiV1ProjectsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApiV1ProjectsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostApiV1ProjectsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Oauth2Error
+	JSON401      *Oauth2Error
+	JSON409      *Oauth2Error
+	JSON500      *Oauth2Error
+}
+
+// Status returns HTTPResponse.Status
+func (r PostApiV1ProjectsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostApiV1ProjectsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteApiV1ProjectsProjectNameResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Oauth2Error
+	JSON401      *Oauth2Error
+	JSON404      *Oauth2Error
+	JSON500      *Oauth2Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteApiV1ProjectsProjectNameResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteApiV1ProjectsProjectNameResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2155,22 +2400,57 @@ func (c *ClientWithResponses) GetApiV1ControlplanesControlPlaneNameClustersClust
 	return ParseGetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfigResponse(rsp)
 }
 
-// DeleteApiV1ProjectWithResponse request returning *DeleteApiV1ProjectResponse
-func (c *ClientWithResponses) DeleteApiV1ProjectWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DeleteApiV1ProjectResponse, error) {
-	rsp, err := c.DeleteApiV1Project(ctx, reqEditors...)
+// DeleteApiV1OrganizationWithResponse request returning *DeleteApiV1OrganizationResponse
+func (c *ClientWithResponses) DeleteApiV1OrganizationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DeleteApiV1OrganizationResponse, error) {
+	rsp, err := c.DeleteApiV1Organization(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeleteApiV1ProjectResponse(rsp)
+	return ParseDeleteApiV1OrganizationResponse(rsp)
 }
 
-// PostApiV1ProjectWithResponse request returning *PostApiV1ProjectResponse
-func (c *ClientWithResponses) PostApiV1ProjectWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostApiV1ProjectResponse, error) {
-	rsp, err := c.PostApiV1Project(ctx, reqEditors...)
+// PostApiV1OrganizationWithResponse request returning *PostApiV1OrganizationResponse
+func (c *ClientWithResponses) PostApiV1OrganizationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostApiV1OrganizationResponse, error) {
+	rsp, err := c.PostApiV1Organization(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostApiV1ProjectResponse(rsp)
+	return ParsePostApiV1OrganizationResponse(rsp)
+}
+
+// GetApiV1ProjectsWithResponse request returning *GetApiV1ProjectsResponse
+func (c *ClientWithResponses) GetApiV1ProjectsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ProjectsResponse, error) {
+	rsp, err := c.GetApiV1Projects(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApiV1ProjectsResponse(rsp)
+}
+
+// PostApiV1ProjectsWithBodyWithResponse request with arbitrary body returning *PostApiV1ProjectsResponse
+func (c *ClientWithResponses) PostApiV1ProjectsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsResponse, error) {
+	rsp, err := c.PostApiV1ProjectsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostApiV1ProjectsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostApiV1ProjectsWithResponse(ctx context.Context, body PostApiV1ProjectsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsResponse, error) {
+	rsp, err := c.PostApiV1Projects(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostApiV1ProjectsResponse(rsp)
+}
+
+// DeleteApiV1ProjectsProjectNameWithResponse request returning *DeleteApiV1ProjectsProjectNameResponse
+func (c *ClientWithResponses) DeleteApiV1ProjectsProjectNameWithResponse(ctx context.Context, projectName ProjectNameParameter, reqEditors ...RequestEditorFn) (*DeleteApiV1ProjectsProjectNameResponse, error) {
+	rsp, err := c.DeleteApiV1ProjectsProjectName(ctx, projectName, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteApiV1ProjectsProjectNameResponse(rsp)
 }
 
 // GetApiV1RegionsWithResponse request returning *GetApiV1RegionsResponse
@@ -2929,15 +3209,15 @@ func ParseGetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfigResp
 	return response, nil
 }
 
-// ParseDeleteApiV1ProjectResponse parses an HTTP response from a DeleteApiV1ProjectWithResponse call
-func ParseDeleteApiV1ProjectResponse(rsp *http.Response) (*DeleteApiV1ProjectResponse, error) {
+// ParseDeleteApiV1OrganizationResponse parses an HTTP response from a DeleteApiV1OrganizationWithResponse call
+func ParseDeleteApiV1OrganizationResponse(rsp *http.Response) (*DeleteApiV1OrganizationResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeleteApiV1ProjectResponse{
+	response := &DeleteApiV1OrganizationResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2976,15 +3256,15 @@ func ParseDeleteApiV1ProjectResponse(rsp *http.Response) (*DeleteApiV1ProjectRes
 	return response, nil
 }
 
-// ParsePostApiV1ProjectResponse parses an HTTP response from a PostApiV1ProjectWithResponse call
-func ParsePostApiV1ProjectResponse(rsp *http.Response) (*PostApiV1ProjectResponse, error) {
+// ParsePostApiV1OrganizationResponse parses an HTTP response from a PostApiV1OrganizationWithResponse call
+func ParsePostApiV1OrganizationResponse(rsp *http.Response) (*PostApiV1OrganizationResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostApiV1ProjectResponse{
+	response := &PostApiV1OrganizationResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -3010,6 +3290,140 @@ func ParsePostApiV1ProjectResponse(rsp *http.Response) (*PostApiV1ProjectRespons
 			return nil, err
 		}
 		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetApiV1ProjectsResponse parses an HTTP response from a GetApiV1ProjectsWithResponse call
+func ParseGetApiV1ProjectsResponse(rsp *http.Response) (*GetApiV1ProjectsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApiV1ProjectsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Projects
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostApiV1ProjectsResponse parses an HTTP response from a PostApiV1ProjectsWithResponse call
+func ParsePostApiV1ProjectsResponse(rsp *http.Response) (*PostApiV1ProjectsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostApiV1ProjectsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteApiV1ProjectsProjectNameResponse parses an HTTP response from a DeleteApiV1ProjectsProjectNameWithResponse call
+func ParseDeleteApiV1ProjectsProjectNameResponse(rsp *http.Response) (*DeleteApiV1ProjectsProjectNameResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteApiV1ProjectsProjectNameResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest Oauth2Error

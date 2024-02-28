@@ -29,6 +29,7 @@ import (
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/cluster"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/controlplane"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/project"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/region"
 	"github.com/unikorn-cloud/unikorn/pkg/server/util"
@@ -62,8 +63,44 @@ func (h *Handler) setUncacheable(w http.ResponseWriter) {
 	w.Header().Add("Cache-Control", "no-cache")
 }
 
-func (h *Handler) PostApiV1Project(w http.ResponseWriter, r *http.Request) {
-	if err := project.NewClient(h.client).Create(r.Context()); err != nil {
+func (h *Handler) PostApiV1Organization(w http.ResponseWriter, r *http.Request) {
+	if err := organization.NewClient(h.client).Create(r.Context()); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+}
+
+func (h *Handler) DeleteApiV1Organization(w http.ResponseWriter, r *http.Request) {
+	if err := organization.NewClient(h.client).Delete(r.Context()); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+}
+
+func (h *Handler) GetApiV1Projects(w http.ResponseWriter, r *http.Request) {
+	result, err := project.NewClient(h.client).List(r.Context())
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	h.setUncacheable(w)
+	util.WriteJSONResponse(w, r, http.StatusOK, result)
+}
+
+func (h *Handler) PostApiV1Projects(w http.ResponseWriter, r *http.Request) {
+	request := &generated.Project{}
+
+	if err := util.ReadJSONBody(r, request); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := project.NewClient(h.client).Create(r.Context(), request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -72,8 +109,8 @@ func (h *Handler) PostApiV1Project(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) DeleteApiV1Project(w http.ResponseWriter, r *http.Request) {
-	if err := project.NewClient(h.client).Delete(r.Context()); err != nil {
+func (h *Handler) DeleteApiV1ProjectsProjectName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter) {
+	if err := project.NewClient(h.client).Delete(r.Context(), projectName); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}

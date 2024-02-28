@@ -20,17 +20,19 @@ package project
 import (
 	"context"
 	goerrors "errors"
+	"slices"
 
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/core/pkg/constants"
-	"github.com/unikorn-cloud/core/pkg/util/retry"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
+	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // Client wraps up project related management handling.
@@ -46,21 +48,11 @@ func NewClient(client client.Client) *Client {
 	}
 }
 
-// NameFromContext translates an Openstack project ID to one we an use.
-func NameFromContext(ctx context.Context) (string, error) {
-	/*
-		claims, err := oauth2.ClaimsFromContext(ctx)
-		if err != nil {
-			return "", err
-		}
-
-		return fmt.Sprintf("unikorn-server-%s", claims.UnikornClaims.Project), nil
-	*/
-	return "", nil
-}
-
 // Meta describes the project.
 type Meta struct {
+	// Organization is the owning organization;s metadata.
+	Organization *organization.Meta
+
 	// Name is the project's Kubernetes name, so a higher level resource
 	// can reference it.
 	Name string
@@ -83,108 +75,88 @@ var (
 	ErrNamespaceUnset = goerrors.New("resource namespace is unset")
 )
 
-// active returns true if the project is usable.
-func active(p *unikornv1.Project) error {
-	// No namespace created yet, you cannot provision any child resources.
-	if p.Status.Namespace == "" {
-		return ErrNamespaceUnset
-	}
-
-	return nil
-}
-
 // GetMetadata retrieves the project metadata.
 // Clients should consult at least the Active status before doing anything
 // with the project.
-func (c *Client) GetMetadata(ctx context.Context) (*Meta, error) {
-	name, err := NameFromContext(ctx)
+func (c *Client) GetMetadata(ctx context.Context, name string) (*Meta, error) {
+	organization, err := organization.NewClient(c.client).GetMetadata(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := c.get(ctx, name)
+	result, err := c.get(ctx, organization.Namespace, name)
 	if err != nil {
 		return nil, err
 	}
 
 	metadata := &Meta{
-		Name:      name,
-		Namespace: result.Status.Namespace,
-		Deleting:  result.DeletionTimestamp != nil,
+		Organization: organization,
+		Name:         name,
+		Namespace:    result.Status.Namespace,
+		Deleting:     result.DeletionTimestamp != nil,
 	}
 
 	return metadata, nil
 }
 
-func (c *Client) GetOrCreateMetadata(ctx context.Context) (*Meta, error) {
-	name, err := NameFromContext(ctx)
+func convert(in *unikornv1.Project) *generated.Project {
+	out := &generated.Project{
+		Name: in.Name,
+		Status: &generated.KubernetesResourceStatus{
+			CreationTime: in.CreationTimestamp.Time,
+		},
+	}
+
+	if in.DeletionTimestamp != nil {
+		out.Status.DeletionTime = &in.DeletionTimestamp.Time
+	}
+
+	condition, err := in.StatusConditionRead(unikornv1core.ConditionAvailable)
+	if err == nil {
+		out.Status.Status = string(condition.Reason)
+	}
+
+	return out
+}
+
+func convertList(in *unikornv1.ProjectList) generated.Projects {
+	out := make(generated.Projects, len(in.Items))
+
+	for i := range in.Items {
+		out[i] = *convert(&in.Items[i])
+	}
+
+	return out
+}
+
+func (c *Client) List(ctx context.Context) (generated.Projects, error) {
+	organization, err := organization.NewClient(c.client).GetMetadata(ctx)
 	if err != nil {
+		// If the organization hasn't been created, then this will 404, which is
+		// kinda confusing.
+		if errors.IsHTTPNotFound(err) {
+			return generated.Projects{}, nil
+		}
+
 		return nil, err
 	}
 
-	result, err := c.get(ctx, name)
-	if err != nil {
-		if !errors.IsHTTPNotFound(err) {
-			return nil, err
-		}
+	result := &unikornv1.ProjectList{}
 
-		log := log.FromContext(ctx)
-
-		log.Info("creating implicit project")
-
-		// GetMetadata should be called by descendents of the project
-		// e.g. control planes, and by transitive closure, clusters.
-		// Rather than delegate creation to each and every client,
-		// implicitly create it.
-		if err := c.Create(ctx); err != nil {
-			return nil, err
-		}
+	if err := c.client.List(ctx, result, &client.ListOptions{Namespace: organization.Namespace}); err != nil {
+		return nil, errors.OAuth2ServerError("failed to list projects").WithError(err)
 	}
 
-	waitCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	slices.SortStableFunc(result.Items, unikornv1.CompareProject)
 
-	// Allow a grace period for the project to become active to avoid client
-	// errors and retries.  The namespace creation should be ostensibly instant
-	// and likewise show up due to non-blocking yields.
-	callback := func() error {
-		result, err = c.get(waitCtx, name)
-		if err != nil {
-			// Short cut deleting errors.
-			if goerrors.Is(err, ErrResourceDeleting) {
-				cancel()
-
-				return nil
-			}
-
-			return err
-		}
-
-		if err := active(result); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	if err := retry.Forever().DoWithContext(waitCtx, callback); err != nil {
-		return nil, err
-	}
-
-	metadata := &Meta{
-		Name:      name,
-		Namespace: result.Status.Namespace,
-		Deleting:  result.DeletionTimestamp != nil,
-	}
-
-	return metadata, nil
+	return convertList(result), nil
 }
 
 // get returns the implicit project identified by the JWT claims.
-func (c *Client) get(ctx context.Context, name string) (*unikornv1.Project, error) {
+func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.Project, error) {
 	result := &unikornv1.Project{}
 
-	if err := c.client.Get(ctx, client.ObjectKey{Name: name}, result); err != nil {
+	if err := c.client.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, result); err != nil {
 		if kerrors.IsNotFound(err) {
 			return nil, errors.HTTPNotFound().WithError(err)
 		}
@@ -195,24 +167,35 @@ func (c *Client) get(ctx context.Context, name string) (*unikornv1.Project, erro
 	return result, nil
 }
 
-// Create creates the implicit project indentified by the JTW claims.
-func (c *Client) Create(ctx context.Context) error {
-	name, err := NameFromContext(ctx)
-	if err != nil {
-		return err
-	}
-
-	// TODO: common with CLI tools.
-	project := &unikornv1.Project{
+func generate(organization *organization.Meta, request *generated.Project) *unikornv1.Project {
+	resource := &unikornv1.Project{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
+			Name:      request.Name,
+			Namespace: organization.Namespace,
 			Labels: map[string]string{
-				constants.VersionLabel: constants.Version,
+				constants.VersionLabel:      constants.Version,
+				constants.OrganizationLabel: organization.Name,
 			},
 		},
 	}
 
-	if err := c.client.Create(ctx, project); err != nil {
+	return resource
+}
+
+// Create creates the implicit project indentified by the JTW claims.
+func (c *Client) Create(ctx context.Context, request *generated.Project) error {
+	organization, err := organization.NewClient(c.client).GetOrCreateMetadata(ctx)
+	if err != nil {
+		return err
+	}
+
+	if organization.Deleting {
+		return errors.OAuth2InvalidRequest("organization is being deleted")
+	}
+
+	resource := generate(organization, request)
+
+	if err := c.client.Create(ctx, resource); err != nil {
 		// TODO: we can do a cached lookup to save the API traffic.
 		if kerrors.IsAlreadyExists(err) {
 			return errors.HTTPConflict()
@@ -225,15 +208,20 @@ func (c *Client) Create(ctx context.Context) error {
 }
 
 // Delete deletes the implicit project indentified by the JTW claims.
-func (c *Client) Delete(ctx context.Context) error {
-	name, err := NameFromContext(ctx)
+func (c *Client) Delete(ctx context.Context, name string) error {
+	organization, err := organization.NewClient(c.client).GetMetadata(ctx)
 	if err != nil {
 		return err
 	}
 
+	if organization.Deleting {
+		return errors.OAuth2InvalidRequest("organization is being deleted")
+	}
+
 	project := &unikornv1.Project{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
+			Name:      name,
+			Namespace: organization.Namespace,
 		},
 	}
 

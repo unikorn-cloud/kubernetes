@@ -38,18 +38,10 @@ paths:
       An organization defines a business entity that contains a set of projects
       etc. that belong to that organization.  This is the coarsest grain entity
       for RBAC.
-  /api/v1/project:
-    x-documentation-group: main
-    description: |-
-      Implements project management services. Projects, as currently defined
-      by the Kubernetes service, are implicit as access tokens issued by the
-      authentication and authorisation API as these are scoped to a specific
-      project.
     post:
       x-no-body: true
       description: |-
-        Creates a new project resource associated with the authenticated user's
-        scoped authorisation token.
+        Creates a new organization based on the access token claims.
       security:
       - oauth2Authentication: []
       responses:
@@ -63,6 +55,61 @@ paths:
           $ref: '#/components/responses/conflictResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
+    delete:
+      description: |-
+        Deletes an organization and all its resources based on the access token claims.
+      security:
+      - oauth2Authentication: []
+      responses:
+        '202':
+          $ref: '#/components/responses/acceptedResponse'
+        '400':
+          $ref: '#/components/responses/badRequestResponse'
+        '401':
+          $ref: '#/components/responses/unauthorizedResponse'
+        '404':
+          $ref: '#/components/responses/notFoundResponse'
+        '500':
+          $ref: '#/components/responses/internalServerErrorResponse'
+  /api/v1/projects:
+    x-documentation-group: main
+    description: |-
+      Implements project management services. Projects, as currently defined
+      by the Kubernetes service, are implicitly scoped to the access token's
+      organization.
+    get:
+      description: |-
+        List all projects for the organization.
+      security:
+      - oauth2Authentication: []
+      responses:
+        '200':
+          $ref: '#/components/responses/projectsResponse'
+        '401':
+          $ref: '#/components/responses/unauthorizedResponse'
+        '500':
+          $ref: '#/components/responses/internalServerErrorResponse'
+    post:
+      description: |-
+        Creates a new project resource for the user's organization.
+      security:
+      - oauth2Authentication: []
+      requestBody:
+        $ref: '#/components/requestBodies/createProjectRequest'
+      responses:
+        '202':
+          $ref: '#/components/responses/acceptedResponse'
+        '400':
+          $ref: '#/components/responses/badRequestResponse'
+        '401':
+          $ref: '#/components/responses/unauthorizedResponse'
+        '409':
+          $ref: '#/components/responses/conflictResponse'
+        '500':
+          $ref: '#/components/responses/internalServerErrorResponse'
+  /api/v1/projects/{projectName}:
+    parameters:
+    - $ref: '#/components/parameters/projectNameParameter'
     delete:
       description: |-
         Deletes the project associated with the authenticated user's scoped
@@ -495,6 +542,14 @@ paths:
           $ref: '#/components/responses/internalServerErrorResponse'
 components:
   parameters:
+    projectNameParameter:
+      name: projectName
+      in: path
+      description: |-
+        The project name.
+      required: true
+      schema:
+        $ref: '#/components/schemas/kubernetesNameParameter'
     controlPlaneNameParameter:
       name: controlPlaneName
       in: path
@@ -566,13 +621,9 @@ components:
       description: A Kubernetes resource status.
       type: object
       required:
-      - name
       - creationTime
       - status
       properties:
-        name:
-          description: The name of the resource.
-          type: string
         creationTime:
           description: The time the resource was created.
           type: string
@@ -608,9 +659,18 @@ components:
     project:
       description: A project.
       type: object
+      required:
+      - name
       properties:
+        name:
+          type: string
         status:
           $ref: '#/components/schemas/kubernetesResourceStatus'
+    projects:
+      description: A list of projects.
+      type: array
+      items:
+        $ref: '#/components/schemas/project'
     controlPlane:
       description: A control plane.
       type: object
@@ -1148,6 +1208,15 @@ components:
       items:
         $ref: '#/components/schemas/openstackAvailabilityZone'
   requestBodies:
+    createProjectRequest:
+      description: Project request parameters.
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/project'
+          example:
+            name: my-project
     createControlPlaneRequest:
       description: Control plane request parameters.
       required: true
@@ -1280,6 +1349,14 @@ components:
           example:
           - name: uk-west
           - name: uk-east
+    projectsResponse:
+      description: A list of projects.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/projects'
+          example:
+          - name: my-project
     controlPlaneResponse:
       description: A control plane.
       content:

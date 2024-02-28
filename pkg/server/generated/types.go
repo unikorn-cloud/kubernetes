@@ -319,9 +319,6 @@ type KubernetesResourceStatus struct {
 	// DeletionTime The time the resource was deleted.
 	DeletionTime *time.Time `json:"deletionTime,omitempty"`
 
-	// Name The name of the resource.
-	Name string `json:"name"`
-
 	// Status The current status of the resource. Intially the status will be "Unknown" until
 	// the resource is reconciled by the relevant controller. It then will transition to
 	// "Provisioning" and will be ready for use when it changes to "Provisioned". The status
@@ -458,6 +455,17 @@ type OpenstackVolume struct {
 	Size int `json:"size"`
 }
 
+// Project A project.
+type Project struct {
+	Name string `json:"name"`
+
+	// Status A Kubernetes resource status.
+	Status *KubernetesResourceStatus `json:"status,omitempty"`
+}
+
+// Projects A list of projects.
+type Projects = []Project
+
 // Region A region.
 type Region struct {
 	// Name The region name.
@@ -481,6 +489,9 @@ type ClusterNameParameter = KubernetesNameParameter
 
 // ControlPlaneNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type ControlPlaneNameParameter = KubernetesNameParameter
+
+// ProjectNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
+type ProjectNameParameter = KubernetesNameParameter
 
 // RegionNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type RegionNameParameter = KubernetesNameParameter
@@ -536,6 +547,9 @@ type OpenstackImagesResponse = OpenstackImages
 // OpenstackKeyPairsResponse A list of OpenStack key pairs.
 type OpenstackKeyPairsResponse = OpenstackKeyPairs
 
+// ProjectsResponse A list of projects.
+type ProjectsResponse = Projects
+
 // RegionsResponse A list of regions.
 type RegionsResponse = Regions
 
@@ -548,6 +562,9 @@ type CreateControlPlaneRequest = ControlPlane
 // CreateKubernetesClusterRequest Kubernetes cluster creation parameters.
 type CreateKubernetesClusterRequest = KubernetesCluster
 
+// CreateProjectRequest A project.
+type CreateProjectRequest = Project
+
 // PostApiV1ControlplanesJSONRequestBody defines body for PostApiV1Controlplanes for application/json ContentType.
 type PostApiV1ControlplanesJSONRequestBody = ControlPlane
 
@@ -559,3 +576,6 @@ type PostApiV1ControlplanesControlPlaneNameClustersJSONRequestBody = KubernetesC
 
 // PutApiV1ControlplanesControlPlaneNameClustersClusterNameJSONRequestBody defines body for PutApiV1ControlplanesControlPlaneNameClustersClusterName for application/json ContentType.
 type PutApiV1ControlplanesControlPlaneNameClustersClusterNameJSONRequestBody = KubernetesCluster
+
+// PostApiV1ProjectsJSONRequestBody defines body for PostApiV1Projects for application/json ContentType.
+type PostApiV1ProjectsJSONRequestBody = Project
