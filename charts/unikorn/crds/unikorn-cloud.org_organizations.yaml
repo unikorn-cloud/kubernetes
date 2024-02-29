@@ -4,17 +4,17 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.12.1
-  name: projects.unikorn-cloud.org
+  name: organizations.unikorn-cloud.org
 spec:
   group: unikorn-cloud.org
   names:
     categories:
     - unikorn
-    kind: Project
-    listKind: ProjectList
-    plural: projects
-    singular: project
-  scope: Namespaced
+    kind: Organization
+    listKind: OrganizationList
+    plural: organizations
+    singular: organization
+  scope: Cluster
   versions:
   - additionalPrinterColumns:
     - jsonPath: .status.namespace
@@ -29,8 +29,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Project is an abstraction around projects and their security
-          requirements.
+        description: Organization is an abstraction around organizations.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -45,17 +44,17 @@ spec:
           metadata:
             type: object
           spec:
-            description: ProjectSpec defines project specific metadata.
+            description: OrganizationSpec defines resource specific metadata.
             properties:
               pause:
                 description: Pause, if true, will inhibit reconciliation.
                 type: boolean
             type: object
           status:
-            description: ProjectStatus defines the status of the project.
+            description: OrganizationStatus defines the status of the resource.
             properties:
               conditions:
-                description: Current service state of a project.
+                description: Current service state of the resource.
                 items:
                   description: Condition is a generic condition type for use across
                     all resource types. It's generic so that the underlying controller-manager
@@ -99,7 +98,8 @@ spec:
                   type: object
                 type: array
               namespace:
-                description: Namespace defines the namespace a project resides in.
+                description: Namespace defines the namespace an organization's child
+                  resources reside in.
                 type: string
             type: object
         required:

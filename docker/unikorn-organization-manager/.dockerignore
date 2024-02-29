@@ -1,0 +1,3 @@
+*
+!bin/*-linux-gnu/unikorn-organization-manager
+!hack/passwd.nonroot
