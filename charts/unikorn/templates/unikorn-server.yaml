@@ -21,6 +21,7 @@ rules:
 - apiGroups:
   - unikorn-cloud.org
   resources:
+  - organizations
   - projects
   - controlplanes
   - kubernetesclusters

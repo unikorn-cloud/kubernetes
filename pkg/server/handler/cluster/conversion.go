@@ -164,7 +164,6 @@ func convertFeatures(in *unikornv1.KubernetesCluster) *generated.KubernetesClust
 // convertStatus converts from a custom resource into the API definition.
 func convertStatus(in *unikornv1.KubernetesCluster) *generated.KubernetesResourceStatus {
 	out := &generated.KubernetesResourceStatus{
-		Name:         in.Name,
 		CreationTime: in.CreationTimestamp.Time,
 		Status:       "Unknown",
 	}
@@ -490,6 +489,7 @@ func (c *Client) createCluster(controlPlane *controlplane.Meta, options *generat
 			Namespace: controlPlane.Namespace,
 			Labels: map[string]string{
 				coreconstants.VersionLabel:      coreconstants.Version,
+				coreconstants.OrganizationLabel: controlPlane.Project.Organization.Name,
 				coreconstants.ProjectLabel:      controlPlane.Project.Name,
 				coreconstants.ControlPlaneLabel: controlPlane.Name,
 			},

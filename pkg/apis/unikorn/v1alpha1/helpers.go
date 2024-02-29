@@ -260,6 +260,10 @@ func (c *KubernetesCluster) NvidiaOperatorEnabled() bool {
 	return c.Spec.Features != nil && c.Spec.Features.NvidiaOperator != nil && *c.Spec.Features.NvidiaOperator
 }
 
+func CompareProject(a, b Project) int {
+	return strings.Compare(a.Name, b.Name)
+}
+
 func CompareControlPlane(a, b ControlPlane) int {
 	return strings.Compare(a.Name, b.Name)
 }
