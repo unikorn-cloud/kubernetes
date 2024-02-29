@@ -25,17 +25,21 @@ import (
 	"github.com/gophercloud/utils/openstack/clientconfig"
 
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
+	"github.com/unikorn-cloud/core/pkg/constants"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/vcluster"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/controlplane"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/providers/openstack"
 
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
@@ -62,15 +66,30 @@ func NewClient(client client.Client, request *http.Request, openstack *openstack
 }
 
 // List returns all clusters owned by the implicit control plane.
-func (c *Client) List(ctx context.Context, controlPlaneName generated.ControlPlaneNameParameter) ([]*generated.KubernetesCluster, error) {
-	controlPlane, err := controlplane.NewClient(c.client).GetMetadata(ctx, controlPlaneName)
+func (c *Client) List(ctx context.Context) ([]*generated.KubernetesCluster, error) {
+	selector := labels.NewSelector()
+
+	// TODO: a super-admin isn't scoped to a single organization!
+	// TODO: RBAC - filter projects based on user membership here.
+	organization, err := organization.NewClient(c.client).GetMetadata(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	organizationReq, err := labels.NewRequirement(constants.OrganizationLabel, selection.Equals, []string{organization.Name})
+	if err != nil {
+		return nil, err
+	}
+
+	selector = selector.Add(*organizationReq)
+
+	options := &client.ListOptions{
+		LabelSelector: selector,
+	}
+
 	result := &unikornv1.KubernetesClusterList{}
 
-	if err := c.client.List(ctx, result, &client.ListOptions{Namespace: controlPlane.Namespace}); err != nil {
+	if err := c.client.List(ctx, result, options); err != nil {
 		return nil, errors.OAuth2ServerError("failed to list control planes").WithError(err)
 	}
 
@@ -99,29 +118,9 @@ func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.Ku
 	return result, nil
 }
 
-// Get returns the cluster.
-func (c *Client) Get(ctx context.Context, controlPlaneName generated.ControlPlaneNameParameter, name generated.ClusterNameParameter) (*generated.KubernetesCluster, error) {
-	controlPlane, err := controlplane.NewClient(c.client).GetMetadata(ctx, controlPlaneName)
-	if err != nil {
-		return nil, err
-	}
-
-	result, err := c.get(ctx, controlPlane.Namespace, name)
-	if err != nil {
-		return nil, err
-	}
-
-	out, err := c.convert(ctx, result)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
 // GetKubeconfig returns the kubernetes configuation associated with a cluster.
-func (c *Client) GetKubeconfig(ctx context.Context, controlPlaneName generated.ControlPlaneNameParameter, name generated.ClusterNameParameter) ([]byte, error) {
-	controlPlane, err := controlplane.NewClient(c.client).GetMetadata(ctx, controlPlaneName)
+func (c *Client) GetKubeconfig(ctx context.Context, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, name generated.ClusterNameParameter) ([]byte, error) {
+	controlPlane, err := controlplane.NewClient(c.client).GetMetadata(ctx, projectName, controlPlaneName)
 	if err != nil {
 		return nil, err
 	}
@@ -240,8 +239,8 @@ func (c *Client) createServerGroup(controlPlane *controlplane.Meta, name, kind s
 }
 
 // Create creates the implicit cluster indentified by the JTW claims.
-func (c *Client) Create(ctx context.Context, controlPlaneName generated.ControlPlaneNameParameter, options *generated.KubernetesCluster) error {
-	controlPlane, err := controlplane.NewClient(c.client).GetOrCreateMetadata(ctx, controlPlaneName)
+func (c *Client) Create(ctx context.Context, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, options *generated.KubernetesCluster) error {
+	controlPlane, err := controlplane.NewClient(c.client).GetOrCreateMetadata(ctx, projectName, controlPlaneName)
 	if err != nil {
 		return err
 	}
@@ -285,8 +284,8 @@ func (c *Client) Create(ctx context.Context, controlPlaneName generated.ControlP
 }
 
 // Delete deletes the implicit cluster indentified by the JTW claims.
-func (c *Client) Delete(ctx context.Context, controlPlaneName generated.ControlPlaneNameParameter, name generated.ClusterNameParameter) error {
-	controlPlane, err := controlplane.NewClient(c.client).GetMetadata(ctx, controlPlaneName)
+func (c *Client) Delete(ctx context.Context, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, name generated.ClusterNameParameter) error {
+	controlPlane, err := controlplane.NewClient(c.client).GetMetadata(ctx, projectName, controlPlaneName)
 	if err != nil {
 		return err
 	}
@@ -314,8 +313,8 @@ func (c *Client) Delete(ctx context.Context, controlPlaneName generated.ControlP
 }
 
 // Update implements read/modify/write for the cluster.
-func (c *Client) Update(ctx context.Context, controlPlaneName generated.ControlPlaneNameParameter, name generated.ClusterNameParameter, request *generated.KubernetesCluster) error {
-	controlPlane, err := controlplane.NewClient(c.client).GetMetadata(ctx, controlPlaneName)
+func (c *Client) Update(ctx context.Context, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, name generated.ClusterNameParameter, request *generated.KubernetesCluster) error {
+	controlPlane, err := controlplane.NewClient(c.client).GetMetadata(ctx, projectName, controlPlaneName)
 	if err != nil {
 		return err
 	}

@@ -30,10 +30,13 @@ import (
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/common"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/project"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -95,7 +98,7 @@ func active(c *unikornv1.ControlPlane) error {
 
 // provisionDefaultControlPlane is called when a cluster creation call is made and the
 // control plane does not exist.
-func (c *Client) provisionDefaultControlPlane(ctx context.Context, name string) error {
+func (c *Client) provisionDefaultControlPlane(ctx context.Context, projectName, name string) error {
 	log := log.FromContext(ctx)
 
 	log.Info("creating implicit control plane", "name", name)
@@ -134,7 +137,7 @@ func (c *Client) provisionDefaultControlPlane(ctx context.Context, name string) 
 		ApplicationBundleAutoUpgrade: &generated.ApplicationBundleAutoUpgrade{},
 	}
 
-	if err := c.Create(ctx, defaultControlPlane); err != nil {
+	if err := c.Create(ctx, projectName, defaultControlPlane); err != nil {
 		return err
 	}
 
@@ -142,8 +145,8 @@ func (c *Client) provisionDefaultControlPlane(ctx context.Context, name string) 
 }
 
 // GetMetadata retrieves the control plane metadata.
-func (c *Client) GetMetadata(ctx context.Context, name string) (*Meta, error) {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
+func (c *Client) GetMetadata(ctx context.Context, projectName, name string) (*Meta, error) {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -163,8 +166,8 @@ func (c *Client) GetMetadata(ctx context.Context, name string) (*Meta, error) {
 	return metadata, nil
 }
 
-func (c *Client) GetOrCreateMetadata(ctx context.Context, name string) (*Meta, error) {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
+func (c *Client) GetOrCreateMetadata(ctx context.Context, projectName, name string) (*Meta, error) {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +178,7 @@ func (c *Client) GetOrCreateMetadata(ctx context.Context, name string) (*Meta, e
 			return nil, err
 		}
 
-		if err := c.provisionDefaultControlPlane(ctx, name); err != nil {
+		if err := c.provisionDefaultControlPlane(ctx, projectName, name); err != nil {
 			return nil, err
 		}
 	}
@@ -220,29 +223,49 @@ func (c *Client) GetOrCreateMetadata(ctx context.Context, name string) (*Meta, e
 	return metadata, nil
 }
 
+func convertMetadata(in *unikornv1.ControlPlane) (*generated.ResourceMetadata, error) {
+	labels, err := in.ResourceLabels()
+	if err != nil {
+		return nil, err
+	}
+
+	// Validated to exist by ResourceLabels()
+	project := labels[constants.ProjectLabel]
+
+	out := &generated.ResourceMetadata{
+		Project:      &project,
+		CreationTime: in.CreationTimestamp.Time,
+		Status:       "Unknown",
+	}
+
+	if in.DeletionTimestamp != nil {
+		out.DeletionTime = &in.DeletionTimestamp.Time
+	}
+
+	if condition, err := in.StatusConditionRead(unikornv1core.ConditionAvailable); err == nil {
+		out.Status = string(condition.Reason)
+	}
+
+	return out, nil
+}
+
 // convert converts from Kubernetes into OpenAPI types.
 func (c *Client) convert(ctx context.Context, in *unikornv1.ControlPlane) (*generated.ControlPlane, error) {
+	metadata, err := convertMetadata(in)
+	if err != nil {
+		return nil, err
+	}
+
 	bundle, err := applicationbundle.NewClient(c.client).GetControlPlane(ctx, *in.Spec.ApplicationBundle)
 	if err != nil {
 		return nil, err
 	}
 
 	out := &generated.ControlPlane{
-		Status: &generated.KubernetesResourceStatus{
-			CreationTime: in.CreationTimestamp.Time,
-			Status:       "Unknown",
-		},
+		Metadata:                     metadata,
 		Name:                         in.Name,
 		ApplicationBundle:            *bundle,
 		ApplicationBundleAutoUpgrade: common.ConvertApplicationBundleAutoUpgrade(in.Spec.ApplicationBundleAutoUpgrade),
-	}
-
-	if in.DeletionTimestamp != nil {
-		out.Status.DeletionTime = &in.DeletionTimestamp.Time
-	}
-
-	if condition, err := in.StatusConditionRead(unikornv1core.ConditionAvailable); err == nil {
-		out.Status.Status = string(condition.Reason)
 	}
 
 	return out, nil
@@ -266,21 +289,29 @@ func (c *Client) convertList(ctx context.Context, in *unikornv1.ControlPlaneList
 
 // List returns all control planes.
 func (c *Client) List(ctx context.Context) ([]*generated.ControlPlane, error) {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
-	if err != nil {
-		// If the project hasn't been created, then this will 404, which is
-		// kinda confusing, as the project isn't in the path, so return an empty
-		// array.
-		if errors.IsHTTPNotFound(err) {
-			return []*generated.ControlPlane{}, nil
-		}
+	selector := labels.NewSelector()
 
+	// TODO: a super-admin isn't scoped to a single organization!
+	// TODO: RBAC - filter projects based on user membership here.
+	organization, err := organization.NewClient(c.client).GetMetadata(ctx)
+	if err != nil {
 		return nil, err
+	}
+
+	organizationReq, err := labels.NewRequirement(constants.OrganizationLabel, selection.Equals, []string{organization.Name})
+	if err != nil {
+		return nil, err
+	}
+
+	selector = selector.Add(*organizationReq)
+
+	options := &client.ListOptions{
+		LabelSelector: selector,
 	}
 
 	result := &unikornv1.ControlPlaneList{}
 
-	if err := c.client.List(ctx, result, &client.ListOptions{Namespace: project.Namespace}); err != nil {
+	if err := c.client.List(ctx, result, options); err != nil {
 		return nil, errors.OAuth2ServerError("failed to list control planes").WithError(err)
 	}
 
@@ -309,26 +340,6 @@ func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.Co
 	return result, nil
 }
 
-// Get returns the control plane.
-func (c *Client) Get(ctx context.Context, name generated.ControlPlaneNameParameter) (*generated.ControlPlane, error) {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
-	if err != nil {
-		return nil, err
-	}
-
-	result, err := c.get(ctx, project.Namespace, name)
-	if err != nil {
-		return nil, err
-	}
-
-	out, err := c.convert(ctx, result)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
 // generate is a common function to create a Kubernetes type from an API one.
 func generate(project *project.Meta, request *generated.ControlPlane) *unikornv1.ControlPlane {
 	// TODO: common with CLI tools.
@@ -352,8 +363,8 @@ func generate(project *project.Meta, request *generated.ControlPlane) *unikornv1
 }
 
 // Create creates a control plane.
-func (c *Client) Create(ctx context.Context, request *generated.ControlPlane) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
+func (c *Client) Create(ctx context.Context, projectName generated.ProjectNameParameter, request *generated.ControlPlane) error {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
 	if err != nil {
 		return err
 	}
@@ -377,8 +388,8 @@ func (c *Client) Create(ctx context.Context, request *generated.ControlPlane) er
 }
 
 // Delete deletes the control plane.
-func (c *Client) Delete(ctx context.Context, name generated.ControlPlaneNameParameter) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
+func (c *Client) Delete(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ControlPlaneNameParameter) error {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
 	if err != nil {
 		return err
 	}
@@ -406,8 +417,8 @@ func (c *Client) Delete(ctx context.Context, name generated.ControlPlaneNamePara
 }
 
 // Update implements read/modify/write for the control plane.
-func (c *Client) Update(ctx context.Context, name generated.ControlPlaneNameParameter, request *generated.ControlPlane) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, "placeholder")
+func (c *Client) Update(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ControlPlaneNameParameter, request *generated.ControlPlane) error {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
 	if err != nil {
 		return err
 	}

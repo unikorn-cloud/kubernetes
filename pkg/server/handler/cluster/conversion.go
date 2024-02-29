@@ -23,9 +23,8 @@ import (
 	"net"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
-	coreconstants "github.com/unikorn-cloud/core/pkg/constants"
+	"github.com/unikorn-cloud/core/pkg/constants"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/unikorn/pkg/constants"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
@@ -161,9 +160,21 @@ func convertFeatures(in *unikornv1.KubernetesCluster) *generated.KubernetesClust
 	return features
 }
 
-// convertStatus converts from a custom resource into the API definition.
-func convertStatus(in *unikornv1.KubernetesCluster) *generated.KubernetesResourceStatus {
-	out := &generated.KubernetesResourceStatus{
+// convertMetadata converts from a custom resource into the API definition.
+func convertMetadata(in *unikornv1.KubernetesCluster) (*generated.ResourceMetadata, error) {
+	labels, err := in.ResourceLabels()
+	if err != nil {
+		return nil, err
+	}
+
+	// Validated to exist by ResourceLabels()
+	project := labels[constants.ProjectLabel]
+	controlplane := labels[constants.ControlPlaneLabel]
+
+	out := &generated.ResourceMetadata{
+		Project:      &project,
+		Controlplane: &controlplane,
+		// TODO: fill in the region.
 		CreationTime: in.CreationTimestamp.Time,
 		Status:       "Unknown",
 	}
@@ -177,17 +188,23 @@ func convertStatus(in *unikornv1.KubernetesCluster) *generated.KubernetesResourc
 		out.Status = string(condition.Reason)
 	}
 
-	return out
+	return out, nil
 }
 
 // convert converts from a custom resource into the API definition.
 func (c *Client) convert(ctx context.Context, in *unikornv1.KubernetesCluster) (*generated.KubernetesCluster, error) {
+	metadata, err := convertMetadata(in)
+	if err != nil {
+		return nil, err
+	}
+
 	bundle, err := applicationbundle.NewClient(c.client).GetKubernetesCluster(ctx, *in.Spec.ApplicationBundle)
 	if err != nil {
 		return nil, err
 	}
 
 	out := &generated.KubernetesCluster{
+		Metadata:                     metadata,
 		Name:                         in.Name,
 		ApplicationBundle:            *bundle,
 		ApplicationBundleAutoUpgrade: common.ConvertApplicationBundleAutoUpgrade(in.Spec.ApplicationBundleAutoUpgrade),
@@ -197,7 +214,6 @@ func (c *Client) convert(ctx context.Context, in *unikornv1.KubernetesCluster) (
 		ControlPlane:                 convertMachine(&in.Spec.ControlPlane.MachineGeneric),
 		WorkloadPools:                convertWorkloadPools(in),
 		Features:                     convertFeatures(in),
-		Status:                       convertStatus(in),
 	}
 
 	return out, nil
@@ -417,7 +433,7 @@ func (c *Client) createWorkloadPools(clusterContext *createClusterContext, optio
 			}
 
 			if flavor.Gpus != nil {
-				t := constants.NvidiaGPUType
+				t := "nvidia.com/gpu"
 
 				workloadPool.Autoscaling.Scheduler.GPU = &unikornv1.MachineGenericAutoscalingSchedulerGPU{
 					Type:  &t,
@@ -488,10 +504,10 @@ func (c *Client) createCluster(controlPlane *controlplane.Meta, options *generat
 			Name:      options.Name,
 			Namespace: controlPlane.Namespace,
 			Labels: map[string]string{
-				coreconstants.VersionLabel:      coreconstants.Version,
-				coreconstants.OrganizationLabel: controlPlane.Project.Organization.Name,
-				coreconstants.ProjectLabel:      controlPlane.Project.Name,
-				coreconstants.ControlPlaneLabel: controlPlane.Name,
+				constants.VersionLabel:      constants.Version,
+				constants.OrganizationLabel: controlPlane.Project.Organization.Name,
+				constants.ProjectLabel:      controlPlane.Project.Name,
+				constants.ControlPlaneLabel: controlPlane.Name,
 			},
 		},
 		Spec: unikornv1.KubernetesClusterSpec{

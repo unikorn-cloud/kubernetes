@@ -139,7 +139,7 @@ paths:
       implicitly create the associated project.
     get:
       description: |-
-        Lists control planes within the scoped project.
+        Lists control planes within the organization.
       security:
       - oauth2Authentication: []
       responses:
@@ -153,9 +153,20 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
+  /api/v1/projects/{projectName}/controlplanes:
+    x-documentation-group: main
+    description: |-
+      Implements control plane management services. Control planes manage the
+      life cycle of Kubernetes clusters, through provisioning, upgrading, to deletion.
+      Control planes must reference a versioned application bundle that defines the
+      software versions of control plane components, and forms the basis of automatic
+      upgrade functionality.  Referencing an explicit control plane name will
+      implicitly create the associated project.
+    parameters:
+    - $ref: '#/components/parameters/projectNameParameter'
     post:
       description: |-
-        Creates a new control plane within the scoped project.
+        Creates a new control plane within the project.
       security:
       - oauth2Authentication: []
       requestBody:
@@ -171,7 +182,7 @@ paths:
           $ref: '#/components/responses/conflictResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/controlplanes/{controlPlaneName}:
+  /api/v1/projects/{projectName}/controlplanes/{controlPlaneName}:
     x-documentation-group: main
     description: |-
       Implements control plane management services. Control planes manage the
@@ -181,23 +192,8 @@ paths:
       upgrade functionality.  Referencing an explicit control plane name will
       implicitly create the associated project.
     parameters:
+    - $ref: '#/components/parameters/projectNameParameter'
     - $ref: '#/components/parameters/controlPlaneNameParameter'
-    get:
-      description: |-
-        Gets a control plane from within the scoped project.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '200':
-          $ref: '#/components/responses/controlPlaneResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '404':
-          $ref: '#/components/responses/notFoundResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
     put:
       description: |-
         Updates a control plane within the scoped project.
@@ -233,14 +229,12 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/controlplanes/{controlPlaneName}/clusters:
+  /api/v1/clusters:
     x-documentation-group: main
     description: Cluster services.
-    parameters:
-    - $ref: '#/components/parameters/controlPlaneNameParameter'
     get:
       description: |-
-        List all clusters within the selected control plane.
+        List all clusters within the organization.
       security:
       - oauth2Authentication: []
       responses:
@@ -254,6 +248,12 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
+  /api/v1/projects/{projectName}/controlplanes/{controlPlaneName}/clusters:
+    x-documentation-group: main
+    description: Cluster services.
+    parameters:
+    - $ref: '#/components/parameters/projectNameParameter'
+    - $ref: '#/components/parameters/controlPlaneNameParameter'
     post:
       description: |-
         Creates a new cluster within the selected control plane.
@@ -274,28 +274,13 @@ paths:
           $ref: '#/components/responses/conflictResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/controlplanes/{controlPlaneName}/clusters/{clusterName}:
+  /api/v1/projects/{projectName}/controlplanes/{controlPlaneName}/clusters/{clusterName}:
     x-documentation-group: main
     description: Cluster services.
     parameters:
+    - $ref: '#/components/parameters/projectNameParameter'
     - $ref: '#/components/parameters/controlPlaneNameParameter'
     - $ref: '#/components/parameters/clusterNameParameter'
-    get:
-      description: |-
-        Get a cluster from within the selected control plane.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '200':
-          $ref: '#/components/responses/kubernetesClusterResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '404':
-          $ref: '#/components/responses/notFoundResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
     put:
       description: |-
         Update a cluster within the selected control plane.
@@ -330,10 +315,11 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/controlplanes/{controlPlaneName}/clusters/{clusterName}/kubeconfig:
+  /api/v1/projects/{projectName}/controlplanes/{controlPlaneName}/clusters/{clusterName}/kubeconfig:
     x-documentation-group: main
     description: Cluster services.
     parameters:
+    - $ref: '#/components/parameters/projectNameParameter'
     - $ref: '#/components/parameters/controlPlaneNameParameter'
     - $ref: '#/components/parameters/clusterNameParameter'
     get:
@@ -617,13 +603,22 @@ components:
         error_description:
           description: Verbose message describing the error.
           type: string
-    kubernetesResourceStatus:
-      description: A Kubernetes resource status.
+    resourceMetadata:
+      description: A resources's metadata
       type: object
       required:
       - creationTime
       - status
       properties:
+        project:
+          description: Where the resource is related to a project, this is populated.
+          type: string
+        controlplane:
+          description: Where the resource is scoped to a control plane, this is populated.
+          type: string
+        region:
+          description: Where the resource is scoped to a region, this is populated,
+          type: string
         creationTime:
           description: The time the resource was created.
           type: string
@@ -662,10 +657,10 @@ components:
       required:
       - name
       properties:
+        metadata:
+          $ref: '#/components/schemas/resourceMetadata'
         name:
           type: string
-        status:
-          $ref: '#/components/schemas/kubernetesResourceStatus'
     projects:
       description: A list of projects.
       type: array
@@ -678,8 +673,8 @@ components:
       - name
       - applicationBundle
       properties:
-        status:
-          $ref: '#/components/schemas/kubernetesResourceStatus'
+        metadata:
+          $ref: '#/components/schemas/resourceMetadata'
         name:
           description: The name of the resource.
           type: string
@@ -876,6 +871,8 @@ components:
       - controlPlane
       - workloadPools
       properties:
+        metadata:
+          $ref: '#/components/schemas/resourceMetadata'
         name:
           description: Cluster name.
           type: string
@@ -895,8 +892,6 @@ components:
           $ref: '#/components/schemas/kubernetesClusterWorkloadPools'
         features:
           $ref: '#/components/schemas/kubernetesClusterFeatures'
-        status:
-          $ref: '#/components/schemas/kubernetesResourceStatus'
     kubernetesClusters:
       description: A list of Kubernetes clusters.
       type: array

@@ -158,11 +158,11 @@ type ControlPlane struct {
 	// automatically upgraded if the currently selected bundle is end of life.
 	ApplicationBundleAutoUpgrade *ApplicationBundleAutoUpgrade `json:"applicationBundleAutoUpgrade,omitempty"`
 
+	// Metadata A resources's metadata
+	Metadata *ResourceMetadata `json:"metadata,omitempty"`
+
 	// Name The name of the resource.
 	Name string `json:"name"`
-
-	// Status A Kubernetes resource status.
-	Status *KubernetesResourceStatus `json:"status,omitempty"`
 }
 
 // ControlPlanes A list of control planes.
@@ -194,6 +194,9 @@ type KubernetesCluster struct {
 	// Features A set of optional add on features for the cluster.
 	Features *KubernetesClusterFeatures `json:"features,omitempty"`
 
+	// Metadata A resources's metadata
+	Metadata *ResourceMetadata `json:"metadata,omitempty"`
+
 	// Name Cluster name.
 	Name string `json:"name"`
 
@@ -202,9 +205,6 @@ type KubernetesCluster struct {
 
 	// Openstack Kubernetes cluster creation OpenStack parameters.
 	Openstack KubernetesClusterOpenStack `json:"openstack"`
-
-	// Status A Kubernetes resource status.
-	Status *KubernetesResourceStatus `json:"status,omitempty"`
 
 	// WorkloadPools A list of Kubernetes cluster workload pools.
 	WorkloadPools KubernetesClusterWorkloadPools `json:"workloadPools"`
@@ -310,24 +310,6 @@ type KubernetesClusters = []KubernetesCluster
 
 // KubernetesNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type KubernetesNameParameter = string
-
-// KubernetesResourceStatus A Kubernetes resource status.
-type KubernetesResourceStatus struct {
-	// CreationTime The time the resource was created.
-	CreationTime time.Time `json:"creationTime"`
-
-	// DeletionTime The time the resource was deleted.
-	DeletionTime *time.Time `json:"deletionTime,omitempty"`
-
-	// Status The current status of the resource. Intially the status will be "Unknown" until
-	// the resource is reconciled by the relevant controller. It then will transition to
-	// "Provisioning" and will be ready for use when it changes to "Provisioned". The status
-	// will also transition to the "Provisioning" status during an update. The
-	// status will change to "Deprovisioning" when a delete request is being processed.
-	// It may also change to "Error" if an unexpected error occurred during any operation.
-	// Errors may be transient.
-	Status string `json:"status"`
-}
 
 // Oauth2Error Generic error message.
 type Oauth2Error struct {
@@ -457,10 +439,9 @@ type OpenstackVolume struct {
 
 // Project A project.
 type Project struct {
-	Name string `json:"name"`
-
-	// Status A Kubernetes resource status.
-	Status *KubernetesResourceStatus `json:"status,omitempty"`
+	// Metadata A resources's metadata
+	Metadata *ResourceMetadata `json:"metadata,omitempty"`
+	Name     string            `json:"name"`
 }
 
 // Projects A list of projects.
@@ -474,6 +455,33 @@ type Region struct {
 
 // Regions A list of regions.
 type Regions = []Region
+
+// ResourceMetadata A resources's metadata
+type ResourceMetadata struct {
+	// Controlplane Where the resource is scoped to a control plane, this is populated.
+	Controlplane *string `json:"controlplane,omitempty"`
+
+	// CreationTime The time the resource was created.
+	CreationTime time.Time `json:"creationTime"`
+
+	// DeletionTime The time the resource was deleted.
+	DeletionTime *time.Time `json:"deletionTime,omitempty"`
+
+	// Project Where the resource is related to a project, this is populated.
+	Project *string `json:"project,omitempty"`
+
+	// Region Where the resource is scoped to a region, this is populated,
+	Region *string `json:"region,omitempty"`
+
+	// Status The current status of the resource. Intially the status will be "Unknown" until
+	// the resource is reconciled by the relevant controller. It then will transition to
+	// "Provisioning" and will be ready for use when it changes to "Provisioned". The status
+	// will also transition to the "Provisioning" status during an update. The
+	// status will change to "Deprovisioning" when a delete request is being processed.
+	// It may also change to "Error" if an unexpected error occurred during any operation.
+	// Errors may be transient.
+	Status string `json:"status"`
+}
 
 // TimeWindow A time window that wraps into the next day if required.
 type TimeWindow struct {
@@ -508,9 +516,6 @@ type BadRequestResponse = Oauth2Error
 // ConflictResponse Generic error message.
 type ConflictResponse = Oauth2Error
 
-// ControlPlaneResponse A control plane.
-type ControlPlaneResponse = ControlPlane
-
 // ControlPlanesResponse A list of control planes.
 type ControlPlanesResponse = ControlPlanes
 
@@ -519,9 +524,6 @@ type ForbiddenResponse = Oauth2Error
 
 // InternalServerErrorResponse Generic error message.
 type InternalServerErrorResponse = Oauth2Error
-
-// KubernetesClusterResponse Kubernetes cluster creation parameters.
-type KubernetesClusterResponse = KubernetesCluster
 
 // KubernetesClustersResponse A list of Kubernetes clusters.
 type KubernetesClustersResponse = KubernetesClusters
@@ -565,17 +567,17 @@ type CreateKubernetesClusterRequest = KubernetesCluster
 // CreateProjectRequest A project.
 type CreateProjectRequest = Project
 
-// PostApiV1ControlplanesJSONRequestBody defines body for PostApiV1Controlplanes for application/json ContentType.
-type PostApiV1ControlplanesJSONRequestBody = ControlPlane
-
-// PutApiV1ControlplanesControlPlaneNameJSONRequestBody defines body for PutApiV1ControlplanesControlPlaneName for application/json ContentType.
-type PutApiV1ControlplanesControlPlaneNameJSONRequestBody = ControlPlane
-
-// PostApiV1ControlplanesControlPlaneNameClustersJSONRequestBody defines body for PostApiV1ControlplanesControlPlaneNameClusters for application/json ContentType.
-type PostApiV1ControlplanesControlPlaneNameClustersJSONRequestBody = KubernetesCluster
-
-// PutApiV1ControlplanesControlPlaneNameClustersClusterNameJSONRequestBody defines body for PutApiV1ControlplanesControlPlaneNameClustersClusterName for application/json ContentType.
-type PutApiV1ControlplanesControlPlaneNameClustersClusterNameJSONRequestBody = KubernetesCluster
-
 // PostApiV1ProjectsJSONRequestBody defines body for PostApiV1Projects for application/json ContentType.
 type PostApiV1ProjectsJSONRequestBody = Project
+
+// PostApiV1ProjectsProjectNameControlplanesJSONRequestBody defines body for PostApiV1ProjectsProjectNameControlplanes for application/json ContentType.
+type PostApiV1ProjectsProjectNameControlplanesJSONRequestBody = ControlPlane
+
+// PutApiV1ProjectsProjectNameControlplanesControlPlaneNameJSONRequestBody defines body for PutApiV1ProjectsProjectNameControlplanesControlPlaneName for application/json ContentType.
+type PutApiV1ProjectsProjectNameControlplanesControlPlaneNameJSONRequestBody = ControlPlane
+
+// PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersJSONRequestBody defines body for PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClusters for application/json ContentType.
+type PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersJSONRequestBody = KubernetesCluster
+
+// PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameJSONRequestBody defines body for PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName for application/json ContentType.
+type PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameJSONRequestBody = KubernetesCluster

@@ -99,21 +99,27 @@ func (c *Client) GetMetadata(ctx context.Context, name string) (*Meta, error) {
 	return metadata, nil
 }
 
-func convert(in *unikornv1.Project) *generated.Project {
-	out := &generated.Project{
-		Name: in.Name,
-		Status: &generated.KubernetesResourceStatus{
-			CreationTime: in.CreationTimestamp.Time,
-		},
+func convertMetadata(in *unikornv1.Project) *generated.ResourceMetadata {
+	out := &generated.ResourceMetadata{
+		CreationTime: in.CreationTimestamp.Time,
+		Status:       "Unknown",
 	}
 
 	if in.DeletionTimestamp != nil {
-		out.Status.DeletionTime = &in.DeletionTimestamp.Time
+		out.DeletionTime = &in.DeletionTimestamp.Time
 	}
 
-	condition, err := in.StatusConditionRead(unikornv1core.ConditionAvailable)
-	if err == nil {
-		out.Status.Status = string(condition.Reason)
+	if condition, err := in.StatusConditionRead(unikornv1core.ConditionAvailable); err == nil {
+		out.Status = string(condition.Reason)
+	}
+
+	return out
+}
+
+func convert(in *unikornv1.Project) *generated.Project {
+	out := &generated.Project{
+		Metadata: convertMetadata(in),
+		Name:     in.Name,
 	}
 
 	return out
