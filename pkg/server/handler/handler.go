@@ -130,7 +130,7 @@ func (h *Handler) GetApiV1Controlplanes(w http.ResponseWriter, r *http.Request) 
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) PostApiV1Controlplanes(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) PostApiV1ProjectsProjectNameControlplanes(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter) {
 	request := &generated.ControlPlane{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -138,7 +138,7 @@ func (h *Handler) PostApiV1Controlplanes(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := controlplane.NewClient(h.client).Create(r.Context(), request); err != nil {
+	if err := controlplane.NewClient(h.client).Create(r.Context(), projectName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -147,8 +147,8 @@ func (h *Handler) PostApiV1Controlplanes(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) DeleteApiV1ControlplanesControlPlaneName(w http.ResponseWriter, r *http.Request, controlPlaneName generated.ControlPlaneNameParameter) {
-	if err := controlplane.NewClient(h.client).Delete(r.Context(), controlPlaneName); err != nil {
+func (h *Handler) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter) {
+	if err := controlplane.NewClient(h.client).Delete(r.Context(), projectName, controlPlaneName); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -157,18 +157,7 @@ func (h *Handler) DeleteApiV1ControlplanesControlPlaneName(w http.ResponseWriter
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) GetApiV1ControlplanesControlPlaneName(w http.ResponseWriter, r *http.Request, controlPlaneName generated.ControlPlaneNameParameter) {
-	result, err := controlplane.NewClient(h.client).Get(r.Context(), controlPlaneName)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setUncacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
-}
-
-func (h *Handler) PutApiV1ControlplanesControlPlaneName(w http.ResponseWriter, r *http.Request, controlPlaneName generated.ControlPlaneNameParameter) {
+func (h *Handler) PutApiV1ProjectsProjectNameControlplanesControlPlaneName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter) {
 	request := &generated.ControlPlane{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -176,7 +165,7 @@ func (h *Handler) PutApiV1ControlplanesControlPlaneName(w http.ResponseWriter, r
 		return
 	}
 
-	if err := controlplane.NewClient(h.client).Update(r.Context(), controlPlaneName, request); err != nil {
+	if err := controlplane.NewClient(h.client).Update(r.Context(), projectName, controlPlaneName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -185,14 +174,14 @@ func (h *Handler) PutApiV1ControlplanesControlPlaneName(w http.ResponseWriter, r
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) GetApiV1ControlplanesControlPlaneNameClusters(w http.ResponseWriter, r *http.Request, controlPlaneName generated.ControlPlaneNameParameter) {
+func (h *Handler) GetApiV1Clusters(w http.ResponseWriter, r *http.Request) {
 	provider, err := region.NewClient(h.client).Provider(r.Context(), "uk-manchester")
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	result, err := cluster.NewClient(h.client, r, provider).List(r.Context(), controlPlaneName)
+	result, err := cluster.NewClient(h.client, r, provider).List(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -202,7 +191,7 @@ func (h *Handler) GetApiV1ControlplanesControlPlaneNameClusters(w http.ResponseW
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) PostApiV1ControlplanesControlPlaneNameClusters(w http.ResponseWriter, r *http.Request, controlPlaneName generated.ControlPlaneNameParameter) {
+func (h *Handler) PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClusters(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter) {
 	request := &generated.KubernetesCluster{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -216,7 +205,7 @@ func (h *Handler) PostApiV1ControlplanesControlPlaneNameClusters(w http.Response
 		return
 	}
 
-	if err := cluster.NewClient(h.client, r, provider).Create(r.Context(), controlPlaneName, request); err != nil {
+	if err := cluster.NewClient(h.client, r, provider).Create(r.Context(), projectName, controlPlaneName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -225,14 +214,14 @@ func (h *Handler) PostApiV1ControlplanesControlPlaneNameClusters(w http.Response
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) DeleteApiV1ControlplanesControlPlaneNameClustersClusterName(w http.ResponseWriter, r *http.Request, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
+func (h *Handler) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
 	provider, err := region.NewClient(h.client).Provider(r.Context(), "uk-manchester")
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if err := cluster.NewClient(h.client, r, provider).Delete(r.Context(), controlPlaneName, clusterName); err != nil {
+	if err := cluster.NewClient(h.client, r, provider).Delete(r.Context(), projectName, controlPlaneName, clusterName); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -241,24 +230,7 @@ func (h *Handler) DeleteApiV1ControlplanesControlPlaneNameClustersClusterName(w 
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) GetApiV1ControlplanesControlPlaneNameClustersClusterName(w http.ResponseWriter, r *http.Request, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
-	provider, err := region.NewClient(h.client).Provider(r.Context(), "uk-manchester")
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := cluster.NewClient(h.client, r, provider).Get(r.Context(), controlPlaneName, clusterName)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setUncacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
-}
-
-func (h *Handler) PutApiV1ControlplanesControlPlaneNameClustersClusterName(w http.ResponseWriter, r *http.Request, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
+func (h *Handler) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
 	request := &generated.KubernetesCluster{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -272,7 +244,7 @@ func (h *Handler) PutApiV1ControlplanesControlPlaneNameClustersClusterName(w htt
 		return
 	}
 
-	if err := cluster.NewClient(h.client, r, provider).Update(r.Context(), controlPlaneName, clusterName, request); err != nil {
+	if err := cluster.NewClient(h.client, r, provider).Update(r.Context(), projectName, controlPlaneName, clusterName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -281,14 +253,14 @@ func (h *Handler) PutApiV1ControlplanesControlPlaneNameClustersClusterName(w htt
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) GetApiV1ControlplanesControlPlaneNameClustersClusterNameKubeconfig(w http.ResponseWriter, r *http.Request, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
+func (h *Handler) GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfig(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
 	provider, err := region.NewClient(h.client).Provider(r.Context(), "uk-manchester")
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	result, err := cluster.NewClient(h.client, r, provider).GetKubeconfig(r.Context(), controlPlaneName, clusterName)
+	result, err := cluster.NewClient(h.client, r, provider).GetKubeconfig(r.Context(), projectName, controlPlaneName, clusterName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

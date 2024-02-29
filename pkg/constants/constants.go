@@ -43,8 +43,3 @@ var (
 func VersionString() string {
 	return fmt.Sprintf("%s/%s (revision/%s)", Application, Version, Revision)
 }
-
-const (
-	// NvidiaGPUType is used to indicate the GPU type for cluster-autoscaler.
-	NvidiaGPUType = "nvidia.com/gpu"
-)
