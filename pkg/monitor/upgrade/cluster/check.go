@@ -23,8 +23,8 @@ import (
 	"slices"
 	"time"
 
+	"github.com/unikorn-cloud/core/pkg/constants"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/unikorn/pkg/constants"
 	"github.com/unikorn-cloud/unikorn/pkg/monitor/upgrade/errors"
 	"github.com/unikorn-cloud/unikorn/pkg/monitor/upgrade/util"
 
@@ -131,7 +131,12 @@ func (c *Checker) Check(ctx context.Context) error {
 	for i := range resources.Items {
 		resource := &resources.Items[i]
 
-		logger := logger.WithValues("project", resource.Labels[constants.ProjectLabel], "controlplane", resource.Labels[constants.ControlPlaneLabel], "cluster", resource.Name)
+		logger := logger.WithValues(
+			"organization", resource.Labels[constants.OrganizationLabel],
+			"project", resource.Labels[constants.ProjectLabel],
+			"controlplane", resource.Labels[constants.ControlPlaneLabel],
+			"cluster", resource.Name,
+		)
 
 		if err := c.upgradeResource(log.IntoContext(ctx, logger), resource, allBundles, upgradeTarget); err != nil {
 			return err

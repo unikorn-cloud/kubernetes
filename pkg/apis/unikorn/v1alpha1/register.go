@@ -49,6 +49,7 @@ var (
 //nolint:gochecknoinits
 func init() {
 	SchemeBuilder.Register(&Region{}, &RegionList{})
+	SchemeBuilder.Register(&Organization{}, &OrganizationList{})
 	SchemeBuilder.Register(&Project{}, &ProjectList{})
 	SchemeBuilder.Register(&ControlPlane{}, &ControlPlaneList{})
 	SchemeBuilder.Register(&KubernetesCluster{}, &KubernetesClusterList{})

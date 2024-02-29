@@ -19,6 +19,11 @@ dockerConfig:
 # ArgoCD as it's a foreign object that needs pruning.
 imagePullSecret:
 
+# Organization manager specifc configuration.
+organizationManager:
+  # Allows override of the global default image.
+  image:
+
 # Project manager specific configuration.
 projectManager:
   # Allows override of the global default image.

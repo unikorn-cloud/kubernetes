@@ -259,6 +259,45 @@ type RegionStatus struct {
 	Conditions []unikornv1core.Condition `json:"conditions,omitempty"`
 }
 
+// OrganizationList is a typed list of projects.
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type OrganizationList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Organization `json:"items"`
+}
+
+// Organization is an abstraction around organizations.
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:resource:scope=Cluster,categories=unikorn
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="namespace",type="string",JSONPath=".status.namespace"
+// +kubebuilder:printcolumn:name="status",type="string",JSONPath=".status.conditions[?(@.type==\"Available\")].reason"
+// +kubebuilder:printcolumn:name="age",type="date",JSONPath=".metadata.creationTimestamp"
+type Organization struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Spec              OrganizationSpec   `json:"spec"`
+	Status            OrganizationStatus `json:"status,omitempty"`
+}
+
+// OrganizationSpec defines resource specific metadata.
+type OrganizationSpec struct {
+	// Pause, if true, will inhibit reconciliation.
+	Pause bool `json:"pause,omitempty"`
+}
+
+// OrganizationStatus defines the status of the resource.
+type OrganizationStatus struct {
+	// Namespace defines the namespace an organization's child resources reside in.
+	Namespace string `json:"namespace,omitempty"`
+
+	// Current service state of the resource.
+	Conditions []unikornv1core.Condition `json:"conditions,omitempty"`
+}
+
 // ProjectList is a typed list of projects.
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type ProjectList struct {
@@ -267,12 +306,10 @@ type ProjectList struct {
 	Items           []Project `json:"items"`
 }
 
-// Project is an abstraction around control planes that provides namespacing
-// of ControlPlanes.
+// Project is an abstraction around projects and their security requirements.
 // +genclient
-// +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +kubebuilder:resource:scope=Cluster,categories=unikorn
+// +kubebuilder:resource:scope=Namespaced,categories=unikorn
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="namespace",type="string",JSONPath=".status.namespace"
 // +kubebuilder:printcolumn:name="status",type="string",JSONPath=".status.conditions[?(@.type==\"Available\")].reason"

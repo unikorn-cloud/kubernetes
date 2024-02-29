@@ -72,6 +72,10 @@ Create the container images
 {{- end }}
 {{- end }}
 
+{{- define "unikorn.organizationManagerImage" -}}
+{{- .Values.organizationManager.image | default (printf "%s/unikorn-organization-manager:%s" (include "unikorn.defaultRepositoryPath" .) (.Values.tag | default .Chart.Version)) }}
+{{- end }}
+
 {{- define "unikorn.projectManagerImage" -}}
 {{- .Values.projectManager.image | default (printf "%s/unikorn-project-manager:%s" (include "unikorn.defaultRepositoryPath" .) (.Values.tag | default .Chart.Version)) }}
 {{- end }}

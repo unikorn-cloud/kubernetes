@@ -1,0 +1,168 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: unikorn-organization-manager
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
+{{- with ( include "unikorn.imagePullSecrets" . ) }}
+imagePullSecrets:
+{{ . }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: unikorn-organization-manager
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
+rules:
+# Manage organizations (my job).
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - organizations
+  verbs:
+  - list
+  - get
+  - watch
+  - update
+  - patch
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - organizations/status
+  verbs:
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - delete
+  - update
+# Manage organizations (cascading deletion).
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - projects 
+  verbs:
+  - list
+  - get
+  - watch
+  - delete
+# ArgoCD integration (access to API secret).
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: unikorn-organization-manager
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
+rules:
+# Controller prerequisites.
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: unikorn-organization-manager
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
+subjects:
+- kind: ServiceAccount
+  namespace: {{ .Release.Namespace }}
+  name: unikorn-organization-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: unikorn-organization-manager
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: unikorn-organization-manager
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
+subjects:
+- kind: ServiceAccount
+  namespace: {{ .Release.Namespace }}
+  name: unikorn-organization-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: unikorn-organization-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unikorn-organization-manager
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unikorn-organization-manager
+  template:
+    metadata:
+      labels:
+        app: unikorn-organization-manager
+    spec:
+      containers:
+      - name: unikorn-organization-manager
+        image: {{ include "unikorn.organizationManagerImage" . }}
+        ports:
+        - name: prometheus
+          containerPort: 8080
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+        securityContext:
+          readOnlyRootFilesystem: true
+      serviceAccountName: unikorn-organization-manager
+      securityContext:
+        runAsNonRoot: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unikorn-organization-manager
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
+    {{- include "unikorn.prometheusLabels" (dict "job" "unikorn-organization-manager") | nindent 4 }}
+spec:
+  selector:
+    app: unikorn-organization-manager
+  ports:
+  - name: prometheus
+    port: 8080
+    targetPort: prometheus
