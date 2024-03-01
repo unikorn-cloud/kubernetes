@@ -152,11 +152,14 @@ type ControlPlane struct {
 	// a newer version of a bundle exists that is not in preview. When a bundle's end of
 	// life expires, resources will undergo a foreced upgrade, regardless of whether
 	// automatic upgrade is enabled for a resource or not.
-	ApplicationBundle ApplicationBundle `json:"applicationBundle"`
+	ApplicationBundle *ApplicationBundle `json:"applicationBundle,omitempty"`
 
-	// ApplicationBundleAutoUpgrade When specified, enables auto upgrade of application bundles. All resources will be
+	// ApplicationBundleAutoUpgrade Whether to enable auto upgrade or not.
+	ApplicationBundleAutoUpgrade *bool `json:"applicationBundleAutoUpgrade,omitempty"`
+
+	// ApplicationBundleAutoUpgradeSchedule When specified, enables auto upgrade of application bundles. All resources will be
 	// automatically upgraded if the currently selected bundle is end of life.
-	ApplicationBundleAutoUpgrade *ApplicationBundleAutoUpgrade `json:"applicationBundleAutoUpgrade,omitempty"`
+	ApplicationBundleAutoUpgradeSchedule *ApplicationBundleAutoUpgrade `json:"applicationBundleAutoUpgradeSchedule,omitempty"`
 
 	// Metadata A resources's metadata
 	Metadata *ResourceMetadata `json:"metadata,omitempty"`
@@ -182,17 +185,14 @@ type KubernetesCluster struct {
 	// a newer version of a bundle exists that is not in preview. When a bundle's end of
 	// life expires, resources will undergo a foreced upgrade, regardless of whether
 	// automatic upgrade is enabled for a resource or not.
-	ApplicationBundle ApplicationBundle `json:"applicationBundle"`
+	ApplicationBundle *ApplicationBundle `json:"applicationBundle,omitempty"`
 
 	// ApplicationBundleAutoUpgrade When specified, enables auto upgrade of application bundles. All resources will be
 	// automatically upgraded if the currently selected bundle is end of life.
 	ApplicationBundleAutoUpgrade *ApplicationBundleAutoUpgrade `json:"applicationBundleAutoUpgrade,omitempty"`
 
 	// ControlPlane A Kubernetes cluster machine.
-	ControlPlane OpenstackMachinePool `json:"controlPlane"`
-
-	// Features A set of optional add on features for the cluster.
-	Features *KubernetesClusterFeatures `json:"features,omitempty"`
+	ControlPlane *OpenstackMachinePool `json:"controlPlane,omitempty"`
 
 	// Metadata A resources's metadata
 	Metadata *ResourceMetadata `json:"metadata,omitempty"`
@@ -201,10 +201,16 @@ type KubernetesCluster struct {
 	Name string `json:"name"`
 
 	// Network A kubernetes cluster network settings.
-	Network KubernetesClusterNetwork `json:"network"`
+	Network *KubernetesClusterNetwork `json:"network,omitempty"`
 
 	// Openstack Kubernetes cluster creation OpenStack parameters.
-	Openstack KubernetesClusterOpenStack `json:"openstack"`
+	Openstack *KubernetesClusterOpenStack `json:"openstack,omitempty"`
+
+	// Region The region to provision the cluster in.
+	Region string `json:"region"`
+
+	// Version The Kuebernetes version.  This should be derived from image metadata.
+	Version string `json:"version"`
 
 	// WorkloadPools A list of Kubernetes cluster workload pools.
 	WorkloadPools KubernetesClusterWorkloadPools `json:"workloadPools"`
@@ -222,65 +228,38 @@ type KubernetesClusterAPI struct {
 // KubernetesClusterAutoscaling A Kubernetes cluster workload pool autoscaling configuration. Cluster autoscaling
 // must also be enabled in the cluster features.
 type KubernetesClusterAutoscaling struct {
-	// MaximumReplicas The maximum number of replicas to allow. Must be greater than the minimum.
-	MaximumReplicas int `json:"maximumReplicas"`
-
 	// MinimumReplicas The minimum number of replicas to allow. Must be less than the maximum.
 	MinimumReplicas int `json:"minimumReplicas"`
-}
-
-// KubernetesClusterFeatures A set of optional add on features for the cluster.
-type KubernetesClusterFeatures struct {
-	// Autoscaling Enable auto-scaling.
-	Autoscaling *bool `json:"autoscaling,omitempty"`
-
-	// CertManager Enable cert-manager.
-	CertManager *bool `json:"certManager,omitempty"`
-
-	// FileStorage Enable POSIX file based persistent storage (Longhorn).
-	FileStorage *bool `json:"fileStorage,omitempty"`
-
-	// Ingress Enable an ingress controller.
-	Ingress *bool `json:"ingress,omitempty"`
-
-	// KubernetesDashboard Enable the Kubernetes dashboard.  Requires ingress and certManager to be enabled.
-	KubernetesDashboard *bool `json:"kubernetesDashboard,omitempty"`
-
-	// NvidiaOperator Install the NVIDIA Operator
-	NvidiaOperator *bool `json:"nvidiaOperator,omitempty"`
-
-	// Prometheus Enable Prometheus.
-	Prometheus *bool `json:"prometheus,omitempty"`
 }
 
 // KubernetesClusterNetwork A kubernetes cluster network settings.
 type KubernetesClusterNetwork struct {
 	// DnsNameservers A list of DNS name server to use.
-	DnsNameservers []string `json:"dnsNameservers"`
+	DnsNameservers *[]string `json:"dnsNameservers,omitempty"`
 
 	// NodePrefix Network prefix to provision nodes in. Must be a valid CIDR block.
-	NodePrefix string `json:"nodePrefix"`
+	NodePrefix *string `json:"nodePrefix,omitempty"`
 
 	// PodPrefix Network prefix to provision pods in. Must be a valid CIDR block.
-	PodPrefix string `json:"podPrefix"`
+	PodPrefix *string `json:"podPrefix,omitempty"`
 
 	// ServicePrefix Network prefix to provision services in. Must be a valid CIDR block.
-	ServicePrefix string `json:"servicePrefix"`
+	ServicePrefix *string `json:"servicePrefix,omitempty"`
 }
 
 // KubernetesClusterOpenStack Kubernetes cluster creation OpenStack parameters.
 type KubernetesClusterOpenStack struct {
 	// ComputeAvailabilityZone Compute availability zone for control plane, and workload pool default.
-	ComputeAvailabilityZone string `json:"computeAvailabilityZone"`
+	ComputeAvailabilityZone *string `json:"computeAvailabilityZone,omitempty"`
 
 	// ExternalNetworkID OpenStack external network ID.
-	ExternalNetworkID string `json:"externalNetworkID"`
+	ExternalNetworkID *string `json:"externalNetworkID,omitempty"`
 
 	// SshKeyName OpenStack SSH Key to install on all machines.
 	SshKeyName *string `json:"sshKeyName,omitempty"`
 
 	// VolumeAvailabilityZone Volume availability zone for control plane, and workload pool default.
-	VolumeAvailabilityZone string `json:"volumeAvailabilityZone"`
+	VolumeAvailabilityZone *string `json:"volumeAvailabilityZone,omitempty"`
 }
 
 // KubernetesClusterWorkloadPool A Kuberntes cluster workload pool.
@@ -415,17 +394,13 @@ type OpenstackMachinePool struct {
 	Disk *OpenstackVolume `json:"disk,omitempty"`
 
 	// FlavorName OpenStack flavor name.
-	FlavorName string `json:"flavorName"`
+	FlavorName *string `json:"flavorName,omitempty"`
 
 	// ImageName OpenStack image name.
-	ImageName string `json:"imageName"`
+	ImageName *string `json:"imageName,omitempty"`
 
-	// Replicas Number of machines.
-	Replicas int `json:"replicas"`
-
-	// Version Kubernetes version. This should be derived from the image name as images
-	// will be preloaded with containers for a specific Kubernetes version.
-	Version string `json:"version"`
+	// Replicas Number of machines for a statically sized pool or the maximum for an auto-scaled pool.
+	Replicas *int `json:"replicas,omitempty"`
 }
 
 // OpenstackVolume An OpenStack volume.

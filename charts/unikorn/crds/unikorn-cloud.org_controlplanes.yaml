@@ -235,11 +235,6 @@ spec:
               pause:
                 description: Pause, if true, will inhibit reconciliation.
                 type: boolean
-              timeout:
-                default: 10m
-                description: Timeout defines how long a control plane is allowed to
-                  provision for before a timeout is triggerd and the request aborts.
-                type: string
             required:
             - applicationBundle
             type: object

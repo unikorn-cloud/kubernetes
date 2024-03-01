@@ -181,7 +181,7 @@ func (h *Handler) GetApiV1Clusters(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := cluster.NewClient(h.client, r, provider).List(r.Context())
+	result, err := cluster.NewClient(h.client, &h.options.Cluster, provider).List(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -205,7 +205,7 @@ func (h *Handler) PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClust
 		return
 	}
 
-	if err := cluster.NewClient(h.client, r, provider).Create(r.Context(), projectName, controlPlaneName, request); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster, provider).Create(r.Context(), projectName, controlPlaneName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -221,7 +221,7 @@ func (h *Handler) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClu
 		return
 	}
 
-	if err := cluster.NewClient(h.client, r, provider).Delete(r.Context(), projectName, controlPlaneName, clusterName); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster, provider).Delete(r.Context(), projectName, controlPlaneName, clusterName); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -244,7 +244,7 @@ func (h *Handler) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameCluste
 		return
 	}
 
-	if err := cluster.NewClient(h.client, r, provider).Update(r.Context(), projectName, controlPlaneName, clusterName, request); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster, provider).Update(r.Context(), projectName, controlPlaneName, clusterName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -260,7 +260,7 @@ func (h *Handler) GetApiV1ProjectsProjectNameControlplanesControlPlaneNameCluste
 		return
 	}
 
-	result, err := cluster.NewClient(h.client, r, provider).GetKubeconfig(r.Context(), projectName, controlPlaneName, clusterName)
+	result, err := cluster.NewClient(h.client, &h.options.Cluster, provider).GetKubeconfig(r.Context(), projectName, controlPlaneName, clusterName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -321,7 +321,7 @@ func (h *Handler) GetApiV1RegionsRegionNameAvailabilityZonesCompute(w http.Respo
 		return
 	}
 
-	result, err := provider.ListAvailabilityZonesCompute(r)
+	result, err := provider.ListAvailabilityZonesCompute(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -338,7 +338,7 @@ func (h *Handler) GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(w http.
 		return
 	}
 
-	result, err := provider.ListAvailabilityZonesBlockStorage(r)
+	result, err := provider.ListAvailabilityZonesBlockStorage(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -355,7 +355,7 @@ func (h *Handler) GetApiV1RegionsRegionNameExternalNetworks(w http.ResponseWrite
 		return
 	}
 
-	result, err := provider.ListExternalNetworks(r)
+	result, err := provider.ListExternalNetworks(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -372,7 +372,7 @@ func (h *Handler) GetApiV1RegionsRegionNameFlavors(w http.ResponseWriter, r *htt
 		return
 	}
 
-	result, err := provider.ListFlavors(r)
+	result, err := provider.ListFlavors(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -389,7 +389,7 @@ func (h *Handler) GetApiV1RegionsRegionNameImages(w http.ResponseWriter, r *http
 		return
 	}
 
-	result, err := provider.ListImages(r)
+	result, err := provider.ListImages(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -406,7 +406,7 @@ func (h *Handler) GetApiV1RegionsRegionNameKeyPairs(w http.ResponseWriter, r *ht
 		return
 	}
 
-	result, err := provider.ListKeyPairs(r)
+	result, err := provider.ListKeyPairs(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

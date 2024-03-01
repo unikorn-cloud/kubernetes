@@ -19,10 +19,11 @@ package cluster
 
 import (
 	"context"
-	"net/http"
+	"net"
 	"slices"
 
 	"github.com/gophercloud/utils/openstack/clientconfig"
+	"github.com/spf13/pflag"
 
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	"github.com/unikorn-cloud/core/pkg/constants"
@@ -45,23 +46,44 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+type Options struct {
+	NodeNetwork    net.IPNet
+	ServiceNetwork net.IPNet
+	PodNetwork     net.IPNet
+	DNSNameservers []net.IP
+}
+
+func (o *Options) AddFlags(f *pflag.FlagSet) {
+	_, nodeNetwork, _ := net.ParseCIDR("192.168.0.0/24")
+	_, serviceNetwork, _ := net.ParseCIDR("172.16.0.0/12")
+	_, podNetwork, _ := net.ParseCIDR("10.0.0.0/8")
+
+	dnsNameservers := []net.IP{net.ParseIP("8.8.8.8")}
+
+	f.IPNetVar(&o.NodeNetwork, "default-node-network", *nodeNetwork, "Default node network to use when creating a cluster")
+	f.IPNetVar(&o.ServiceNetwork, "default-service-network", *serviceNetwork, "Default service network to use when creating a cluster")
+	f.IPNetVar(&o.PodNetwork, "default-pod-network", *podNetwork, "Default pod network to use when creating a cluster")
+	f.IPSliceVar(&o.DNSNameservers, "default-dns-nameservers", dnsNameservers, "Default DNS nameserver to use when creating a cluster")
+}
+
 // Client wraps up cluster related management handling.
 type Client struct {
 	// client allows Kubernetes API access.
 	client client.Client
 
-	// request is the http request that invoked this client.
-	request *http.Request
-
+	// TODO: This needs to be abstract!
 	openstack *openstack.Openstack
+
+	// options control various defaults and the like.
+	options *Options
 }
 
 // NewClient returns a new client with required parameters.
-func NewClient(client client.Client, request *http.Request, openstack *openstack.Openstack) *Client {
+func NewClient(client client.Client, options *Options, openstack *openstack.Openstack) *Client {
 	return &Client{
 		client:    client,
-		request:   request,
 		openstack: openstack,
+		options:   options,
 	}
 }
 
@@ -171,23 +193,23 @@ func (c *Client) GetKubeconfig(ctx context.Context, projectName generated.Projec
 }
 
 // createClientConfig creates an Openstack client configuration from the API.
-func (c *Client) createClientConfig(controlPlane *controlplane.Meta, name string) ([]byte, string, error) {
+func (c *Client) createClientConfig(ctx context.Context, controlPlane *controlplane.Meta, name string) ([]byte, string, error) {
 	// Name is fully qualified to avoid namespace clashes with control planes sharing
 	// the same project.
 	applicationCredentialName := controlPlane.Name + "-" + name
 
 	// Find and delete and existing credential.
-	if _, err := c.openstack.GetApplicationCredential(c.request, applicationCredentialName); err != nil {
+	if _, err := c.openstack.GetApplicationCredential(ctx, applicationCredentialName); err != nil {
 		if !errors.IsHTTPNotFound(err) {
 			return nil, "", err
 		}
 	} else {
-		if err := c.openstack.DeleteApplicationCredential(c.request, applicationCredentialName); err != nil {
+		if err := c.openstack.DeleteApplicationCredential(ctx, applicationCredentialName); err != nil {
 			return nil, "", err
 		}
 	}
 
-	ac, err := c.openstack.CreateApplicationCredential(c.request, applicationCredentialName)
+	ac, err := c.openstack.CreateApplicationCredential(ctx, applicationCredentialName)
 	if err != nil {
 		return nil, "", err
 	}
@@ -216,13 +238,13 @@ func (c *Client) createClientConfig(controlPlane *controlplane.Meta, name string
 }
 
 // createServerGroup creates an OpenStack server group.
-func (c *Client) createServerGroup(controlPlane *controlplane.Meta, name, kind string) (string, error) {
+func (c *Client) createServerGroup(ctx context.Context, controlPlane *controlplane.Meta, name, kind string) (string, error) {
 	// Name is fully qualified to avoid namespace clashes with control planes sharing
 	// the same project.
 	serverGroupName := controlPlane.Name + "-" + name + "-" + kind
 
 	// Reuse the server group if it exists, otherwise create a new one.
-	sg, err := c.openstack.GetServerGroup(c.request, serverGroupName)
+	sg, err := c.openstack.GetServerGroup(ctx, serverGroupName)
 	if err != nil {
 		if !errors.IsHTTPNotFound(err) {
 			return "", err
@@ -230,7 +252,7 @@ func (c *Client) createServerGroup(controlPlane *controlplane.Meta, name, kind s
 	}
 
 	if sg == nil {
-		if sg, err = c.openstack.CreateServerGroup(c.request, serverGroupName); err != nil {
+		if sg, err = c.openstack.CreateServerGroup(ctx, serverGroupName); err != nil {
 			return "", err
 		}
 	}
@@ -249,17 +271,17 @@ func (c *Client) Create(ctx context.Context, projectName generated.ProjectNamePa
 		return errors.OAuth2InvalidRequest("control plane is being deleted")
 	}
 
-	cluster, err := c.createCluster(controlPlane, options)
+	cluster, err := c.generate(ctx, controlPlane, options)
 	if err != nil {
 		return err
 	}
 
-	clientConfig, cloud, err := c.createClientConfig(controlPlane, options.Name)
+	clientConfig, cloud, err := c.createClientConfig(ctx, controlPlane, options.Name)
 	if err != nil {
 		return err
 	}
 
-	serverGroupID, err := c.createServerGroup(controlPlane, options.Name, "control-plane")
+	serverGroupID, err := c.createServerGroup(ctx, controlPlane, options.Name, "control-plane")
 	if err != nil {
 		return err
 	}
@@ -328,7 +350,7 @@ func (c *Client) Update(ctx context.Context, projectName generated.ProjectNamePa
 		return err
 	}
 
-	required, err := c.createCluster(controlPlane, request)
+	required, err := c.generate(ctx, controlPlane, request)
 	if err != nil {
 		return err
 	}

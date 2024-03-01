@@ -366,10 +366,6 @@ type ControlPlane struct {
 type ControlPlaneSpec struct {
 	// Pause, if true, will inhibit reconciliation.
 	Pause bool `json:"pause,omitempty"`
-	// Timeout defines how long a control plane is allowed to provision for before
-	// a timeout is triggerd and the request aborts.
-	// +kubebuilder:default="10m"
-	Timeout *metav1.Duration `json:"timeout,omitempty"`
 	// ApplicationBundle defines the applications used to create the control plane.
 	// Change this to a new bundle to start an upgrade.
 	ApplicationBundle *string `json:"applicationBundle"`
@@ -520,9 +516,8 @@ type KubernetesCluster struct {
 type KubernetesClusterSpec struct {
 	// Pause, if true, will inhibit reconciliation.
 	Pause bool `json:"pause,omitempty"`
-	// Timeout is the maximum time to attempt to provision a cluster before aborting.
-	// +kubebuilder:default="20m"
-	Timeout *metav1.Duration `json:"timeout"`
+	// Region to provision the cluster in.
+	Region string `json:"region"`
 	// Openstack defines global Openstack related configuration.
 	Openstack *KubernetesClusterOpenstackSpec `json:"openstack"`
 	// Network defines the Kubernetes networking.
