@@ -26,6 +26,7 @@ import (
 	"github.com/spf13/pflag"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/trace"
 
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
@@ -67,6 +68,9 @@ func (s *Server) SetupLogging() {
 // TODO: move config into an otel specific options struct.
 func (s *Server) SetupOpenTelemetry(ctx context.Context) error {
 	otel.SetLogger(log.Log)
+
+	// TODO: use a full w3c trace context.
+	otel.SetTextMapPropagator(propagation.Baggage{})
 
 	opts := []trace.TracerProviderOption{
 		trace.WithSpanProcessor(&middleware.LoggingSpanProcessor{}),
