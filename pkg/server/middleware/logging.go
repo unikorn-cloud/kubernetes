@@ -23,6 +23,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/baggage"
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.18.0"
@@ -125,17 +126,17 @@ func (*LoggingSpanProcessor) ForceFlush(ctx context.Context) error {
 
 // Logger attaches logging context to the request.
 func Logger() func(next http.Handler) http.Handler {
-	// TODO: this needs an implmenetation of https://www.w3.org/TR/trace-context/.
-	// Like everything here, OpenTelemetry is very good at doing nothing by default.
-	propagator := otel.GetTextMapPropagator()
-
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Extract the tracing information from the HTTP headers.  See above
-			// for what this entails.
-			ctx := propagator.Extract(r.Context(), propagation.HeaderCarrier(r.Header))
-
 			var attributes []attribute.KeyValue
+
+			// Extract the tracing information from the HTTP headers.
+			ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
+			baggage := baggage.FromContext(ctx)
+
+			for _, member := range baggage.Members() {
+				attributes = append(attributes, attribute.Key("baggage."+member.Key()).String(member.Value()))
+			}
 
 			// Add in service information.
 			attributes = append(attributes, semconv.ServiceName(constants.Application))
