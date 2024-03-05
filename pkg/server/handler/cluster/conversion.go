@@ -21,9 +21,11 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"slices"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/core/pkg/constants"
+	"github.com/unikorn-cloud/core/pkg/util"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
@@ -36,11 +38,11 @@ import (
 )
 
 // convertOpenstack converts from a custom resource into the API definition.
-func convertOpenstack(in *unikornv1.KubernetesCluster) generated.KubernetesClusterOpenStack {
-	openstack := generated.KubernetesClusterOpenStack{
-		ComputeAvailabilityZone: *in.Spec.Openstack.FailureDomain,
-		VolumeAvailabilityZone:  *in.Spec.Openstack.VolumeFailureDomain,
-		ExternalNetworkID:       *in.Spec.Openstack.ExternalNetworkID,
+func convertOpenstack(in *unikornv1.KubernetesCluster) *generated.KubernetesClusterOpenStack {
+	openstack := &generated.KubernetesClusterOpenStack{
+		ComputeAvailabilityZone: in.Spec.Openstack.FailureDomain,
+		VolumeAvailabilityZone:  in.Spec.Openstack.VolumeFailureDomain,
+		ExternalNetworkID:       in.Spec.Openstack.ExternalNetworkID,
 		SshKeyName:              in.Spec.Openstack.SSHKeyName,
 	}
 
@@ -48,18 +50,22 @@ func convertOpenstack(in *unikornv1.KubernetesCluster) generated.KubernetesClust
 }
 
 // convertNetwork converts from a custom resource into the API definition.
-func convertNetwork(in *unikornv1.KubernetesCluster) generated.KubernetesClusterNetwork {
+func convertNetwork(in *unikornv1.KubernetesCluster) *generated.KubernetesClusterNetwork {
 	dnsNameservers := make([]string, len(in.Spec.Network.DNSNameservers))
 
 	for i, address := range in.Spec.Network.DNSNameservers {
 		dnsNameservers[i] = address.IP.String()
 	}
 
-	network := generated.KubernetesClusterNetwork{
-		NodePrefix:     in.Spec.Network.NodeNetwork.IPNet.String(),
-		ServicePrefix:  in.Spec.Network.ServiceNetwork.IPNet.String(),
-		PodPrefix:      in.Spec.Network.PodNetwork.IPNet.String(),
-		DnsNameservers: dnsNameservers,
+	nodePrefix := in.Spec.Network.NodeNetwork.IPNet.String()
+	servicePrefix := in.Spec.Network.ServiceNetwork.IPNet.String()
+	podPrefix := in.Spec.Network.PodNetwork.IPNet.String()
+
+	network := &generated.KubernetesClusterNetwork{
+		NodePrefix:     &nodePrefix,
+		ServicePrefix:  &servicePrefix,
+		PodPrefix:      &podPrefix,
+		DnsNameservers: &dnsNameservers,
 	}
 
 	return network
@@ -91,12 +97,11 @@ func convertAPI(in *unikornv1.KubernetesCluster) *generated.KubernetesClusterAPI
 }
 
 // convertMachine converts from a custom resource into the API definition.
-func convertMachine(in *unikornv1.MachineGeneric) generated.OpenstackMachinePool {
-	machine := generated.OpenstackMachinePool{
-		Replicas:   *in.Replicas,
-		Version:    string(*in.Version),
-		ImageName:  *in.Image,
-		FlavorName: *in.Flavor,
+func convertMachine(in *unikornv1.MachineGeneric) *generated.OpenstackMachinePool {
+	machine := &generated.OpenstackMachinePool{
+		Replicas:   in.Replicas,
+		ImageName:  in.Image,
+		FlavorName: in.Flavor,
 	}
 
 	if in.DiskSize != nil {
@@ -113,7 +118,7 @@ func convertMachine(in *unikornv1.MachineGeneric) generated.OpenstackMachinePool
 func convertWorkloadPool(in *unikornv1.KubernetesClusterWorkloadPoolsPoolSpec) generated.KubernetesClusterWorkloadPool {
 	workloadPool := generated.KubernetesClusterWorkloadPool{
 		Name:    in.Name,
-		Machine: convertMachine(&in.KubernetesWorkloadPoolSpec.MachineGeneric),
+		Machine: *convertMachine(&in.KubernetesWorkloadPoolSpec.MachineGeneric),
 	}
 
 	if in.KubernetesWorkloadPoolSpec.Labels != nil {
@@ -123,7 +128,6 @@ func convertWorkloadPool(in *unikornv1.KubernetesClusterWorkloadPoolsPoolSpec) g
 	if in.KubernetesWorkloadPoolSpec.Autoscaling != nil {
 		workloadPool.Autoscaling = &generated.KubernetesClusterAutoscaling{
 			MinimumReplicas: *in.KubernetesWorkloadPoolSpec.Autoscaling.MinimumReplicas,
-			MaximumReplicas: *in.KubernetesWorkloadPoolSpec.Autoscaling.MaximumReplicas,
 		}
 	}
 
@@ -141,25 +145,6 @@ func convertWorkloadPools(in *unikornv1.KubernetesCluster) []generated.Kubernete
 	return workloadPools
 }
 
-// convertFeatures converts from a custom resource into the API definition.
-func convertFeatures(in *unikornv1.KubernetesCluster) *generated.KubernetesClusterFeatures {
-	if in.Spec.Features == nil {
-		return nil
-	}
-
-	features := &generated.KubernetesClusterFeatures{
-		Autoscaling:         in.Spec.Features.Autoscaling,
-		Ingress:             in.Spec.Features.Ingress,
-		CertManager:         in.Spec.Features.CertManager,
-		KubernetesDashboard: in.Spec.Features.KubernetesDashboard,
-		FileStorage:         in.Spec.Features.FileStorage,
-		Prometheus:          in.Spec.Features.Prometheus,
-		NvidiaOperator:      in.Spec.Features.NvidiaOperator,
-	}
-
-	return features
-}
-
 // convertMetadata converts from a custom resource into the API definition.
 func convertMetadata(in *unikornv1.KubernetesCluster) (*generated.ResourceMetadata, error) {
 	labels, err := in.ResourceLabels()
@@ -174,7 +159,7 @@ func convertMetadata(in *unikornv1.KubernetesCluster) (*generated.ResourceMetada
 	out := &generated.ResourceMetadata{
 		Project:      &project,
 		Controlplane: &controlplane,
-		// TODO: fill in the region.
+		Region:       &in.Spec.Region,
 		CreationTime: in.CreationTimestamp.Time,
 		Status:       "Unknown",
 	}
@@ -206,14 +191,14 @@ func (c *Client) convert(ctx context.Context, in *unikornv1.KubernetesCluster) (
 	out := &generated.KubernetesCluster{
 		Metadata:                     metadata,
 		Name:                         in.Name,
-		ApplicationBundle:            *bundle,
+		Version:                      string(*in.Spec.ControlPlane.Version),
+		ApplicationBundle:            bundle,
 		ApplicationBundleAutoUpgrade: common.ConvertApplicationBundleAutoUpgrade(in.Spec.ApplicationBundleAutoUpgrade),
 		Openstack:                    convertOpenstack(in),
 		Network:                      convertNetwork(in),
 		Api:                          convertAPI(in),
 		ControlPlane:                 convertMachine(&in.Spec.ControlPlane.MachineGeneric),
 		WorkloadPools:                convertWorkloadPools(in),
-		Features:                     convertFeatures(in),
 	}
 
 	return out, nil
@@ -235,61 +220,179 @@ func (c *Client) convertList(ctx context.Context, in *unikornv1.KubernetesCluste
 	return out, nil
 }
 
-// createOpenstack creates the Openstack configuration part of a cluster.
-func createOpenstack(options *generated.KubernetesCluster) *unikornv1.KubernetesClusterOpenstackSpec {
-	openstack := &unikornv1.KubernetesClusterOpenstackSpec{
-		FailureDomain:       &options.Openstack.ComputeAvailabilityZone,
-		VolumeFailureDomain: &options.Openstack.VolumeAvailabilityZone,
-		ExternalNetworkID:   &options.Openstack.ExternalNetworkID,
-	}
-
-	if options.Openstack.SshKeyName != nil {
-		openstack.SSHKeyName = options.Openstack.SshKeyName
-	}
-
-	return openstack
-}
-
-// createNetwork creates the network part of a cluster.
-func createNetwork(options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterNetworkSpec, error) {
-	_, nodeNet, err := net.ParseCIDR(options.Network.NodePrefix)
+// defaultApplicationBundle returns a default application bundle.
+func (c *Client) defaultApplicationBundle(ctx context.Context) (*generated.ApplicationBundle, error) {
+	applicationBundles, err := applicationbundle.NewClient(c.client).ListCluster(ctx)
 	if err != nil {
-		return nil, errors.OAuth2InvalidRequest("failed to parse node prefix").WithError(err)
+		return nil, err
 	}
 
-	_, serviceNet, err := net.ParseCIDR(options.Network.ServicePrefix)
-	if err != nil {
-		return nil, errors.OAuth2InvalidRequest("failed to parse service prefix").WithError(err)
-	}
-
-	_, podNet, err := net.ParseCIDR(options.Network.PodPrefix)
-	if err != nil {
-		return nil, errors.OAuth2InvalidRequest("failed to parse pod prefix").WithError(err)
-	}
-
-	dnsNameservers := make([]net.IP, len(options.Network.DnsNameservers))
-
-	for i, server := range options.Network.DnsNameservers {
-		ip := net.ParseIP(server)
-		if ip == nil {
-			return nil, errors.OAuth2InvalidRequest("failed to parse dns server IP")
+	applicationBundles = slices.DeleteFunc(applicationBundles, func(bundle *generated.ApplicationBundle) bool {
+		if bundle.Preview != nil && *bundle.Preview {
+			return true
 		}
 
-		dnsNameservers[i] = ip
+		if bundle.EndOfLife != nil {
+			return true
+		}
+
+		return false
+	})
+
+	if len(applicationBundles) == 0 {
+		return nil, errors.OAuth2ServerError("unable to select an application bundle")
+	}
+
+	return applicationBundles[0], nil
+}
+
+// defaultExternalNetwork returns a default network.
+func (c *Client) defaultExternalNetwork(ctx context.Context) (*generated.OpenstackExternalNetwork, error) {
+	externalNetworks, err := c.openstack.ListExternalNetworks(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(externalNetworks) == 0 {
+		return nil, errors.OAuth2ServerError("unable to select an external network")
+	}
+
+	return &externalNetworks[0], nil
+}
+
+// defaultControlPlaneFlavor returns a default control plane flavor.  This will be
+// one that doesxn't have any GPUs.  The provider ensures the "nost cost-effective"
+// comes first.
+// TODO: we should allow this to be configured per region.
+func (c *Client) defaultControlPlaneFlavor(ctx context.Context) (*generated.OpenstackFlavor, error) {
+	flavors, err := c.openstack.ListFlavors(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	flavors = slices.DeleteFunc(flavors, func(x generated.OpenstackFlavor) bool { return x.Gpus != nil })
+
+	if len(flavors) == 0 {
+		return nil, errors.OAuth2ServerError("unable to select a control plane flavor")
+	}
+
+	return &flavors[0], nil
+}
+
+// defaultImage returns a default image for either control planes or workload pools
+// based on the specified Kubernetes version.
+func (c *Client) defaultImage(ctx context.Context, version string) (*generated.OpenstackImage, error) {
+	// Images will be
+	images, err := c.openstack.ListImages(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	images = slices.DeleteFunc(images, func(x generated.OpenstackImage) bool { return x.Versions.Kubernetes == version })
+
+	if len(images) == 0 {
+		return nil, errors.OAuth2ServerError("unable to select an image")
+	}
+
+	return &images[0], nil
+}
+
+// generateOpenstack generates the Openstack configuration part of a cluster.
+func (c *Client) generateOpenstack(ctx context.Context, options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterOpenstackSpec, error) {
+	// Default missing configuration.
+	os := options.Openstack
+	if os == nil {
+		os = &generated.KubernetesClusterOpenStack{}
+	}
+
+	if os.ExternalNetworkID == nil {
+		resource, err := c.defaultExternalNetwork(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		os.ExternalNetworkID = &resource.Id
+	}
+
+	openstack := &unikornv1.KubernetesClusterOpenstackSpec{
+		FailureDomain:       os.ComputeAvailabilityZone,
+		VolumeFailureDomain: os.VolumeAvailabilityZone,
+		ExternalNetworkID:   os.ExternalNetworkID,
+	}
+
+	if os.SshKeyName != nil {
+		openstack.SSHKeyName = os.SshKeyName
+	}
+
+	return openstack, nil
+}
+
+// generateNetwork generates the network part of a cluster.
+//
+//nolint:cyclop
+func (c *Client) generateNetwork(options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterNetworkSpec, error) {
+	// Grab some defaults (as these are in the right format already)
+	// the override with anything coming in from the API, if set.
+	nodeNetwork := c.options.NodeNetwork
+	serviceNetwork := c.options.ServiceNetwork
+	podNetwork := c.options.PodNetwork
+	dnsNameservers := c.options.DNSNameservers
+
+	//nolint:nestif
+	if options.Network != nil {
+		if options.Network.NodePrefix != nil {
+			_, t, err := net.ParseCIDR(*options.Network.NodePrefix)
+			if err != nil {
+				return nil, errors.OAuth2InvalidRequest("failed to parse node prefix").WithError(err)
+			}
+
+			nodeNetwork = *t
+		}
+
+		if options.Network.ServicePrefix != nil {
+			_, t, err := net.ParseCIDR(*options.Network.ServicePrefix)
+			if err != nil {
+				return nil, errors.OAuth2InvalidRequest("failed to parse service prefix").WithError(err)
+			}
+
+			serviceNetwork = *t
+		}
+
+		if options.Network.PodPrefix != nil {
+			_, t, err := net.ParseCIDR(*options.Network.PodPrefix)
+			if err != nil {
+				return nil, errors.OAuth2InvalidRequest("failed to parse pod prefix").WithError(err)
+			}
+
+			podNetwork = *t
+		}
+
+		if options.Network.DnsNameservers != nil {
+			dnsNameservers := make([]net.IP, len(*options.Network.DnsNameservers))
+
+			for i, server := range *options.Network.DnsNameservers {
+				ip := net.ParseIP(server)
+				if ip == nil {
+					return nil, errors.OAuth2InvalidRequest("failed to parse dns server IP")
+				}
+
+				dnsNameservers[i] = ip
+			}
+		}
 	}
 
 	network := &unikornv1.KubernetesClusterNetworkSpec{
-		NodeNetwork:    &unikornv1.IPv4Prefix{IPNet: *nodeNet},
-		ServiceNetwork: &unikornv1.IPv4Prefix{IPNet: *serviceNet},
-		PodNetwork:     &unikornv1.IPv4Prefix{IPNet: *podNet},
+		NodeNetwork:    &unikornv1.IPv4Prefix{IPNet: nodeNetwork},
+		ServiceNetwork: &unikornv1.IPv4Prefix{IPNet: serviceNetwork},
+		PodNetwork:     &unikornv1.IPv4Prefix{IPNet: podNetwork},
 		DNSNameservers: unikornv1.IPv4AddressSliceFromIPSlice(dnsNameservers),
 	}
 
 	return network, nil
 }
 
-// createAPI creates the Kubernetes API part of the cluster.
-func createAPI(options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterAPISpec, error) {
+// generateAPI generates the Kubernetes API part of the cluster.
+func generateAPI(options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterAPISpec, error) {
 	if options.Api == nil {
 		//nolint:nilnil
 		return nil, nil
@@ -319,26 +422,23 @@ func createAPI(options *generated.KubernetesCluster) (*unikornv1.KubernetesClust
 	return api, nil
 }
 
-// createMachineGeneric creates a generic machine part of the cluster.
-func (c *Client) createMachineGeneric(m *generated.OpenstackMachinePool) (*unikornv1.MachineGeneric, *generated.OpenstackFlavor, error) {
-	// Check the image passed in is valid.
-	image, err := c.openstack.GetImage(c.request, m.ImageName)
-	if err != nil {
-		if errors.IsHTTPNotFound(err) {
-			return nil, nil, errors.OAuth2InvalidRequest("invalid image").WithError(err)
+// generateMachineGeneric generates a generic machine part of the cluster.
+func (c *Client) generateMachineGeneric(ctx context.Context, options *generated.KubernetesCluster, m *generated.OpenstackMachinePool) (*unikornv1.MachineGeneric, *generated.OpenstackFlavor, error) {
+	if m.Replicas == nil {
+		m.Replicas = util.ToPointer(3)
+	}
+
+	if m.ImageName == nil {
+		resource, err := c.defaultImage(ctx, options.Version)
+		if err != nil {
+			return nil, nil, err
 		}
 
-		return nil, nil, err
+		m.ImageName = &resource.Name
 	}
 
-	// TODO: we can derive the version from the image, but its useful to have that
-	// in the GET data.
-	if m.Version != image.Versions.Kubernetes {
-		return nil, nil, errors.OAuth2InvalidRequest("invalid version for image").WithError(err)
-	}
-
-	// Check the flavor is valid
-	flavor, err := c.openstack.GetFlavor(c.request, m.FlavorName)
+	// Lookup the flavor so we can assess whether to install GPU controllers.
+	flavor, err := c.openstack.GetFlavor(ctx, *m.FlavorName)
 	if err != nil {
 		if errors.IsHTTPNotFound(err) {
 			return nil, nil, errors.OAuth2InvalidRequest("invalid flavor").WithError(err)
@@ -347,13 +447,10 @@ func (c *Client) createMachineGeneric(m *generated.OpenstackMachinePool) (*uniko
 		return nil, nil, err
 	}
 
-	version := unikornv1.SemanticVersion(m.Version)
-
 	machine := &unikornv1.MachineGeneric{
-		Version:  &version,
-		Replicas: &m.Replicas,
-		Image:    &m.ImageName,
-		Flavor:   &m.FlavorName,
+		Replicas: m.Replicas,
+		Image:    m.ImageName,
+		Flavor:   m.FlavorName,
 	}
 
 	if m.Disk != nil {
@@ -372,9 +469,25 @@ func (c *Client) createMachineGeneric(m *generated.OpenstackMachinePool) (*uniko
 	return machine, flavor, nil
 }
 
-// createControlPlane creates the control plane part of a cluster.
-func (c *Client) createControlPlane(options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterControlPlaneSpec, error) {
-	machine, _, err := c.createMachineGeneric(&options.ControlPlane)
+// generateControlPlane generates the control plane part of a cluster.
+func (c *Client) generateControlPlane(ctx context.Context, options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterControlPlaneSpec, error) {
+	// Add in any missing defaults.
+	controlPlaneOptions := options.ControlPlane
+
+	if controlPlaneOptions == nil {
+		controlPlaneOptions = &generated.OpenstackMachinePool{}
+	}
+
+	if controlPlaneOptions.FlavorName == nil {
+		resource, err := c.defaultControlPlaneFlavor(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		controlPlaneOptions.FlavorName = &resource.Name
+	}
+
+	machine, _, err := c.generateMachineGeneric(ctx, options, controlPlaneOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -386,14 +499,14 @@ func (c *Client) createControlPlane(options *generated.KubernetesCluster) (*unik
 	return controlPlane, nil
 }
 
-// createWorkloadPools creates the workload pools part of a cluster.
-func (c *Client) createWorkloadPools(clusterContext *createClusterContext, options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterWorkloadPoolsSpec, error) {
+// generateWorkloadPools generates the workload pools part of a cluster.
+func (c *Client) generateWorkloadPools(ctx context.Context, clusterContext *generateContext, options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterWorkloadPoolsSpec, error) {
 	workloadPools := &unikornv1.KubernetesClusterWorkloadPoolsSpec{}
 
 	for i := range options.WorkloadPools {
 		pool := &options.WorkloadPools[i]
 
-		machine, flavor, err := c.createMachineGeneric(&pool.Machine)
+		machine, flavor, err := c.generateMachineGeneric(ctx, options, &pool.Machine)
 		if err != nil {
 			return nil, err
 		}
@@ -425,7 +538,7 @@ func (c *Client) createWorkloadPools(clusterContext *createClusterContext, optio
 
 			workloadPool.Autoscaling = &unikornv1.MachineGenericAutoscaling{
 				MinimumReplicas: &pool.Autoscaling.MinimumReplicas,
-				MaximumReplicas: &pool.Autoscaling.MaximumReplicas,
+				MaximumReplicas: pool.Machine.Replicas,
 				Scheduler: &unikornv1.MachineGenericAutoscalingScheduler{
 					CPU:    &flavor.Cpus,
 					Memory: &memory,
@@ -448,26 +561,7 @@ func (c *Client) createWorkloadPools(clusterContext *createClusterContext, optio
 	return workloadPools, nil
 }
 
-// createFeatures creates the features part of a cluster.
-func createFeatures(options *generated.KubernetesCluster) *unikornv1.KubernetesClusterFeaturesSpec {
-	if options.Features == nil {
-		return nil
-	}
-
-	features := &unikornv1.KubernetesClusterFeaturesSpec{
-		Autoscaling:         options.Features.Autoscaling,
-		Ingress:             options.Features.Ingress,
-		CertManager:         options.Features.CertManager,
-		KubernetesDashboard: options.Features.KubernetesDashboard,
-		FileStorage:         options.Features.FileStorage,
-		Prometheus:          options.Features.Prometheus,
-		NvidiaOperator:      options.Features.NvidiaOperator,
-	}
-
-	return features
-}
-
-type createClusterContext struct {
+type generateContext struct {
 	hasGPUWorkloadPool bool
 }
 
@@ -475,28 +569,44 @@ func installNvidiaOperator(features *unikornv1.KubernetesClusterFeaturesSpec) bo
 	return features.NvidiaOperator == nil || *features.NvidiaOperator
 }
 
-// createCluster creates the full cluster custom resource.
-func (c *Client) createCluster(controlPlane *controlplane.Meta, options *generated.KubernetesCluster) (*unikornv1.KubernetesCluster, error) {
-	var clusterContext createClusterContext
+// generate generates the full cluster custom resource.
+func (c *Client) generate(ctx context.Context, controlPlane *controlplane.Meta, options *generated.KubernetesCluster) (*unikornv1.KubernetesCluster, error) {
+	var clusterContext generateContext
 
-	network, err := createNetwork(options)
+	openstack, err := c.generateOpenstack(ctx, options)
 	if err != nil {
 		return nil, err
 	}
 
-	api, err := createAPI(options)
+	network, err := c.generateNetwork(options)
 	if err != nil {
 		return nil, err
 	}
 
-	kubernetesControlPlane, err := c.createControlPlane(options)
+	api, err := generateAPI(options)
 	if err != nil {
 		return nil, err
 	}
 
-	kubernetesWorkloadPools, err := c.createWorkloadPools(&clusterContext, options)
+	kubernetesControlPlane, err := c.generateControlPlane(ctx, options)
 	if err != nil {
 		return nil, err
+	}
+
+	kubernetesWorkloadPools, err := c.generateWorkloadPools(ctx, &clusterContext, options)
+	if err != nil {
+		return nil, err
+	}
+
+	applicationBundle := options.ApplicationBundle
+
+	if applicationBundle == nil {
+		resource, err := c.defaultApplicationBundle(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		applicationBundle = resource
 	}
 
 	cluster := &unikornv1.KubernetesCluster{
@@ -511,14 +621,14 @@ func (c *Client) createCluster(controlPlane *controlplane.Meta, options *generat
 			},
 		},
 		Spec: unikornv1.KubernetesClusterSpec{
-			ApplicationBundle:            &options.ApplicationBundle.Name,
+			Region:                       options.Region,
+			ApplicationBundle:            &applicationBundle.Name,
 			ApplicationBundleAutoUpgrade: common.CreateApplicationBundleAutoUpgrade(options.ApplicationBundleAutoUpgrade),
-			Openstack:                    createOpenstack(options),
+			Openstack:                    openstack,
 			Network:                      network,
 			API:                          api,
 			ControlPlane:                 kubernetesControlPlane,
 			WorkloadPools:                kubernetesWorkloadPools,
-			Features:                     createFeatures(options),
 		},
 	}
 

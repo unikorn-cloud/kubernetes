@@ -671,7 +671,6 @@ components:
       type: object
       required:
       - name
-      - applicationBundle
       properties:
         metadata:
           $ref: '#/components/schemas/resourceMetadata'
@@ -681,6 +680,9 @@ components:
         applicationBundle:
           $ref: '#/components/schemas/applicationBundle'
         applicationBundleAutoUpgrade:
+          description: Whether to enable auto upgrade or not.
+          type: boolean
+        applicationBundleAutoUpgradeSchedule:
           $ref: '#/components/schemas/applicationBundleAutoUpgrade'
     controlPlanes:
       description: A list of control planes.
@@ -690,10 +692,6 @@ components:
     kubernetesClusterOpenStack:
       description: Kubernetes cluster creation OpenStack parameters.
       type: object
-      required:
-      - computeAvailabilityZone
-      - volumeAvailabilityZone
-      - externalNetworkID
       properties:
         computeAvailabilityZone:
           description: Compute availability zone for control plane, and workload pool default.
@@ -710,11 +708,6 @@ components:
     kubernetesClusterNetwork:
       description: A kubernetes cluster network settings.
       type: object
-      required:
-      - nodePrefix
-      - servicePrefix
-      - podPrefix
-      - dnsNameservers
       properties:
         nodePrefix:
           description: Network prefix to provision nodes in. Must be a valid CIDR block.
@@ -764,21 +757,11 @@ components:
     openstackMachinePool:
       description: A Kubernetes cluster machine.
       type: object
-      required:
-      - replicas
-      - version
-      - imageName
-      - flavorName
       properties:
         replicas:
-          description: Number of machines.
+          description: Number of machines for a statically sized pool or the maximum
+            for an auto-scaled pool.
           type: integer
-        version:
-          description: |-
-            Kubernetes version. This should be derived from the image name as images
-            will be preloaded with containers for a specific Kubernetes version.
-          type: string
-          minLength: 1
         imageName:
           description: OpenStack image name.
           type: string
@@ -796,15 +779,10 @@ components:
       type: object
       required:
       - minimumReplicas
-      - maximumReplicas
       properties:
         minimumReplicas:
           description: |-
             The minimum number of replicas to allow. Must be less than the maximum.
-          type: integer
-        maximumReplicas:
-          description: |-
-            The maximum number of replicas to allow. Must be greater than the minimum.
           type: integer
     kubernetesClusterWorkloadPool:
       description: A Kuberntes cluster workload pool.
@@ -835,46 +813,26 @@ components:
       minItems: 1
       items:
         $ref: '#/components/schemas/kubernetesClusterWorkloadPool'
-    kubernetesClusterFeatures:
-      description: A set of optional add on features for the cluster.
-      type: object
-      properties:
-        autoscaling:
-          description: Enable auto-scaling.
-          type: boolean
-        ingress:
-          description: Enable an ingress controller.
-          type: boolean
-        certManager:
-          description: Enable cert-manager.
-          type: boolean
-        kubernetesDashboard:
-          description: Enable the Kubernetes dashboard.  Requires ingress and certManager to be enabled.
-          type: boolean
-        fileStorage:
-          description: Enable POSIX file based persistent storage (Longhorn).
-          type: boolean
-        prometheus:
-          description: Enable Prometheus.
-          type: boolean
-        nvidiaOperator:
-          description: Install the NVIDIA Operator
-          type: boolean
     kubernetesCluster:
       description: Kubernetes cluster creation parameters.
       type: object
       required:
       - name
-      - applicationBundle
-      - openstack
-      - network
-      - controlPlane
+      - region
+      - version
       - workloadPools
       properties:
         metadata:
           $ref: '#/components/schemas/resourceMetadata'
         name:
           description: Cluster name.
+          type: string
+        region:
+          description: The region to provision the cluster in.
+          type: string
+        version:
+          description: The Kuebernetes version.  This should be derived from
+            image metadata.
           type: string
         applicationBundle:
           $ref: '#/components/schemas/applicationBundle'
@@ -890,8 +848,6 @@ components:
           $ref: '#/components/schemas/openstackMachinePool'
         workloadPools:
           $ref: '#/components/schemas/kubernetesClusterWorkloadPools'
-        features:
-          $ref: '#/components/schemas/kubernetesClusterFeatures'
     kubernetesClusters:
       description: A list of Kubernetes clusters.
       type: array
@@ -1232,39 +1188,19 @@ components:
           schema:
             $ref: '#/components/schemas/kubernetesCluster'
           example:
-            applicationBundle:
-              name: kubernetes-cluster-1.0.0
-              version: 1.0.0
+            region: uk-east-1
+            version: v1.27.2
             controlPlane:
-              flavorName: g.2.standard
               imageName: eck-230714-4bef8ab1
-              replicas: 3
-              version: v1.27.2
             features:
               autoscaling: true
             name: cluster
-            network:
-              dnsNameservers:
-              - 8.8.8.8
-              - 8.8.4.4
-              nodePrefix: 192.168.0.0/16
-              podPrefix: 10.0.0.0/8
-              servicePrefix: 172.16.0.0/12
-            openstack:
-              computeAvailabilityZone: nova
-              externalNetworkID: c9d130bc-301d-45c0-9328-a6964af65579
-              volumeAvailabilityZone: nova
             workloadPools:
             - autoscaling:
-                maximumReplicas: 3
                 minimumReplicas: 0
               machine:
-                disk:
-                  size: 50
                 flavorName: g.4.highmem.a100.1g.10gb
-                imageName: eck-230714-4bef8ab1
                 replicas: 3
-                version: v1.27.2
               name: default
   responses:
     acceptedResponse:
@@ -1362,7 +1298,7 @@ components:
             applicationBundle: 
               name: control-plane-1.0.0
               version: 1.1.0
-            applicationBundleAutoUpgrade: {}
+            applicationBundleAutoUpgrade: true
             name: default
             status:
               creationTime: 2023-07-31T10:45:42Z
@@ -1378,7 +1314,7 @@ components:
           - applicationBundle:
               name: control-plane-1.0.0
               version: 1.0.0
-            applicationBundleAutoUpgrade: {}
+            applicationBundleAutoUpgrade: true
             name: default
             status:
               creationTime: 2023-07-31T10:45:42Z
@@ -1446,14 +1382,15 @@ components:
           schema:
             $ref: '#/components/schemas/kubernetesClusters'
           example:
-          - applicationBundle:
+          - region: uk-east-1
+            version: v1.27.2
+            applicationBundle:
               name: kubernetes-cluster-1.0.0
               version: 1.0.0
             controlPlane:
               flavorName: g.2.standard
               imageName: eck-230714-4bef8ab1
               replicas: 3
-              version: v1.27.2
             features:
               autoscaling: true
               certManager: false

@@ -18,9 +18,9 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
 	goerrors "errors"
 	"fmt"
-	"net/http"
 	"reflect"
 	"slices"
 	"sort"
@@ -120,8 +120,8 @@ func New(client client.Client, options *unikornv1.RegionOpenstackSpec) (*Opensta
 	return o, nil
 }
 
-func cacheKey(r *http.Request) (string, error) {
-	claims, err := oauth2.ClaimsFromContext(r.Context())
+func cacheKey(ctx context.Context) (string, error) {
+	claims, err := oauth2.ClaimsFromContext(ctx)
 	if err != nil {
 		return "", errors.OAuth2ServerError("failed get cacheKe claims").WithError(err)
 	}
@@ -129,28 +129,16 @@ func cacheKey(r *http.Request) (string, error) {
 	return claims.ID, nil
 }
 
-func getUser(r *http.Request) (string, error) {
-	/*
-		claims, err := oauth2.ClaimsFromContext(r.Context())
-		if err != nil {
-			return "", errors.OAuth2ServerError("failed get cacheKe claims").WithError(err)
-		}
-
-		if claims.UnikornClaims == nil {
-			return "", errors.OAuth2ServerError("failed get cacheKe claim")
-		}
-
-		return claims.UnikornClaims.User, nil
-	*/
-	return "", nil
+func getUser(ctx context.Context) (string, error) {
+	return "d2dc1554d8fa47388e839a88e6b06fc7", nil
 }
 
 func (o *Openstack) providerClient() openstack.Provider {
 	return openstack.NewApplicationCredentialProvider(o.client, o.options)
 }
 
-func (o *Openstack) IdentityClient(r *http.Request) (*openstack.IdentityClient, error) {
-	cacheKey, err := cacheKey(r)
+func (o *Openstack) IdentityClient(ctx context.Context) (*openstack.IdentityClient, error) {
+	cacheKey, err := cacheKey(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +147,7 @@ func (o *Openstack) IdentityClient(r *http.Request) (*openstack.IdentityClient, 
 		return client, nil
 	}
 
-	client, err := openstack.NewIdentityClient(r.Context(), o.providerClient())
+	client, err := openstack.NewIdentityClient(ctx, o.providerClient())
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get identity client").WithError(err)
 	}
@@ -169,8 +157,8 @@ func (o *Openstack) IdentityClient(r *http.Request) (*openstack.IdentityClient, 
 	return client, nil
 }
 
-func (o *Openstack) ComputeClient(r *http.Request) (*openstack.ComputeClient, error) {
-	cacheKe, err := cacheKey(r)
+func (o *Openstack) ComputeClient(ctx context.Context) (*openstack.ComputeClient, error) {
+	cacheKe, err := cacheKey(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +167,7 @@ func (o *Openstack) ComputeClient(r *http.Request) (*openstack.ComputeClient, er
 		return client, nil
 	}
 
-	client, err := openstack.NewComputeClient(r.Context(), o.options.Compute, o.providerClient())
+	client, err := openstack.NewComputeClient(ctx, o.options.Compute, o.providerClient())
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get compute client").WithError(err)
 	}
@@ -189,8 +177,8 @@ func (o *Openstack) ComputeClient(r *http.Request) (*openstack.ComputeClient, er
 	return client, nil
 }
 
-func (o *Openstack) BlockStorageClient(r *http.Request) (*openstack.BlockStorageClient, error) {
-	cacheKe, err := cacheKey(r)
+func (o *Openstack) BlockStorageClient(ctx context.Context) (*openstack.BlockStorageClient, error) {
+	cacheKe, err := cacheKey(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +187,7 @@ func (o *Openstack) BlockStorageClient(r *http.Request) (*openstack.BlockStorage
 		return client, nil
 	}
 
-	client, err := openstack.NewBlockStorageClient(r.Context(), o.providerClient())
+	client, err := openstack.NewBlockStorageClient(ctx, o.providerClient())
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get block storage client").WithError(err)
 	}
@@ -209,8 +197,8 @@ func (o *Openstack) BlockStorageClient(r *http.Request) (*openstack.BlockStorage
 	return client, nil
 }
 
-func (o *Openstack) NetworkClient(r *http.Request) (*openstack.NetworkClient, error) {
-	cacheKe, err := cacheKey(r)
+func (o *Openstack) NetworkClient(ctx context.Context) (*openstack.NetworkClient, error) {
+	cacheKe, err := cacheKey(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +207,7 @@ func (o *Openstack) NetworkClient(r *http.Request) (*openstack.NetworkClient, er
 		return client, nil
 	}
 
-	client, err := openstack.NewNetworkClient(r.Context(), o.providerClient())
+	client, err := openstack.NewNetworkClient(ctx, o.providerClient())
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get network client").WithError(err)
 	}
@@ -229,8 +217,8 @@ func (o *Openstack) NetworkClient(r *http.Request) (*openstack.NetworkClient, er
 	return client, nil
 }
 
-func (o *Openstack) ImageClient(r *http.Request) (*openstack.ImageClient, error) {
-	cacheKe, err := cacheKey(r)
+func (o *Openstack) ImageClient(ctx context.Context) (*openstack.ImageClient, error) {
+	cacheKe, err := cacheKey(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +227,7 @@ func (o *Openstack) ImageClient(r *http.Request) (*openstack.ImageClient, error)
 		return client, nil
 	}
 
-	client, err := openstack.NewImageClient(r.Context(), o.providerClient(), o.options.Image)
+	client, err := openstack.NewImageClient(ctx, o.providerClient(), o.options.Image)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get image client").WithError(err)
 	}
@@ -249,13 +237,13 @@ func (o *Openstack) ImageClient(r *http.Request) (*openstack.ImageClient, error)
 	return client, nil
 }
 
-func (o *Openstack) ListAvailabilityZonesCompute(r *http.Request) (generated.OpenstackAvailabilityZones, error) {
-	client, err := o.ComputeClient(r)
+func (o *Openstack) ListAvailabilityZonesCompute(ctx context.Context) (generated.OpenstackAvailabilityZones, error) {
+	client, err := o.ComputeClient(ctx)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get compute client").WithError(err)
 	}
 
-	result, err := client.AvailabilityZones(r.Context())
+	result, err := client.AvailabilityZones(ctx)
 	if err != nil {
 		return nil, covertError(err)
 	}
@@ -269,13 +257,13 @@ func (o *Openstack) ListAvailabilityZonesCompute(r *http.Request) (generated.Ope
 	return azs, nil
 }
 
-func (o *Openstack) ListAvailabilityZonesBlockStorage(r *http.Request) (generated.OpenstackAvailabilityZones, error) {
-	client, err := o.BlockStorageClient(r)
+func (o *Openstack) ListAvailabilityZonesBlockStorage(ctx context.Context) (generated.OpenstackAvailabilityZones, error) {
+	client, err := o.BlockStorageClient(ctx)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get block storage client").WithError(err)
 	}
 
-	result, err := client.AvailabilityZones(r.Context())
+	result, err := client.AvailabilityZones(ctx)
 	if err != nil {
 		return nil, covertError(err)
 	}
@@ -289,13 +277,13 @@ func (o *Openstack) ListAvailabilityZonesBlockStorage(r *http.Request) (generate
 	return azs, nil
 }
 
-func (o *Openstack) ListExternalNetworks(r *http.Request) (interface{}, error) {
-	client, err := o.NetworkClient(r)
+func (o *Openstack) ListExternalNetworks(ctx context.Context) (generated.OpenstackExternalNetworks, error) {
+	client, err := o.NetworkClient(ctx)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get network client").WithError(err)
 	}
 
-	result, err := client.ExternalNetworks(r.Context())
+	result, err := client.ExternalNetworks(ctx)
 	if err != nil {
 		return nil, covertError(err)
 	}
@@ -371,13 +359,13 @@ func (w flavorSortWrapper) Swap(i, j int) {
 	w.f[i], w.f[j] = w.f[j], w.f[i]
 }
 
-func (o *Openstack) ListFlavors(r *http.Request) (generated.OpenstackFlavors, error) {
-	client, err := o.ComputeClient(r)
+func (o *Openstack) ListFlavors(ctx context.Context) (generated.OpenstackFlavors, error) {
+	client, err := o.ComputeClient(ctx)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get compute client").WithError(err)
 	}
 
-	result, err := client.Flavors(r.Context())
+	result, err := client.Flavors(ctx)
 	if err != nil {
 		return nil, covertError(err)
 	}
@@ -403,8 +391,8 @@ func (o *Openstack) ListFlavors(r *http.Request) (generated.OpenstackFlavors, er
 }
 
 // GetFlavor does a list and find, while inefficient, it does do image filtering.
-func (o *Openstack) GetFlavor(r *http.Request, name string) (*generated.OpenstackFlavor, error) {
-	flavors, err := o.ListFlavors(r)
+func (o *Openstack) GetFlavor(ctx context.Context, name string) (*generated.OpenstackFlavor, error) {
+	flavors, err := o.ListFlavors(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -435,13 +423,13 @@ func (w imageSortWrapper) Swap(i, j int) {
 	w.images[i], w.images[j] = w.images[j], w.images[i]
 }
 
-func (o *Openstack) ListImages(r *http.Request) (generated.OpenstackImages, error) {
-	client, err := o.ImageClient(r)
+func (o *Openstack) ListImages(ctx context.Context) (generated.OpenstackImages, error) {
+	client, err := o.ImageClient(ctx)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get image client").WithError(err)
 	}
 
-	result, err := client.Images(r.Context())
+	result, err := client.Images(ctx)
 	if err != nil {
 		return nil, covertError(err)
 	}
@@ -470,8 +458,8 @@ func (o *Openstack) ListImages(r *http.Request) (generated.OpenstackImages, erro
 }
 
 // GetImage does a list and find, while inefficient, it does do image filtering.
-func (o *Openstack) GetImage(r *http.Request, name string) (*generated.OpenstackImage, error) {
-	images, err := o.ListImages(r)
+func (o *Openstack) GetImage(ctx context.Context, name string) (*generated.OpenstackImage, error) {
+	images, err := o.ListImages(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -485,13 +473,13 @@ func (o *Openstack) GetImage(r *http.Request, name string) (*generated.Openstack
 	return nil, errors.HTTPNotFound().WithError(fmt.Errorf("%w: image %s", ErrResourceNotFound, name))
 }
 
-func (o *Openstack) ListKeyPairs(r *http.Request) (generated.OpenstackKeyPairs, error) {
-	client, err := o.ComputeClient(r)
+func (o *Openstack) ListKeyPairs(ctx context.Context) (generated.OpenstackKeyPairs, error) {
+	client, err := o.ComputeClient(ctx)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get compute client").WithError(err)
 	}
 
-	result, err := client.KeyPairs(r.Context())
+	result, err := client.KeyPairs(ctx)
 	if err != nil {
 		return nil, covertError(err)
 	}
@@ -528,18 +516,18 @@ func findApplicationCredential(in []applicationcredentials.ApplicationCredential
 	return nil, errors.HTTPNotFound().WithError(fmt.Errorf("%w: application credential %s", ErrResourceNotFound, name))
 }
 
-func (o *Openstack) GetApplicationCredential(r *http.Request, name string) (*applicationcredentials.ApplicationCredential, error) {
-	user, err := getUser(r)
+func (o *Openstack) GetApplicationCredential(ctx context.Context, name string) (*applicationcredentials.ApplicationCredential, error) {
+	user, err := getUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := o.IdentityClient(r)
+	client, err := o.IdentityClient(ctx)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get identity client").WithError(err)
 	}
 
-	result, err := client.ListApplicationCredentials(r.Context(), user)
+	result, err := client.ListApplicationCredentials(ctx, user)
 	if err != nil {
 		return nil, covertError(err)
 	}
@@ -552,13 +540,13 @@ func (o *Openstack) GetApplicationCredential(r *http.Request, name string) (*app
 	return match, nil
 }
 
-func (o *Openstack) CreateApplicationCredential(r *http.Request, name string) (*applicationcredentials.ApplicationCredential, error) {
-	user, err := getUser(r)
+func (o *Openstack) CreateApplicationCredential(ctx context.Context, name string) (*applicationcredentials.ApplicationCredential, error) {
+	user, err := getUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := o.IdentityClient(r)
+	client, err := o.IdentityClient(ctx)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get identity client").WithError(err)
 	}
@@ -574,7 +562,7 @@ func (o *Openstack) CreateApplicationCredential(r *http.Request, name string) (*
 		roles = o.options.Identity.ClusterRoles
 	}
 
-	result, err := client.CreateApplicationCredential(r.Context(), user, name, description, roles)
+	result, err := client.CreateApplicationCredential(ctx, user, name, description, roles)
 	if err != nil {
 		return nil, covertError(err)
 	}
@@ -582,18 +570,18 @@ func (o *Openstack) CreateApplicationCredential(r *http.Request, name string) (*
 	return result, nil
 }
 
-func (o *Openstack) DeleteApplicationCredential(r *http.Request, name string) error {
-	user, err := getUser(r)
+func (o *Openstack) DeleteApplicationCredential(ctx context.Context, name string) error {
+	user, err := getUser(ctx)
 	if err != nil {
 		return err
 	}
 
-	client, err := o.IdentityClient(r)
+	client, err := o.IdentityClient(ctx)
 	if err != nil {
 		return errors.OAuth2ServerError("failed get identity client").WithError(err)
 	}
 
-	result, err := client.ListApplicationCredentials(r.Context(), user)
+	result, err := client.ListApplicationCredentials(ctx, user)
 	if err != nil {
 		return covertError(err)
 	}
@@ -603,20 +591,20 @@ func (o *Openstack) DeleteApplicationCredential(r *http.Request, name string) er
 		return err
 	}
 
-	if err := client.DeleteApplicationCredential(r.Context(), user, match.ID); err != nil {
+	if err := client.DeleteApplicationCredential(ctx, user, match.ID); err != nil {
 		return errors.OAuth2ServerError("failed delete application credentials").WithError(err)
 	}
 
 	return nil
 }
 
-func (o *Openstack) GetServerGroup(r *http.Request, name string) (*servergroups.ServerGroup, error) {
-	client, err := o.ComputeClient(r)
+func (o *Openstack) GetServerGroup(ctx context.Context, name string) (*servergroups.ServerGroup, error) {
+	client, err := o.ComputeClient(ctx)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get compute client").WithError(err)
 	}
 
-	result, err := client.ListServerGroups(r.Context())
+	result, err := client.ListServerGroups(ctx)
 	if err != nil {
 		return nil, covertError(err)
 	}
@@ -635,13 +623,13 @@ func (o *Openstack) GetServerGroup(r *http.Request, name string) (*servergroups.
 	}
 }
 
-func (o *Openstack) CreateServerGroup(r *http.Request, name string) (*servergroups.ServerGroup, error) {
-	client, err := o.ComputeClient(r)
+func (o *Openstack) CreateServerGroup(ctx context.Context, name string) (*servergroups.ServerGroup, error) {
+	client, err := o.ComputeClient(ctx)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed get compute client").WithError(err)
 	}
 
-	result, err := client.CreateServerGroup(r.Context(), name)
+	result, err := client.CreateServerGroup(ctx, name)
 	if err != nil {
 		return nil, covertError(err)
 	}

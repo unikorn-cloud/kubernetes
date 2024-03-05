@@ -409,10 +409,8 @@ spec:
               pause:
                 description: Pause, if true, will inhibit reconciliation.
                 type: boolean
-              timeout:
-                default: 20m
-                description: Timeout is the maximum time to attempt to provision a
-                  cluster before aborting.
+              region:
+                description: Region to provision the cluster in.
                 type: string
               workloadPools:
                 description: WorkloadPools defines the workload cluster topology.
@@ -570,7 +568,7 @@ spec:
             - controlPlane
             - network
             - openstack
-            - timeout
+            - region
             - workloadPools
             type: object
           status:

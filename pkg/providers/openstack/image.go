@@ -26,13 +26,13 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
-	"golang.org/x/exp/slices"
 
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/util"
@@ -150,6 +150,22 @@ func (c *ImageClient) verifyImage(image *images.Image) bool {
 	return ecdsa.VerifyASN1(signingKey, hash[:], signature)
 }
 
+func (c *ImageClient) imageValid(image *images.Image) bool {
+	if image.Status != "active" {
+		return false
+	}
+
+	if !c.validateProperties(image) {
+		return false
+	}
+
+	if !c.verifyImage(image) {
+		return false
+	}
+
+	return true
+}
+
 // Images returns a list of images.
 func (c *ImageClient) Images(ctx context.Context) ([]images.Image, error) {
 	tracer := otel.GetTracerProvider().Tracer(constants.Application)
@@ -168,25 +184,14 @@ func (c *ImageClient) Images(ctx context.Context) ([]images.Image, error) {
 	}
 
 	// Filter out images that aren't compatible.
-	filtered := []images.Image{}
+	result = slices.DeleteFunc(result, func(image images.Image) bool {
+		return !c.imageValid(&image)
+	})
 
-	for i := range result {
-		image := result[i]
+	// Sort by age, the newest should have the fewest CVEs!
+	slices.SortStableFunc(result, func(a, b images.Image) int {
+		return a.CreatedAt.Compare(b.CreatedAt)
+	})
 
-		if image.Status != "active" {
-			continue
-		}
-
-		if !c.validateProperties(&image) {
-			continue
-		}
-
-		if !c.verifyImage(&image) {
-			continue
-		}
-
-		filtered = append(filtered, image)
-	}
-
-	return filtered, nil
+	return result, nil
 }

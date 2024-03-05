@@ -24,6 +24,7 @@ import (
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/core/pkg/constants"
+	"github.com/unikorn-cloud/core/pkg/util"
 	"github.com/unikorn-cloud/core/pkg/util/retry"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
@@ -103,38 +104,14 @@ func (c *Client) provisionDefaultControlPlane(ctx context.Context, projectName, 
 
 	log.Info("creating implicit control plane", "name", name)
 
-	applicationBundles, err := applicationbundle.NewClient(c.client).ListControlPlane(ctx)
-	if err != nil {
-		return err
-	}
-
-	var applicationBundle *generated.ApplicationBundle
-
-	for _, bundle := range applicationBundles {
-		if bundle.Preview != nil && *bundle.Preview {
-			continue
-		}
-
-		if bundle.EndOfLife != nil {
-			continue
-		}
-
-		applicationBundle = bundle
-
-		break
-	}
-
-	if applicationBundle == nil {
-		return ErrApplicationBundle
-	}
+	autoUpgrade := true
 
 	// GetMetadata should be called by descendents of the control
 	// plane e.g. clusters. Rather than delegate creation to each
 	// and every client implicitly create it.
 	defaultControlPlane := &generated.ControlPlane{
 		Name:                         name,
-		ApplicationBundle:            *applicationBundle,
-		ApplicationBundleAutoUpgrade: &generated.ApplicationBundleAutoUpgrade{},
+		ApplicationBundleAutoUpgrade: &autoUpgrade,
 	}
 
 	if err := c.Create(ctx, projectName, defaultControlPlane); err != nil {
@@ -261,11 +238,14 @@ func (c *Client) convert(ctx context.Context, in *unikornv1.ControlPlane) (*gene
 		return nil, err
 	}
 
+	autoUpgrade := in.Spec.ApplicationBundleAutoUpgrade != nil
+
 	out := &generated.ControlPlane{
-		Metadata:                     metadata,
-		Name:                         in.Name,
-		ApplicationBundle:            *bundle,
-		ApplicationBundleAutoUpgrade: common.ConvertApplicationBundleAutoUpgrade(in.Spec.ApplicationBundleAutoUpgrade),
+		Metadata:                             metadata,
+		Name:                                 in.Name,
+		ApplicationBundle:                    bundle,
+		ApplicationBundleAutoUpgrade:         &autoUpgrade,
+		ApplicationBundleAutoUpgradeSchedule: common.ConvertApplicationBundleAutoUpgrade(in.Spec.ApplicationBundleAutoUpgrade),
 	}
 
 	return out, nil
@@ -340,9 +320,51 @@ func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.Co
 	return result, nil
 }
 
+// defaultApplicationBundle returns a default application bundle.
+func (c *Client) defaultApplicationBundle(ctx context.Context) (*generated.ApplicationBundle, error) {
+	applicationBundles, err := applicationbundle.NewClient(c.client).ListControlPlane(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	applicationBundles = slices.DeleteFunc(applicationBundles, func(bundle *generated.ApplicationBundle) bool {
+		if bundle.Preview != nil && *bundle.Preview {
+			return true
+		}
+
+		if bundle.EndOfLife != nil {
+			return true
+		}
+
+		return false
+	})
+
+	if len(applicationBundles) == 0 {
+		return nil, errors.OAuth2ServerError("unable to select an application bundle")
+	}
+
+	return applicationBundles[0], nil
+}
+
 // generate is a common function to create a Kubernetes type from an API one.
-func generate(project *project.Meta, request *generated.ControlPlane) *unikornv1.ControlPlane {
-	// TODO: common with CLI tools.
+func (c *Client) generate(ctx context.Context, project *project.Meta, request *generated.ControlPlane) (*unikornv1.ControlPlane, error) {
+	paremeters := request
+
+	if paremeters == nil {
+		paremeters = &generated.ControlPlane{
+			ApplicationBundleAutoUpgrade: util.ToPointer(true),
+		}
+	}
+
+	if paremeters.ApplicationBundle == nil {
+		applicationBundle, err := c.defaultApplicationBundle(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		paremeters.ApplicationBundle = applicationBundle
+	}
+
 	controlPlane := &unikornv1.ControlPlane{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      request.Name,
@@ -354,12 +376,15 @@ func generate(project *project.Meta, request *generated.ControlPlane) *unikornv1
 			},
 		},
 		Spec: unikornv1.ControlPlaneSpec{
-			ApplicationBundle:            &request.ApplicationBundle.Name,
-			ApplicationBundleAutoUpgrade: common.CreateApplicationBundleAutoUpgrade(request.ApplicationBundleAutoUpgrade),
+			ApplicationBundle: &paremeters.Name,
 		},
 	}
 
-	return controlPlane
+	if paremeters.ApplicationBundleAutoUpgrade != nil && *paremeters.ApplicationBundleAutoUpgrade {
+		controlPlane.Spec.ApplicationBundleAutoUpgrade = common.CreateApplicationBundleAutoUpgrade(request.ApplicationBundleAutoUpgradeSchedule)
+	}
+
+	return controlPlane, nil
 }
 
 // Create creates a control plane.
@@ -373,7 +398,10 @@ func (c *Client) Create(ctx context.Context, projectName generated.ProjectNamePa
 		return errors.OAuth2InvalidRequest("project is being deleted")
 	}
 
-	resource := generate(project, request)
+	resource, err := c.generate(ctx, project, request)
+	if err != nil {
+		return err
+	}
 
 	if err := c.client.Create(ctx, resource); err != nil {
 		// TODO: we can do a cached lookup to save the API traffic.
@@ -432,7 +460,10 @@ func (c *Client) Update(ctx context.Context, projectName generated.ProjectNamePa
 		return err
 	}
 
-	required := generate(project, request)
+	required, err := c.generate(ctx, project, request)
+	if err != nil {
+		return err
+	}
 
 	// Experience has taught me that modifying caches by accident is a bad thing
 	// so be extra safe and deep copy the existing resource.
