@@ -69,8 +69,7 @@ func (s *Server) SetupLogging() {
 func (s *Server) SetupOpenTelemetry(ctx context.Context) error {
 	otel.SetLogger(log.Log)
 
-	// TODO: use a full w3c trace context.
-	otel.SetTextMapPropagator(propagation.Baggage{})
+	otel.SetTextMapPropagator(propagation.TraceContext{})
 
 	opts := []trace.TracerProviderOption{
 		trace.WithSpanProcessor(&middleware.LoggingSpanProcessor{}),
