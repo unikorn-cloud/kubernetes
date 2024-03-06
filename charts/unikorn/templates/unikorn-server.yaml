@@ -176,7 +176,9 @@ metadata:
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
   annotations:
-  {{- if .Values.server.ingress.issuer }}
+  {{- if .Values.server.ingress.clusterIssuer }}
+     cert-manager.io/cluster-issuer: {{ .Values.server.ingress.clusterIssuer | indent 2 }}
+  {{- else if .Values.server.ingress.issuer }}
     cert-manager.io/issuer: {{ .Values.server.ingress.issuer }}
   {{- else }}
     cert-manager.io/issuer: unikorn-server-ingress
