@@ -87,6 +87,7 @@ func Middleware(schema *openapi.Schema, options *Options) func(http.Handler) htt
 			// to requirements.
 			headers := []string{
 				"Authorization",
+				"Content-Type",
 				"traceparent",
 				"tracestate",
 			}
