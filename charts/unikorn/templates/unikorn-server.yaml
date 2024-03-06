@@ -68,21 +68,6 @@ roleRef:
   kind: ClusterRole
   name: unikorn-server
 ---
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: unikorn-server-jose-tls
-spec:
-  issuerRef:
-    kind: Issuer
-    name: unikorn-server-jose
-  privateKey:
-    algorithm: ECDSA
-    encoding: PKCS8
-    size: 521
-  commonName : Unikorn Server JOSE Key
-  secretName: unikorn-server-jose-tls
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -177,7 +162,7 @@ metadata:
     {{- include "unikorn.labels" . | nindent 4 }}
   annotations:
   {{- if .Values.server.ingress.clusterIssuer }}
-     cert-manager.io/cluster-issuer: {{ .Values.server.ingress.clusterIssuer | indent 2 }}
+    cert-manager.io/cluster-issuer: {{ .Values.server.ingress.clusterIssuer | indent 2 }}
   {{- else if .Values.server.ingress.issuer }}
     cert-manager.io/issuer: {{ .Values.server.ingress.issuer }}
   {{- else }}
