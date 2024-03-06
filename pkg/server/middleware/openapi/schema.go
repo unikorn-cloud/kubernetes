@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package middleware
+package openapi
 
 import (
 	"net/http"
@@ -28,8 +28,8 @@ import (
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 )
 
-// OpenAPI abstracts schema access and validation.
-type OpenAPI struct {
+// Schema abstracts schema access and validation.
+type Schema struct {
 	// spec is the full specification.
 	spec *openapi3.T
 
@@ -40,7 +40,7 @@ type OpenAPI struct {
 
 // NewOpenRpi extracts the swagger document.
 // NOTE: this is surprisingly slow, make sure you cache it and reuse it.
-func NewOpenAPI() (*OpenAPI, error) {
+func NewSchema() (*Schema, error) {
 	spec, err := generated.GetSwagger()
 	if err != nil {
 		return nil, err
@@ -51,17 +51,17 @@ func NewOpenAPI() (*OpenAPI, error) {
 		return nil, err
 	}
 
-	o := &OpenAPI{
+	s := &Schema{
 		spec:   spec,
 		router: router,
 	}
 
-	return o, nil
+	return s, nil
 }
 
-// findRoute looks up the route from the specification.
-func (o *OpenAPI) findRoute(r *http.Request) (*routers.Route, map[string]string, error) {
-	route, params, err := o.router.FindRoute(r)
+// FindRoute looks up the route from the specification.
+func (s *Schema) FindRoute(r *http.Request) (*routers.Route, map[string]string, error) {
+	route, params, err := s.router.FindRoute(r)
 	if err != nil {
 		return nil, nil, errors.OAuth2ServerError("unable to find route").WithError(err)
 	}

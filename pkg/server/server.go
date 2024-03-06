@@ -31,7 +31,10 @@ import (
 
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler"
-	"github.com/unikorn-cloud/unikorn/pkg/server/middleware"
+	"github.com/unikorn-cloud/unikorn/pkg/server/middleware/cors"
+	"github.com/unikorn-cloud/unikorn/pkg/server/middleware/openapi"
+	"github.com/unikorn-cloud/unikorn/pkg/server/middleware/opentelemetry"
+	"github.com/unikorn-cloud/unikorn/pkg/server/middleware/timeout"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -48,7 +51,11 @@ type Server struct {
 	// HandlerOptions sets options for the HTTP handler.
 	HandlerOptions handler.Options
 
-	AuthorizerOptions middleware.AuthorizerOptions
+	// AuthorizerOptions allow configuration of the OIDC backend.
+	AuthorizerOptions openapi.Options
+
+	// CORSOptions are for remote resource sharing.
+	CORSOptions cors.Options
 }
 
 func (s *Server) AddFlags(goflags *flag.FlagSet, flags *pflag.FlagSet) {
@@ -57,6 +64,7 @@ func (s *Server) AddFlags(goflags *flag.FlagSet, flags *pflag.FlagSet) {
 	s.Options.AddFlags(flags)
 	s.HandlerOptions.AddFlags(flags)
 	s.AuthorizerOptions.AddFlags(flags)
+	s.CORSOptions.AddFlags(flags)
 }
 
 func (s *Server) SetupLogging() {
@@ -72,7 +80,7 @@ func (s *Server) SetupOpenTelemetry(ctx context.Context) error {
 	otel.SetTextMapPropagator(propagation.TraceContext{})
 
 	opts := []trace.TracerProviderOption{
-		trace.WithSpanProcessor(&middleware.LoggingSpanProcessor{}),
+		trace.WithSpanProcessor(&opentelemetry.LoggingSpanProcessor{}),
 	}
 
 	if s.Options.OTLPEndpoint != "" {
@@ -94,20 +102,21 @@ func (s *Server) SetupOpenTelemetry(ctx context.Context) error {
 }
 
 func (s *Server) GetServer(client client.Client) (*http.Server, error) {
+	schema, err := openapi.NewSchema()
+	if err != nil {
+		return nil, err
+	}
+
 	// Middleware specified here is applied to all requests pre-routing.
 	router := chi.NewRouter()
-	router.Use(middleware.Logger())
-	router.Use(middleware.Timeout(s.Options.RequestTimeout))
+	router.Use(timeout.Middleware(s.Options.RequestTimeout))
+	router.Use(opentelemetry.Middleware())
+	router.Use(cors.Middleware(schema, &s.CORSOptions))
 	router.NotFound(http.HandlerFunc(handler.NotFound))
 	router.MethodNotAllowed(http.HandlerFunc(handler.MethodNotAllowed))
 
 	// Setup middleware.
-	authorizer := middleware.NewAuthorizer(&s.AuthorizerOptions)
-
-	openapi, err := middleware.NewOpenAPI()
-	if err != nil {
-		return nil, err
-	}
+	authorizer := openapi.NewAuthorizer(&s.AuthorizerOptions)
 
 	// Middleware specified here is applied to all requests post-routing.
 	// NOTE: these are applied in reverse order!!
@@ -115,7 +124,7 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 		BaseRouter:       router,
 		ErrorHandlerFunc: handler.HandleError,
 		Middlewares: []generated.MiddlewareFunc{
-			middleware.OpenAPIValidatorMiddlewareFactory(authorizer, openapi),
+			openapi.Middleware(authorizer, schema),
 		},
 	}
 
