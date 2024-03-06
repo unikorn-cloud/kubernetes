@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package middleware
+package openapi
 
 import (
 	"crypto/tls"
@@ -44,7 +44,7 @@ type authorizationContext struct {
 	claims oauth2.Claims
 }
 
-type AuthorizerOptions struct {
+type Options struct {
 	// issuer is used to perform OIDC discovery and verify access tokens
 	// using the JWKS endpoint.
 	issuer string
@@ -53,18 +53,18 @@ type AuthorizerOptions struct {
 	issuerCA []byte
 }
 
-func (o *AuthorizerOptions) AddFlags(f *pflag.FlagSet) {
+func (o *Options) AddFlags(f *pflag.FlagSet) {
 	f.StringVar(&o.issuer, "oidc-issuer", "", "OIDC issuer URL to use for token validation.")
 	f.BytesBase64Var(&o.issuerCA, "oidc-issuer-ca", nil, "base64 OIDC endpoint CA certificate.")
 }
 
 // Authorizer provides OpenAPI based authorization middleware.
 type Authorizer struct {
-	options *AuthorizerOptions
+	options *Options
 }
 
 // NewAuthorizer returns a new authorizer with required parameters.
-func NewAuthorizer(options *AuthorizerOptions) *Authorizer {
+func NewAuthorizer(options *Options) *Authorizer {
 	return &Authorizer{
 		options: options,
 	}

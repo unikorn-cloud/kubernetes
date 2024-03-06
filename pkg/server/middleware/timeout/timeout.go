@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package middleware
+package timeout
 
 import (
 	"context"
@@ -23,8 +23,8 @@ import (
 	"time"
 )
 
-// Timeout adds a timeout to requests.
-func Timeout(timeout time.Duration) func(http.Handler) http.Handler {
+// Middleware adds a timeout to requests.
+func Middleware(timeout time.Duration) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx, cancel := context.WithTimeout(r.Context(), timeout)

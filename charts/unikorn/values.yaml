@@ -99,19 +99,24 @@ server:
 
   ingress:
     # Sets the ingress class to use.
-    ingressClass: nginx
-
-    # A map of explicit annotations to add to the ingress.  By default, when not
-    # specified, the chart will create an issuer and add in an annotation to generate
-    # self signed TLS secret with cert-manager.  For real life deployments, you will
-    # want something like the following e.g. a shared cluster issuer, and external-dns
-    # to define the DNS address via DDNS and keep the IP address in sync.
-    # annotations:
-    #   external-dns.alpha.kubernetes.io/hostname=unikorn.unikorn-cloud.org
-    #   cert-manager.io/issuer: letsencrypt-prod
+    class: nginx
 
     # Sets the DNS hosts/X.509 Certs.
     host: unikorn.unikorn-cloud.org
+
+    # Cert Manager certificate issuer to use.  If not specified it will generate a
+    # self signed one.
+    issuer: ~
+
+    # If true, will add the external DNS hostname annotation.
+    externalDns: false
+
+  # Allows CORS to be configured/secured
+  # cors:
+  #   # Broswers must send requests from these origin servers, defaults to * if not set.
+  #   allowOrigin: ['*']
+  #   # How long to cache the CORS preflight for, mostly useless as browsers override this.
+  #   maxAge: 86400
 
   oidc:
     # OIDC issuer used to discover OIDC configuration and verify access tokens.
@@ -123,11 +128,6 @@ server:
 
   # Sets the OTLP endpoint for shipping spans.
   # otlpEndpoint: jaeger-collector.default:4318
-
-# UI that works with the server.
-ui:
-  # Temporarily block deployment until it's complete.
-  enabled: false
 
 # Defines Prometheus monitoring integration.
 monitoring:

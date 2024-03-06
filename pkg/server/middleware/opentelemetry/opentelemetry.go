@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package middleware
+package opentelemetry
 
 import (
 	"context"
@@ -256,8 +256,8 @@ func httpStatusToOtelCode(status int) (codes.Code, string) {
 	return code, http.StatusText(status)
 }
 
-// Logger attaches logging context to the request.
-func Logger() func(next http.Handler) http.Handler {
+// Middleware attaches logging context to the request.
+func Middleware() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Extract the tracing information from the HTTP headers.

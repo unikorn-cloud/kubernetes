@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package middleware
+package openapi
 
 import (
 	"bytes"
@@ -34,26 +34,26 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-// OpenAPIValidator provides OpenAPI validation of request and response codes,
+// Validator provides Schema validation of request and response codes,
 // media, and schema validation of payloads to ensure we are meeting the
 // specification.
-type OpenAPIValidator struct {
+type Validator struct {
 	// next defines the next HTTP handler in the chain.
 	next http.Handler
 
 	// authorizer provides security policy enforcement.
 	authorizer *Authorizer
 
-	// openapi caches the OpenAPI schema.
-	openapi *OpenAPI
+	// openapi caches the Schema schema.
+	openapi *Schema
 }
 
 // Ensure this implements the required interfaces.
-var _ http.Handler = &OpenAPIValidator{}
+var _ http.Handler = &Validator{}
 
-// NewOpenAPIValidator returns an initialized validator middleware.
-func NewOpenAPIValidator(authorizer *Authorizer, next http.Handler, openapi *OpenAPI) *OpenAPIValidator {
-	return &OpenAPIValidator{
+// NewValidator returns an initialized validator middleware.
+func NewValidator(authorizer *Authorizer, next http.Handler, openapi *Schema) *Validator {
+	return &Validator{
 		authorizer: authorizer,
 		next:       next,
 		openapi:    openapi,
@@ -109,13 +109,13 @@ func (w *bufferingResponseWriter) StatusCode() int {
 	return w.code
 }
 
-func (v *OpenAPIValidator) validateRequest(r *http.Request, authContext *authorizationContext) (*openapi3filter.ResponseValidationInput, error) {
+func (v *Validator) validateRequest(r *http.Request, authContext *authorizationContext) (*openapi3filter.ResponseValidationInput, error) {
 	tracer := otel.GetTracerProvider().Tracer(constants.Application)
 
 	ctx, span := tracer.Start(r.Context(), "openapi request validation", trace.WithSpanKind(trace.SpanKindInternal))
 	defer span.End()
 
-	route, params, err := v.openapi.findRoute(r)
+	route, params, err := v.openapi.FindRoute(r)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("route lookup failure").WithError(err)
 	}
@@ -159,7 +159,7 @@ func (v *OpenAPIValidator) validateRequest(r *http.Request, authContext *authori
 	return responseValidationInput, nil
 }
 
-func (v *OpenAPIValidator) validateResponse(w *bufferingResponseWriter, r *http.Request, responseValidationInput *openapi3filter.ResponseValidationInput) {
+func (v *Validator) validateResponse(w *bufferingResponseWriter, r *http.Request, responseValidationInput *openapi3filter.ResponseValidationInput) {
 	tracer := otel.GetTracerProvider().Tracer(constants.Application)
 
 	ctx, span := tracer.Start(r.Context(), "openapi response validation",
@@ -177,7 +177,7 @@ func (v *OpenAPIValidator) validateResponse(w *bufferingResponseWriter, r *http.
 }
 
 // ServeHTTP implements the http.Handler interface.
-func (v *OpenAPIValidator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (v *Validator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	authContext := &authorizationContext{}
 
 	responseValidationInput, err := v.validateRequest(r, authContext)
@@ -200,10 +200,10 @@ func (v *OpenAPIValidator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	v.validateResponse(writer, r, responseValidationInput)
 }
 
-// OpenAPIValidatorMiddlewareFactory returns a function that generates per-request
+// Middleware returns a function that generates per-request
 // middleware functions.
-func OpenAPIValidatorMiddlewareFactory(authorizer *Authorizer, openapi *OpenAPI) func(http.Handler) http.Handler {
+func Middleware(authorizer *Authorizer, openapi *Schema) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-		return NewOpenAPIValidator(authorizer, next, openapi)
+		return NewValidator(authorizer, next, openapi)
 	}
 }
