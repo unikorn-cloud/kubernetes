@@ -18,6 +18,7 @@ package cors
 
 import (
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -38,13 +39,22 @@ func (o *Options) AddFlags(f *pflag.FlagSet) {
 	f.IntVar(&o.MaxAge, "cors-max-age", 86400, "CORS maximum age (may be overridden by the browser)")
 }
 
+func setAllowOrigin(w http.ResponseWriter, r *http.Request, allowedOrigins []string) {
+	if origin := r.Header.Get("Origin"); origin != "" {
+		if index := slices.IndexFunc(allowedOrigins, func(s string) bool { return s == origin }); index >= 0 {
+			w.Header().Add("Access-Control-Allow-Origin", origin)
+			return
+		}
+	}
+
+	w.Header().Add("Access-Control-Allow-Origin", allowedOrigins[0])
+}
+
 func Middleware(schema *openapi.Schema, options *Options) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// All requests get the allow origin header.
-			for _, origin := range options.AllowedOrigins {
-				w.Header().Add("Access-Control-Allow-Origin", origin)
-			}
+			// All requests get the allow origin header.  BUT only one!
+			setAllowOrigin(w, r, options.AllowedOrigins)
 
 			// For normal requests handle them.
 			if r.Method != http.MethodOptions {
