@@ -27,6 +27,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
@@ -36,6 +37,7 @@ import (
 
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/util"
+	"github.com/unikorn-cloud/core/pkg/util/cache"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 )
 
@@ -52,13 +54,14 @@ var (
 
 // ImageClient wraps the generic client because gophercloud is unsafe.
 type ImageClient struct {
-	client  *gophercloud.ServiceClient
-	options *unikornv1.RegionOpenstackImageSpec
+	client     *gophercloud.ServiceClient
+	options    *unikornv1.RegionOpenstackImageSpec
+	imageCache *cache.TimeoutCache[[]images.Image]
 }
 
 // NewImageClient provides a simple one-liner to start computing.
-func NewImageClient(ctx context.Context, provider Provider, options *unikornv1.RegionOpenstackImageSpec) (*ImageClient, error) {
-	providerClient, err := provider.Client(ctx)
+func NewImageClient(ctx context.Context, provider CredentialProvider, options *unikornv1.RegionOpenstackImageSpec) (*ImageClient, error) {
+	providerClient, err := provider.Client()
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +72,9 @@ func NewImageClient(ctx context.Context, provider Provider, options *unikornv1.R
 	}
 
 	c := &ImageClient{
-		client:  client,
-		options: options,
+		client:     client,
+		options:    options,
+		imageCache: cache.New[[]images.Image](time.Hour),
 	}
 
 	return c, nil
@@ -168,6 +172,10 @@ func (c *ImageClient) imageValid(image *images.Image) bool {
 
 // Images returns a list of images.
 func (c *ImageClient) Images(ctx context.Context) ([]images.Image, error) {
+	if result, ok := c.imageCache.Get(); ok {
+		return result, nil
+	}
+
 	tracer := otel.GetTracerProvider().Tracer(constants.Application)
 
 	_, span := tracer.Start(ctx, "/imageservice/v2/images", trace.WithSpanKind(trace.SpanKindClient))
@@ -192,6 +200,8 @@ func (c *ImageClient) Images(ctx context.Context) ([]images.Image, error) {
 	slices.SortStableFunc(result, func(a, b images.Image) int {
 		return a.CreatedAt.Compare(b.CreatedAt)
 	})
+
+	c.imageCache.Set(result)
 
 	return result, nil
 }

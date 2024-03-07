@@ -37,7 +37,7 @@ spec:
         {{ printf "gpuDescriptors:" | nindent 6 }}
         {{- range $descriptor := $descriptors }}
           {{ printf "- property: %s" $descriptor.property | nindent 6 }}
-          {{ printf "expresison: %s" $descriptor.property | nindent 8 }}
+          {{ printf "  expression: %s" $descriptor.expression | nindent 6 }}
         {{- end }}
       {{- end }}
     {{- end }}

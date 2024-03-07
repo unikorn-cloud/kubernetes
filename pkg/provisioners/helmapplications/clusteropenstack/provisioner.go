@@ -95,7 +95,7 @@ func (p *Provisioner) generateWorkloadPoolHelmValues(cluster *unikornv1.Kubernet
 		workloadPool := &cluster.Spec.WorkloadPools.Pools[i]
 
 		object := map[string]interface{}{
-			"version":  string(*workloadPool.Version),
+			"version":  string(*cluster.Spec.Version),
 			"replicas": *workloadPool.Replicas,
 			"machine":  p.generateMachineHelmValues(&workloadPool.MachineGeneric, workloadPool.FailureDomain),
 		}
@@ -217,6 +217,7 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 
 	// TODO: generate types from the Helm values schema.
 	values := map[string]interface{}{
+		"version":   string(*cluster.Spec.Version),
 		"openstack": openstackValues,
 		"cluster": map[string]interface{}{
 			"taints": []interface{}{
@@ -234,7 +235,6 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 			"serverMetadata": serverMetadata,
 		},
 		"controlPlane": map[string]interface{}{
-			"version":  string(*cluster.Spec.ControlPlane.Version),
 			"replicas": *cluster.Spec.ControlPlane.Replicas,
 			"machine":  p.generateMachineHelmValues(&cluster.Spec.ControlPlane.MachineGeneric, nil),
 		},

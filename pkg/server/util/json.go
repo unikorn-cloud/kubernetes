@@ -22,7 +22,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
+	"github.com/unikorn-cloud/core/pkg/server/errors"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )

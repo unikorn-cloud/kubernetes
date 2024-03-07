@@ -20,17 +20,16 @@ package controlplane
 import (
 	"context"
 	goerrors "errors"
+	"fmt"
 	"slices"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/core/pkg/constants"
-	"github.com/unikorn-cloud/core/pkg/util"
+	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util/retry"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/common"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/project"
 
@@ -104,14 +103,11 @@ func (c *Client) provisionDefaultControlPlane(ctx context.Context, projectName, 
 
 	log.Info("creating implicit control plane", "name", name)
 
-	autoUpgrade := true
-
 	// GetMetadata should be called by descendents of the control
 	// plane e.g. clusters. Rather than delegate creation to each
 	// and every client implicitly create it.
 	defaultControlPlane := &generated.ControlPlane{
-		Name:                         name,
-		ApplicationBundleAutoUpgrade: &autoUpgrade,
+		Name: name,
 	}
 
 	if err := c.Create(ctx, projectName, defaultControlPlane); err != nil {
@@ -227,36 +223,26 @@ func convertMetadata(in *unikornv1.ControlPlane) (*generated.ResourceMetadata, e
 }
 
 // convert converts from Kubernetes into OpenAPI types.
-func (c *Client) convert(ctx context.Context, in *unikornv1.ControlPlane) (*generated.ControlPlane, error) {
+func (c *Client) convert(in *unikornv1.ControlPlane) (*generated.ControlPlane, error) {
 	metadata, err := convertMetadata(in)
 	if err != nil {
 		return nil, err
 	}
 
-	bundle, err := applicationbundle.NewClient(c.client).GetControlPlane(ctx, *in.Spec.ApplicationBundle)
-	if err != nil {
-		return nil, err
-	}
-
-	autoUpgrade := in.Spec.ApplicationBundleAutoUpgrade != nil
-
 	out := &generated.ControlPlane{
-		Metadata:                             metadata,
-		Name:                                 in.Name,
-		ApplicationBundle:                    bundle,
-		ApplicationBundleAutoUpgrade:         &autoUpgrade,
-		ApplicationBundleAutoUpgradeSchedule: common.ConvertApplicationBundleAutoUpgrade(in.Spec.ApplicationBundleAutoUpgrade),
+		Metadata: metadata,
+		Name:     in.Name,
 	}
 
 	return out, nil
 }
 
 // convertList converts from Kubernetes into OpenAPI types.
-func (c *Client) convertList(ctx context.Context, in *unikornv1.ControlPlaneList) ([]*generated.ControlPlane, error) {
+func (c *Client) convertList(in *unikornv1.ControlPlaneList) ([]*generated.ControlPlane, error) {
 	out := make([]*generated.ControlPlane, len(in.Items))
 
 	for i := range in.Items {
-		item, err := c.convert(ctx, &in.Items[i])
+		item, err := c.convert(&in.Items[i])
 		if err != nil {
 			return nil, err
 		}
@@ -297,7 +283,7 @@ func (c *Client) List(ctx context.Context) ([]*generated.ControlPlane, error) {
 
 	slices.SortStableFunc(result.Items, unikornv1.CompareControlPlane)
 
-	out, err := c.convertList(ctx, result)
+	out, err := c.convertList(result)
 	if err != nil {
 		return nil, err
 	}
@@ -321,53 +307,43 @@ func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.Co
 }
 
 // defaultApplicationBundle returns a default application bundle.
-func (c *Client) defaultApplicationBundle(ctx context.Context) (*generated.ApplicationBundle, error) {
+func (c *Client) defaultApplicationBundle(ctx context.Context) (*unikornv1.ControlPlaneApplicationBundle, error) {
 	applicationBundles, err := applicationbundle.NewClient(c.client).ListControlPlane(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	applicationBundles = slices.DeleteFunc(applicationBundles, func(bundle *generated.ApplicationBundle) bool {
-		if bundle.Preview != nil && *bundle.Preview {
+	applicationBundles.Items = slices.DeleteFunc(applicationBundles.Items, func(bundle unikornv1.ControlPlaneApplicationBundle) bool {
+		if bundle.Spec.Preview != nil && *bundle.Spec.Preview {
 			return true
 		}
 
-		if bundle.EndOfLife != nil {
+		if bundle.Spec.EndOfLife != nil {
 			return true
 		}
 
 		return false
 	})
 
-	if len(applicationBundles) == 0 {
+	if len(applicationBundles.Items) == 0 {
 		return nil, errors.OAuth2ServerError("unable to select an application bundle")
 	}
 
-	return applicationBundles[0], nil
+	return &applicationBundles.Items[0], nil
 }
 
 // generate is a common function to create a Kubernetes type from an API one.
-func (c *Client) generate(ctx context.Context, project *project.Meta, request *generated.ControlPlane) (*unikornv1.ControlPlane, error) {
-	paremeters := request
-
-	if paremeters == nil {
-		paremeters = &generated.ControlPlane{
-			ApplicationBundleAutoUpgrade: util.ToPointer(true),
-		}
+func (c *Client) generate(ctx context.Context, project *project.Meta, parameters *generated.ControlPlane) (*unikornv1.ControlPlane, error) {
+	applicationBundle, err := c.defaultApplicationBundle(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	if paremeters.ApplicationBundle == nil {
-		applicationBundle, err := c.defaultApplicationBundle(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		paremeters.ApplicationBundle = applicationBundle
-	}
+	fmt.Println(applicationBundle)
 
 	controlPlane := &unikornv1.ControlPlane{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      request.Name,
+			Name:      parameters.Name,
 			Namespace: project.Namespace,
 			Labels: map[string]string{
 				constants.VersionLabel:      constants.Version,
@@ -376,12 +352,9 @@ func (c *Client) generate(ctx context.Context, project *project.Meta, request *g
 			},
 		},
 		Spec: unikornv1.ControlPlaneSpec{
-			ApplicationBundle: &paremeters.Name,
+			ApplicationBundle:            &applicationBundle.Name,
+			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
 		},
-	}
-
-	if paremeters.ApplicationBundleAutoUpgrade != nil && *paremeters.ApplicationBundleAutoUpgrade {
-		controlPlane.Spec.ApplicationBundleAutoUpgrade = common.CreateApplicationBundleAutoUpgrade(request.ApplicationBundleAutoUpgradeSchedule)
 	}
 
 	return controlPlane, nil

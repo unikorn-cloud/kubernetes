@@ -338,42 +338,6 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/applicationbundles/controlPlane:
-    x-documentation-group: main
-    description: Control plane application bundle services.
-    get:
-      description: |-
-        Lists global application bundles for control planes.  This is
-        used to present a choice of versions for provisioning.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '200':
-          $ref: '#/components/responses/applicationBundleResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/applicationbundles/cluster:
-    x-documentation-group: main
-    description: Cluster application bundle services.
-    get:
-      description: |-
-        Lists global application bundles for clusters.  This is
-        used to present a choice of versions for provisioning.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '200':
-          $ref: '#/components/responses/applicationBundleResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
   /api/v1/applications:
     x-documentation-group: main
     description: Cluster application services.
@@ -443,83 +407,6 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/openstackImagesResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/regions/{regionName}/availability-zones/compute:
-    x-documentation-group: provider-openstack
-    description: Compute availability zone services.
-    parameters:
-    - $ref: '#/components/parameters/regionNameParameter'
-    get:
-      description: |-
-        Lists all compute availability zones the authenticated user has access to.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '200':
-          $ref: '#/components/responses/openstackComputeAvailabilityZonesResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/regions/{regionName}/availability-zones/block-storage:
-    x-documentation-group: provider-openstack
-    description: Block storage availability zone services.
-    parameters:
-    - $ref: '#/components/parameters/regionNameParameter'
-    get:
-      description: |-
-        Lists all volume availability zones the authenticated user has
-        access to.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '200':
-          $ref: '#/components/responses/openstackBlockStorageAvailabilityZonesResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/regions/{regionName}/external-networks:
-    x-documentation-group: provider-openstack
-    description: External network services.
-    parameters:
-    - $ref: '#/components/parameters/regionNameParameter'
-    get:
-      description: |-
-        Lists all external networks the authenticated user has access to.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '200':
-          $ref: '#/components/responses/openstackExternalNetworksResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/regions/{regionName}/key-pairs:
-    x-documentation-group: provider-openstack
-    description: Key pair services.
-    parameters:
-    - $ref: '#/components/parameters/regionNameParameter'
-    get:
-      description: |-
-        Lists all key pairs the authenticated user has access to.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '200':
-          $ref: '#/components/responses/openstackKeyPairsResponse'
         '400':
           $ref: '#/components/responses/badRequestResponse'
         '401':
@@ -677,34 +564,11 @@ components:
         name:
           description: The name of the resource.
           type: string
-        applicationBundle:
-          $ref: '#/components/schemas/applicationBundle'
-        applicationBundleAutoUpgrade:
-          description: Whether to enable auto upgrade or not.
-          type: boolean
-        applicationBundleAutoUpgradeSchedule:
-          $ref: '#/components/schemas/applicationBundleAutoUpgrade'
     controlPlanes:
       description: A list of control planes.
       type: array
       items:
         $ref: '#/components/schemas/controlPlane'
-    kubernetesClusterOpenStack:
-      description: Kubernetes cluster creation OpenStack parameters.
-      type: object
-      properties:
-        computeAvailabilityZone:
-          description: Compute availability zone for control plane, and workload pool default.
-          type: string
-        volumeAvailabilityZone:
-          description: Volume availability zone for control plane, and workload pool default.
-          type: string
-        externalNetworkID:
-          description: OpenStack external network ID.
-          type: string
-        sshKeyName:
-          description: OpenStack SSH Key to install on all machines.
-          type: string
     kubernetesClusterNetwork:
       description: A kubernetes cluster network settings.
       type: object
@@ -751,9 +615,6 @@ components:
         size:
           description: Disk size in GiB.
           type: integer
-        availabilityZone:
-          description: Volume availability zone. Overrides the cluster default.
-          type: string
     openstackMachinePool:
       description: A Kubernetes cluster machine.
       type: object
@@ -762,10 +623,6 @@ components:
           description: Number of machines for a statically sized pool or the maximum
             for an auto-scaled pool.
           type: integer
-        imageName:
-          description: OpenStack image name.
-          type: string
-          minLength: 1
         flavorName:
           description: OpenStack flavor name.
           type: string
@@ -796,9 +653,6 @@ components:
           type: string
         machine:
           $ref: '#/components/schemas/openstackMachinePool'
-        availabilityZone:
-          description: Workload pool availability zone. Overrides the cluster default.
-          type: string
         labels:
           description: Workload pool key value labels to apply on node creation.
           type: object
@@ -834,18 +688,6 @@ components:
           description: The Kuebernetes version.  This should be derived from
             image metadata.
           type: string
-        applicationBundle:
-          $ref: '#/components/schemas/applicationBundle'
-        applicationBundleAutoUpgrade:
-          $ref: '#/components/schemas/applicationBundleAutoUpgrade'
-        openstack:
-          $ref: '#/components/schemas/kubernetesClusterOpenStack'
-        network:
-          $ref: '#/components/schemas/kubernetesClusterNetwork'
-        api:
-          $ref: '#/components/schemas/kubernetesClusterAPI'
-        controlPlane:
-          $ref: '#/components/schemas/openstackMachinePool'
         workloadPools:
           $ref: '#/components/schemas/kubernetesClusterWorkloadPools'
     kubernetesClusters:
@@ -853,37 +695,6 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/kubernetesCluster'
-    applicationBundle:
-      description: |-
-        A bundle of applications. This forms the basis of resource versions. Bundles marked
-        as preview should not be selected by default, and end of life bundles should not be
-        used to avoid unnecessary upgrades. If enabled, automatic upgrades will occur if
-        a newer version of a bundle exists that is not in preview. When a bundle's end of
-        life expires, resources will undergo a foreced upgrade, regardless of whether
-        automatic upgrade is enabled for a resource or not.
-      type: object
-      required:
-      - name
-      - version
-      properties:
-        name:
-          description: The resource name.
-          type: string
-        version:
-          description: The bundle version.
-          type: string
-        preview:
-          description: Whether the bundle is in preview.
-          type: boolean
-        endOfLife:
-          description: When the bundle is end-of-life.
-          type: string
-          format: date-time
-    applicationBundles:
-      description: A list of application bundles.
-      type: array
-      items:
-        $ref: '#/components/schemas/applicationBundle'
     applicationVersion:
       description: An application version.
       type: object
@@ -968,69 +779,6 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/application'
-    applicationBundleAutoUpgrade:
-      description: |-
-        When specified, enables auto upgrade of application bundles. All resources will be
-        automatically upgraded if the currently selected bundle is end of life.
-      type: object
-      properties:
-        daysOfWeek:
-          $ref: '#/components/schemas/autoUpgradeDaysOfWeek'
-    autoUpgradeDaysOfWeek:
-      description: Days of the week and time windows that permit operations to be performed in.
-      type: object
-      properties:
-        sunday:
-          $ref: '#/components/schemas/timeWindow'
-        monday:
-          $ref: '#/components/schemas/timeWindow'
-        tuesday:
-          $ref: '#/components/schemas/timeWindow'
-        wednesday:
-          $ref: '#/components/schemas/timeWindow'
-        thursday:
-          $ref: '#/components/schemas/timeWindow'
-        friday:
-          $ref: '#/components/schemas/timeWindow'
-        saturday:
-          $ref: '#/components/schemas/timeWindow'
-    timeWindow:
-      description: A time window that wraps into the next day if required.
-      type: object
-      required:
-      - start
-      - end
-      properties:
-        start:
-          $ref: '#/components/schemas/hour'
-        end:
-          $ref: '#/components/schemas/hour'
-    hour:
-      description: An hour of the day in UTC.
-      type: integer
-      minimum: 0
-      maximum: 23
-    openstackProject:
-      description: An OpenStack project.
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          description: The unique project ID.
-          type: string
-        name:
-          description: The name of the project.
-          type: string
-        description:
-          description: A verbose description of the project.
-          type: string
-    openstackProjects:
-      description: A list of OpenStack projects.
-      type: array
-      items:
-        $ref: '#/components/schemas/openstackProject'
     openstackImageVersions:
       description: Image version metadata.
       type: object
@@ -1112,52 +860,6 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/openstackFlavor'
-    openstackExternalNetwork:
-      description: An OpenStack external network.
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          description: OpenStack external network ID.
-          type: string
-        name:
-          description: Opestack external network name.
-          type: string
-    openstackExternalNetworks:
-      description: A list of OpenStack external networks.
-      type: array
-      items:
-        $ref: '#/components/schemas/openstackExternalNetwork'
-    openstackKeyPair:
-      description: An OpenStack SSH key pair.
-      type: object
-      required:
-      - name
-      properties:
-        name:
-          description: The key pair name.
-          type: string
-    openstackKeyPairs:
-      description: A list of OpenStack key pairs.
-      type: array
-      items:
-        $ref: '#/components/schemas/openstackKeyPair'
-    openstackAvailabilityZone:
-      description: An OpenStack availability zone.
-      type: object
-      required:
-      - name
-      properties:
-        name:
-          description: The availability zone name.
-          type: string
-    openstackAvailabilityZones:
-      description: A list of OpenStack availability zones.
-      type: array
-      items:
-        $ref: '#/components/schemas/openstackAvailabilityZone'
   requestBodies:
     createProjectRequest:
       description: Project request parameters.
@@ -1176,9 +878,6 @@ components:
           schema:
             $ref: '#/components/schemas/controlPlane'
           example:
-            applicationBundle:
-              name: control-plane-1.0.0
-              version: 1.1.0
             name: default
     createKubernetesClusterRequest:
       description: Kubernetes cluster request parameters.
@@ -1190,10 +889,6 @@ components:
           example:
             region: uk-east-1
             version: v1.27.2
-            controlPlane:
-              imageName: eck-230714-4bef8ab1
-            features:
-              autoscaling: true
             name: cluster
             workloadPools:
             - autoscaling:
@@ -1295,10 +990,6 @@ components:
           schema:
             $ref: '#/components/schemas/controlPlane'
           example:
-            applicationBundle: 
-              name: control-plane-1.0.0
-              version: 1.1.0
-            applicationBundleAutoUpgrade: true
             name: default
             status:
               creationTime: 2023-07-31T10:45:42Z
@@ -1311,11 +1002,7 @@ components:
           schema:
             $ref: '#/components/schemas/controlPlanes'
           example:
-          - applicationBundle:
-              name: control-plane-1.0.0
-              version: 1.0.0
-            applicationBundleAutoUpgrade: true
-            name: default
+          - name: default
             status:
               creationTime: 2023-07-31T10:45:42Z
               name: default
@@ -1324,57 +1011,6 @@ components:
       description: A Kubernetes cluster configuration.
       content:
         application/octet-stream: {}
-    kubernetesClusterResponse:
-      description: A Kubernetes cluster.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/kubernetesCluster'
-          example:
-            applicationBundle:
-              name: kubernetes-cluster-1.0.0
-              version: 1.0.0
-            controlPlane:
-              flavorName: g.2.standard
-              imageName: eck-230714-4bef8ab1
-              replicas: 3
-              version: v1.27.2
-            features:
-              autoscaling: true
-              certManager: false
-              fileStorage: false
-              ingress: false
-              kubernetesDashboard: false
-              prometheus: false
-              nvidiaOperator: false
-            name: cluster
-            network:
-              dnsNameservers:
-              - 8.8.8.8
-              - 8.8.4.4
-              nodePrefix: 192.168.0.0/16
-              podPrefix: 10.0.0.0/8
-              servicePrefix: 172.16.0.0/12
-            openstack:
-              computeAvailabilityZone: nova
-              externalNetworkID: c9d130bc-301d-45c0-9328-a6964af65579
-              volumeAvailabilityZone: nova
-            status:
-              creationTime: 2023-07-31T10:45:45Z
-              name: cluster
-              status: Provisioned
-            workloadPools:
-            - autoscaling:
-                maximumReplicas: 3
-                minimumReplicas: 0
-              machine:
-                disk:
-                  size: 50
-                flavorName: g.4.highmem.a100.1g.10gb
-                imageName: eck-230714-4bef8ab1
-                replicas: 3
-                version: v1.27.2
-              name: default
     kubernetesClustersResponse:
       description: A list of Kubernetes clusters.
       content:
@@ -1382,60 +1018,20 @@ components:
           schema:
             $ref: '#/components/schemas/kubernetesClusters'
           example:
-          - region: uk-east-1
+          - name: cluster
+            region: uk-east-1
             version: v1.27.2
-            applicationBundle:
-              name: kubernetes-cluster-1.0.0
-              version: 1.0.0
-            controlPlane:
-              flavorName: g.2.standard
-              imageName: eck-230714-4bef8ab1
-              replicas: 3
-            features:
-              autoscaling: true
-              certManager: false
-              fileStorage: false
-              ingress: false
-              kubernetesDashboard: false
-              prometheus: false
-              nvidiaOperator: false
-            name: cluster
-            network:
-              dnsNameservers:
-              - 8.8.8.8
-              - 8.8.4.4
-              nodePrefix: 192.168.0.0/16
-              podPrefix: 10.0.0.0/8
-              servicePrefix: 172.16.0.0/12
-            openstack:
-              computeAvailabilityZone: nova
-              externalNetworkID: c9d130bc-301d-45c0-9328-a6964af65579
-              volumeAvailabilityZone: nova
             status:
               creationTime: 2023-07-31T10:45:45Z
               name: cluster
               status: Provisioned
             workloadPools:
-            - autoscaling:
-                maximumReplicas: 3
-                minimumReplicas: 0
+            - name: default
               machine:
                 disk:
                   size: 50
                 flavorName: g.4.highmem.a100.1g.10gb
-                imageName: eck-230714-4bef8ab1
                 replicas: 3
-                version: v1.27.2
-              name: default
-    applicationBundleResponse:
-      description: A list of application bundles.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/applicationBundles'
-          example:
-          - name: kubernetes-cluster-1.0.0
-            version: 1.3.0
     applicationResponse:
       description: A list of available applications.
       content:
@@ -1454,16 +1050,6 @@ components:
             name: longhorn-1.5.1-1
             versions:
             - version: 1.5.1
-    openstackProjectsResponse:
-      description: A list of OpenStack projects.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/openstackProjects'
-          example:
-          - description: My project
-            id: 23a9e437091d481da99f2aa07180b4ea
-            name: my_project
     openstackImagesResponse:
       description: A list of OpenStack images that are compatible with this platform.
       content:
@@ -1491,41 +1077,6 @@ components:
             id: 9a8c6370-4065-4d4a-9da0-7678df40cd9d
             memory: 32
             name: g.4.highmem.a100.1g.10gb
-    openstackExternalNetworksResponse:
-      description: A list of OpenStack external networks.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/openstackExternalNetworks'
-          example:
-          - id: c9d130bc-301d-45c0-9328-a6964af65579
-            name: Internet
-    openstackKeyPairsResponse:
-      description: A list of OpenStack key pairs.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/openstackKeyPairs'
-          example:
-          - name: my-ssh-key
-    openstackComputeAvailabilityZonesResponse:
-      description: A list of OpenStack availability zones.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/openstackAvailabilityZones'
-          example:
-          - name: nova
-          - name: POD-1
-          - name: POD-2
-    openstackBlockStorageAvailabilityZonesResponse:
-      description: A list of OpenStack availability zones.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/openstackAvailabilityZones'
-          example:
-          - name: nova
   securitySchemes:
     oauth2Authentication:
       description: Operation requires OAuth2 bearer token authentication.

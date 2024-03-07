@@ -22,19 +22,17 @@ import (
 	"net"
 	"slices"
 
-	"github.com/gophercloud/utils/openstack/clientconfig"
 	"github.com/spf13/pflag"
 
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	"github.com/unikorn-cloud/core/pkg/constants"
+	"github.com/unikorn-cloud/core/pkg/server/errors"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/vcluster"
-	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/controlplane"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/providers/openstack"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/region"
 
 	corev1 "k8s.io/api/core/v1"
@@ -44,7 +42,6 @@ import (
 	"k8s.io/apimachinery/pkg/selection"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/yaml"
 )
 
 type Options struct {
@@ -114,7 +111,7 @@ func (c *Client) List(ctx context.Context) ([]*generated.KubernetesCluster, erro
 
 	slices.SortStableFunc(result.Items, unikornv1.CompareKubernetesCluster)
 
-	out, err := c.convertList(ctx, result)
+	out, err := c.convertList(result)
 	if err != nil {
 		return nil, err
 	}
@@ -189,6 +186,7 @@ func (c *Client) GetKubeconfig(ctx context.Context, projectName generated.Projec
 	return secret.Data["value"], nil
 }
 
+/*
 // createClientConfig creates an Openstack client configuration from the API.
 func (c *Client) createClientConfig(ctx context.Context, provider *openstack.Openstack, controlPlane *controlplane.Meta, name string) ([]byte, string, error) {
 	// Name is fully qualified to avoid namespace clashes with control planes sharing
@@ -218,7 +216,7 @@ func (c *Client) createClientConfig(ctx context.Context, provider *openstack.Ope
 			cloud: {
 				AuthType: clientconfig.AuthV3ApplicationCredential,
 				AuthInfo: &clientconfig.AuthInfo{
-					AuthURL:                     "", /*c.authenticator.Keystone.Endpoint()*/
+					AuthURL:                     c.authenticator.Keystone.Endpoint(),
 					ApplicationCredentialID:     ac.ID,
 					ApplicationCredentialSecret: ac.Secret,
 				},
@@ -256,6 +254,7 @@ func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Open
 
 	return sg.ID, nil
 }
+*/
 
 // Create creates the implicit cluster indentified by the JTW claims.
 func (c *Client) Create(ctx context.Context, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, options *generated.KubernetesCluster) error {
@@ -278,22 +277,29 @@ func (c *Client) Create(ctx context.Context, projectName generated.ProjectNamePa
 		return err
 	}
 
-	clientConfig, cloud, err := c.createClientConfig(ctx, provider, controlPlane, options.Name)
-	if err != nil {
+	if err := provider.ConfigureCluster(ctx, cluster); err != nil {
 		return err
 	}
 
-	serverGroupID, err := c.createServerGroup(ctx, provider, controlPlane, options.Name, "control-plane")
-	if err != nil {
-		return err
-	}
+	/*
+		clientConfig, cloud, err := c.createClientConfig(ctx, provider, controlPlane, options.Name)
+		if err != nil {
+			return err
+		}
 
-	// TODO: should allow a private/self-signed CA via the API, or perhaps provide a
-	// default.
-	cluster.Spec.Openstack.Cloud = &cloud
-	cluster.Spec.Openstack.CloudConfig = &clientConfig
+		serverGroupID, err := c.createServerGroup(ctx, provider, controlPlane, options.Name, "control-plane")
+		if err != nil {
+			return err
+		}
 
-	cluster.Spec.ControlPlane.ServerGroupID = &serverGroupID
+		// TODO: should allow a private/self-signed CA via the API, or perhaps provide a
+		// default.
+		cluster.Spec.Openstack.Cloud = &cloud
+		cluster.Spec.Openstack.CloudConfig = &clientConfig
+
+		cluster.Spec.ControlPlane.ServerGroupID = &serverGroupID
+
+	*/
 
 	if err := c.client.Create(ctx, cluster); err != nil {
 		// TODO: we can do a cached lookup to save the API traffic.
@@ -367,11 +373,13 @@ func (c *Client) Update(ctx context.Context, projectName generated.ProjectNamePa
 	temp := resource.DeepCopy()
 	temp.Spec = required.Spec
 
-	temp.Spec.Openstack.CACert = resource.Spec.Openstack.CACert
-	temp.Spec.Openstack.Cloud = resource.Spec.Openstack.Cloud
-	temp.Spec.Openstack.CloudConfig = resource.Spec.Openstack.CloudConfig
+	/*
+		temp.Spec.Openstack.CACert = resource.Spec.Openstack.CACert
+		temp.Spec.Openstack.Cloud = resource.Spec.Openstack.Cloud
+		temp.Spec.Openstack.CloudConfig = resource.Spec.Openstack.CloudConfig
 
-	temp.Spec.ControlPlane.ServerGroupID = resource.Spec.ControlPlane.ServerGroupID
+		temp.Spec.ControlPlane.ServerGroupID = resource.Spec.ControlPlane.ServerGroupID
+	*/
 
 	if err := c.client.Patch(ctx, temp, client.MergeFrom(resource)); err != nil {
 		return errors.OAuth2ServerError("failed to patch cluster").WithError(err)

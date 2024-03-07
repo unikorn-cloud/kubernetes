@@ -21,12 +21,13 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
-	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
+	"github.com/unikorn-cloud/core/pkg/server/errors"
+	coreutil "github.com/unikorn-cloud/core/pkg/util"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/application"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/cluster"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/controlplane"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
@@ -240,28 +241,6 @@ func (h *Handler) GetApiV1ProjectsProjectNameControlplanesControlPlaneNameCluste
 	util.WriteOctetStreamResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) GetApiV1ApplicationbundlesControlPlane(w http.ResponseWriter, r *http.Request) {
-	result, err := applicationbundle.NewClient(h.client).ListControlPlane(r.Context())
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setUncacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
-}
-
-func (h *Handler) GetApiV1ApplicationbundlesCluster(w http.ResponseWriter, r *http.Request) {
-	result, err := applicationbundle.NewClient(h.client).ListCluster(r.Context())
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setUncacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
-}
-
 func (h *Handler) GetApiV1Applications(w http.ResponseWriter, r *http.Request) {
 	result, err := application.NewClient(h.client).List(r.Context())
 	if err != nil {
@@ -284,57 +263,6 @@ func (h *Handler) GetApiV1Regions(w http.ResponseWriter, r *http.Request) {
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) GetApiV1RegionsRegionNameAvailabilityZonesCompute(w http.ResponseWriter, r *http.Request, regionName generated.RegionNameParameter) {
-	provider, err := region.NewClient(h.client).Provider(r.Context(), regionName)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := provider.ListAvailabilityZonesCompute(r.Context())
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setCacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
-}
-
-func (h *Handler) GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(w http.ResponseWriter, r *http.Request, regionName generated.RegionNameParameter) {
-	provider, err := region.NewClient(h.client).Provider(r.Context(), regionName)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := provider.ListAvailabilityZonesBlockStorage(r.Context())
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setCacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
-}
-
-func (h *Handler) GetApiV1RegionsRegionNameExternalNetworks(w http.ResponseWriter, r *http.Request, regionName generated.RegionNameParameter) {
-	provider, err := region.NewClient(h.client).Provider(r.Context(), regionName)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := provider.ListExternalNetworks(r.Context())
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setCacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
-}
-
 func (h *Handler) GetApiV1RegionsRegionNameFlavors(w http.ResponseWriter, r *http.Request, regionName generated.RegionNameParameter) {
 	provider, err := region.NewClient(h.client).Provider(r.Context(), regionName)
 	if err != nil {
@@ -342,14 +270,34 @@ func (h *Handler) GetApiV1RegionsRegionNameFlavors(w http.ResponseWriter, r *htt
 		return
 	}
 
-	result, err := provider.ListFlavors(r.Context())
+	result, err := provider.Flavors(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
+	// Apply ordering guarantees.
+	sort.Stable(result)
+
+	out := make(generated.OpenstackFlavors, 0, len(result))
+
+	for _, r := range result {
+		t := generated.OpenstackFlavor{
+			Name:   r.Name,
+			Cpus:   r.CPUs,
+			Memory: int(r.Memory.Value()) >> 30,
+			Disk:   int(r.Disk.Value()) / 1000000000,
+		}
+
+		if r.GPUs != 0 {
+			t.Gpus = coreutil.ToPointer(r.GPUs)
+		}
+
+		out = append(out, t)
+	}
+
 	h.setCacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
+	util.WriteJSONResponse(w, r, http.StatusOK, out)
 }
 
 func (h *Handler) GetApiV1RegionsRegionNameImages(w http.ResponseWriter, r *http.Request, regionName generated.RegionNameParameter) {
@@ -359,29 +307,28 @@ func (h *Handler) GetApiV1RegionsRegionNameImages(w http.ResponseWriter, r *http
 		return
 	}
 
-	result, err := provider.ListImages(r.Context())
+	result, err := provider.Images(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
+	}
+
+	// Apply ordering guarantees.
+	sort.Stable(result)
+
+	out := make(generated.OpenstackImages, 0, len(result))
+
+	for _, r := range result {
+		out = append(out, generated.OpenstackImage{
+			Name:     r.Name,
+			Created:  r.Created,
+			Modified: r.Modified,
+			Versions: generated.OpenstackImageVersions{
+				Kubernetes: r.KubernetesVersion,
+			},
+		})
 	}
 
 	h.setCacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
-}
-
-func (h *Handler) GetApiV1RegionsRegionNameKeyPairs(w http.ResponseWriter, r *http.Request, regionName generated.RegionNameParameter) {
-	provider, err := region.NewClient(h.client).Provider(r.Context(), regionName)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := provider.ListKeyPairs(r.Context())
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setUncacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
+	util.WriteJSONResponse(w, r, http.StatusOK, out)
 }

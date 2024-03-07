@@ -29,12 +29,14 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/trace"
 
+	"github.com/unikorn-cloud/core/pkg/server/middleware/cors"
+	"github.com/unikorn-cloud/core/pkg/server/middleware/openapi"
+	"github.com/unikorn-cloud/core/pkg/server/middleware/openapi/oidc"
+	"github.com/unikorn-cloud/core/pkg/server/middleware/opentelemetry"
+	"github.com/unikorn-cloud/core/pkg/server/middleware/timeout"
+	"github.com/unikorn-cloud/unikorn/pkg/constants"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler"
-	"github.com/unikorn-cloud/unikorn/pkg/server/middleware/cors"
-	"github.com/unikorn-cloud/unikorn/pkg/server/middleware/openapi"
-	"github.com/unikorn-cloud/unikorn/pkg/server/middleware/opentelemetry"
-	"github.com/unikorn-cloud/unikorn/pkg/server/middleware/timeout"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -52,7 +54,7 @@ type Server struct {
 	HandlerOptions handler.Options
 
 	// AuthorizerOptions allow configuration of the OIDC backend.
-	AuthorizerOptions openapi.Options
+	AuthorizerOptions oidc.Options
 
 	// CORSOptions are for remote resource sharing.
 	CORSOptions cors.Options
@@ -102,7 +104,7 @@ func (s *Server) SetupOpenTelemetry(ctx context.Context) error {
 }
 
 func (s *Server) GetServer(client client.Client) (*http.Server, error) {
-	schema, err := openapi.NewSchema()
+	schema, err := openapi.NewSchema(generated.GetSwagger)
 	if err != nil {
 		return nil, err
 	}
@@ -110,13 +112,13 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 	// Middleware specified here is applied to all requests pre-routing.
 	router := chi.NewRouter()
 	router.Use(timeout.Middleware(s.Options.RequestTimeout))
-	router.Use(opentelemetry.Middleware())
+	router.Use(opentelemetry.Middleware(constants.Application, constants.Version))
 	router.Use(cors.Middleware(schema, &s.CORSOptions))
 	router.NotFound(http.HandlerFunc(handler.NotFound))
 	router.MethodNotAllowed(http.HandlerFunc(handler.MethodNotAllowed))
 
 	// Setup middleware.
-	authorizer := openapi.NewAuthorizer(&s.AuthorizerOptions)
+	authorizer := oidc.NewAuthorizer(&s.AuthorizerOptions)
 
 	// Middleware specified here is applied to all requests post-routing.
 	// NOTE: these are applied in reverse order!!

@@ -21,9 +21,8 @@ import (
 	"context"
 	"slices"
 
+	"github.com/unikorn-cloud/core/pkg/server/errors"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
-	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -41,75 +40,27 @@ func NewClient(client client.Client) *Client {
 	}
 }
 
-func convertControlPlane(in *unikornv1.ControlPlaneApplicationBundle) *generated.ApplicationBundle {
-	out := &generated.ApplicationBundle{
-		Name:    in.Name,
-		Version: *in.Spec.Version,
-		Preview: in.Spec.Preview,
-	}
-
-	if in.Spec.EndOfLife != nil {
-		out.EndOfLife = &in.Spec.EndOfLife.Time
-	}
-
-	return out
-}
-
-func convertKubernetesCluster(in *unikornv1.KubernetesClusterApplicationBundle) *generated.ApplicationBundle {
-	out := &generated.ApplicationBundle{
-		Name:    in.Name,
-		Version: *in.Spec.Version,
-		Preview: in.Spec.Preview,
-	}
-
-	if in.Spec.EndOfLife != nil {
-		out.EndOfLife = &in.Spec.EndOfLife.Time
-	}
-
-	return out
-}
-
-func convertControlPlaneList(in []unikornv1.ControlPlaneApplicationBundle) []*generated.ApplicationBundle {
-	out := make([]*generated.ApplicationBundle, len(in))
-
-	for i := range in {
-		out[i] = convertControlPlane(&in[i])
-	}
-
-	return out
-}
-
-func convertKubernetesClusterList(in []unikornv1.KubernetesClusterApplicationBundle) []*generated.ApplicationBundle {
-	out := make([]*generated.ApplicationBundle, len(in))
-
-	for i := range in {
-		out[i] = convertKubernetesCluster(&in[i])
-	}
-
-	return out
-}
-
-func (c *Client) GetControlPlane(ctx context.Context, name string) (*generated.ApplicationBundle, error) {
+func (c *Client) GetControlPlane(ctx context.Context, name string) (*unikornv1.ControlPlaneApplicationBundle, error) {
 	result := &unikornv1.ControlPlaneApplicationBundle{}
 
 	if err := c.client.Get(ctx, client.ObjectKey{Name: name}, result); err != nil {
 		return nil, errors.HTTPNotFound().WithError(err)
 	}
 
-	return convertControlPlane(result), nil
+	return result, nil
 }
 
-func (c *Client) GetKubernetesCluster(ctx context.Context, name string) (*generated.ApplicationBundle, error) {
+func (c *Client) GetKubernetesCluster(ctx context.Context, name string) (*unikornv1.KubernetesClusterApplicationBundle, error) {
 	result := &unikornv1.KubernetesClusterApplicationBundle{}
 
 	if err := c.client.Get(ctx, client.ObjectKey{Name: name}, result); err != nil {
 		return nil, errors.HTTPNotFound().WithError(err)
 	}
 
-	return convertKubernetesCluster(result), nil
+	return result, nil
 }
 
-func (c *Client) ListControlPlane(ctx context.Context) ([]*generated.ApplicationBundle, error) {
+func (c *Client) ListControlPlane(ctx context.Context) (*unikornv1.ControlPlaneApplicationBundleList, error) {
 	result := &unikornv1.ControlPlaneApplicationBundleList{}
 
 	if err := c.client.List(ctx, result); err != nil {
@@ -118,10 +69,10 @@ func (c *Client) ListControlPlane(ctx context.Context) ([]*generated.Application
 
 	slices.SortStableFunc(result.Items, unikornv1.CompareControlPlaneApplicationBundle)
 
-	return convertControlPlaneList(result.Items), nil
+	return result, nil
 }
 
-func (c *Client) ListCluster(ctx context.Context) ([]*generated.ApplicationBundle, error) {
+func (c *Client) ListCluster(ctx context.Context) (*unikornv1.KubernetesClusterApplicationBundleList, error) {
 	result := &unikornv1.KubernetesClusterApplicationBundleList{}
 
 	if err := c.client.List(ctx, result); err != nil {
@@ -130,5 +81,5 @@ func (c *Client) ListCluster(ctx context.Context) ([]*generated.ApplicationBundl
 
 	slices.SortStableFunc(result.Items, unikornv1.CompareKubernetesClusterApplicationBundle)
 
-	return convertKubernetesClusterList(result.Items), nil
+	return result, nil
 }

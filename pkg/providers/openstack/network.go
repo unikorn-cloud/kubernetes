@@ -19,6 +19,9 @@ package openstack
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
@@ -27,17 +30,24 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/unikorn-cloud/core/pkg/util/cache"
 	"github.com/unikorn-cloud/unikorn/pkg/constants"
+)
+
+var (
+	ErrNoMatchingResource = errors.New("unable to find a matching resource")
 )
 
 // NetworkClient wraps the generic client because gophercloud is unsafe.
 type NetworkClient struct {
 	client *gophercloud.ServiceClient
+
+	externalNetworkCache *cache.TimeoutCache[[]networks.Network]
 }
 
 // NewNetworkClient provides a simple one-liner to start networking.
-func NewNetworkClient(ctx context.Context, provider Provider) (*NetworkClient, error) {
-	providerClient, err := provider.Client(ctx)
+func NewNetworkClient(ctx context.Context, provider CredentialProvider) (*NetworkClient, error) {
+	providerClient, err := provider.Client()
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +58,8 @@ func NewNetworkClient(ctx context.Context, provider Provider) (*NetworkClient, e
 	}
 
 	c := &NetworkClient{
-		client: client,
+		client:               client,
+		externalNetworkCache: cache.New[[]networks.Network](time.Hour),
 	}
 
 	return c, nil
@@ -56,6 +67,10 @@ func NewNetworkClient(ctx context.Context, provider Provider) (*NetworkClient, e
 
 // ExternalNetworks returns a list of external networks.
 func (c *NetworkClient) ExternalNetworks(ctx context.Context) ([]networks.Network, error) {
+	if result, ok := c.externalNetworkCache.Get(); ok {
+		return result, nil
+	}
+
 	tracer := otel.GetTracerProvider().Tracer(constants.Application)
 
 	_, span := tracer.Start(ctx, "/networking/v2.0/networks", trace.WithSpanKind(trace.SpanKindClient))
@@ -74,5 +89,21 @@ func (c *NetworkClient) ExternalNetworks(ctx context.Context) ([]networks.Networ
 		return nil, err
 	}
 
+	c.externalNetworkCache.Set(results)
+
 	return results, nil
+}
+
+// Get a network for external connectivity.
+func (c *NetworkClient) defaultExternalNetwork(ctx context.Context) (*networks.Network, error) {
+	externalNetworks, err := c.ExternalNetworks(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(externalNetworks) == 0 {
+		return nil, fmt.Errorf("%w: default external network", ErrNoMatchingResource)
+	}
+
+	return &externalNetworks[0], nil
 }

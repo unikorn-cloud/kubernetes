@@ -21,8 +21,9 @@ import (
 	"errors"
 
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/providers"
+	"github.com/unikorn-cloud/unikorn/pkg/providers/openstack"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/providers/openstack"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -69,8 +70,20 @@ func findRegion(regions *unikornv1.RegionList, region string) (*unikornv1.Region
 	return nil, ErrRegionNotFound
 }
 
-// TODO: make this return a generic interface type.
-func (c *Client) Provider(ctx context.Context, regionName string) (*openstack.Openstack, error) {
+//nolint:gochecknoglobals
+var cache = map[string]providers.Provider{}
+
+func (c Client) newProvider(region *unikornv1.Region) (providers.Provider, error) {
+	//nolint:gocritic
+	switch region.Spec.Provider {
+	case unikornv1.ProviderOpenstack:
+		return openstack.New(c.client, region), nil
+	}
+
+	return nil, ErrRegionProviderUnimplmented
+}
+
+func (c *Client) Provider(ctx context.Context, regionName string) (providers.Provider, error) {
 	regions, err := c.list(ctx)
 	if err != nil {
 		return nil, err
@@ -81,12 +94,18 @@ func (c *Client) Provider(ctx context.Context, regionName string) (*openstack.Op
 		return nil, err
 	}
 
-	switch region.Spec.Provider {
-	case unikornv1.ProviderOpenstack:
-		return openstack.New(c.client, region.Spec.Openstack)
-	default:
-		return nil, ErrRegionProviderUnimplmented
+	if provider, ok := cache[region.Name]; ok {
+		return provider, nil
 	}
+
+	provider, err := c.newProvider(region)
+	if err != nil {
+		return nil, err
+	}
+
+	cache[region.Name] = provider
+
+	return provider, nil
 }
 
 func convert(in *unikornv1.Region) *generated.Region {

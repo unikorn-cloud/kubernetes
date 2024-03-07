@@ -38,8 +38,8 @@ type IdentityClient struct {
 }
 
 // NewIdentityClient returns a new identity client.
-func NewIdentityClient(ctx context.Context, provider Provider) (*IdentityClient, error) {
-	providerClient, err := provider.Client(ctx)
+func NewIdentityClient(ctx context.Context, provider CredentialProvider) (*IdentityClient, error) {
+	providerClient, err := provider.Client()
 	if err != nil {
 		return nil, err
 	}

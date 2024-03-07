@@ -21,11 +21,11 @@ import (
 	"context"
 	goerrors "errors"
 
+	"github.com/unikorn-cloud/core/pkg/authorization/oauth2/claims"
 	"github.com/unikorn-cloud/core/pkg/constants"
+	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util/retry"
-	"github.com/unikorn-cloud/identity/pkg/oauth2"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -73,7 +73,7 @@ var (
 
 // getOrganizationName extracts it from the claims stored in the context.
 func getOrganizationName(ctx context.Context) (string, error) {
-	claims, err := oauth2.ClaimsFromContext(ctx)
+	claims, err := claims.FromContext(ctx)
 	if err != nil {
 		return "", err
 	}
