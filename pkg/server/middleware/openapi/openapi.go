@@ -24,11 +24,8 @@ import (
 	"net/http"
 
 	"github.com/getkin/kin-openapi/openapi3filter"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/trace"
 
 	"github.com/unikorn-cloud/identity/pkg/oauth2"
-	"github.com/unikorn-cloud/unikorn/pkg/constants"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -110,20 +107,12 @@ func (w *bufferingResponseWriter) StatusCode() int {
 }
 
 func (v *Validator) validateRequest(r *http.Request, authContext *authorizationContext) (*openapi3filter.ResponseValidationInput, error) {
-	tracer := otel.GetTracerProvider().Tracer(constants.Application)
-
-	ctx, span := tracer.Start(r.Context(), "openapi request validation", trace.WithSpanKind(trace.SpanKindInternal))
-	defer span.End()
-
 	route, params, err := v.openapi.FindRoute(r)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("route lookup failure").WithError(err)
 	}
 
 	authorizationFunc := func(ctx context.Context, input *openapi3filter.AuthenticationInput) error {
-		_, span := tracer.Start(ctx, "authentication", trace.WithSpanKind(trace.SpanKindInternal))
-		defer span.End()
-
 		err := v.authorizer.authorizeScheme(authContext, input.RequestValidationInput.Request, input.SecurityScheme, input.Scopes)
 
 		authContext.err = err
@@ -143,7 +132,7 @@ func (v *Validator) validateRequest(r *http.Request, authContext *authorizationC
 		Options:    options,
 	}
 
-	if err := openapi3filter.ValidateRequest(ctx, requestValidationInput); err != nil {
+	if err := openapi3filter.ValidateRequest(r.Context(), requestValidationInput); err != nil {
 		if authContext.err != nil {
 			return nil, authContext.err
 		}
@@ -160,19 +149,12 @@ func (v *Validator) validateRequest(r *http.Request, authContext *authorizationC
 }
 
 func (v *Validator) validateResponse(w *bufferingResponseWriter, r *http.Request, responseValidationInput *openapi3filter.ResponseValidationInput) {
-	tracer := otel.GetTracerProvider().Tracer(constants.Application)
-
-	ctx, span := tracer.Start(r.Context(), "openapi response validation",
-		trace.WithSpanKind(trace.SpanKindInternal),
-	)
-	defer span.End()
-
 	responseValidationInput.Status = w.StatusCode()
 	responseValidationInput.Header = w.Header()
 	responseValidationInput.Body = w.body
 
-	if err := openapi3filter.ValidateResponse(ctx, responseValidationInput); err != nil {
-		log.FromContext(ctx).Error(err, "response openapi schema validation failure")
+	if err := openapi3filter.ValidateResponse(r.Context(), responseValidationInput); err != nil {
+		log.FromContext(r.Context()).Error(err, "response openapi schema validation failure")
 	}
 }
 

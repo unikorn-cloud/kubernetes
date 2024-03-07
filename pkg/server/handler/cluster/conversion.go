@@ -32,6 +32,7 @@ import (
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/common"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/controlplane"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/providers/openstack"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -247,8 +248,8 @@ func (c *Client) defaultApplicationBundle(ctx context.Context) (*generated.Appli
 }
 
 // defaultExternalNetwork returns a default network.
-func (c *Client) defaultExternalNetwork(ctx context.Context) (*generated.OpenstackExternalNetwork, error) {
-	externalNetworks, err := c.openstack.ListExternalNetworks(ctx)
+func (c *Client) defaultExternalNetwork(ctx context.Context, provider *openstack.Openstack) (*generated.OpenstackExternalNetwork, error) {
+	externalNetworks, err := provider.ListExternalNetworks(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -264,8 +265,8 @@ func (c *Client) defaultExternalNetwork(ctx context.Context) (*generated.Opensta
 // one that doesxn't have any GPUs.  The provider ensures the "nost cost-effective"
 // comes first.
 // TODO: we should allow this to be configured per region.
-func (c *Client) defaultControlPlaneFlavor(ctx context.Context) (*generated.OpenstackFlavor, error) {
-	flavors, err := c.openstack.ListFlavors(ctx)
+func (c *Client) defaultControlPlaneFlavor(ctx context.Context, provider *openstack.Openstack) (*generated.OpenstackFlavor, error) {
+	flavors, err := provider.ListFlavors(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -281,9 +282,9 @@ func (c *Client) defaultControlPlaneFlavor(ctx context.Context) (*generated.Open
 
 // defaultImage returns a default image for either control planes or workload pools
 // based on the specified Kubernetes version.
-func (c *Client) defaultImage(ctx context.Context, version string) (*generated.OpenstackImage, error) {
+func (c *Client) defaultImage(ctx context.Context, provider *openstack.Openstack, version string) (*generated.OpenstackImage, error) {
 	// Images will be
-	images, err := c.openstack.ListImages(ctx)
+	images, err := provider.ListImages(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +299,7 @@ func (c *Client) defaultImage(ctx context.Context, version string) (*generated.O
 }
 
 // generateOpenstack generates the Openstack configuration part of a cluster.
-func (c *Client) generateOpenstack(ctx context.Context, options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterOpenstackSpec, error) {
+func (c *Client) generateOpenstack(ctx context.Context, provider *openstack.Openstack, options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterOpenstackSpec, error) {
 	// Default missing configuration.
 	os := options.Openstack
 	if os == nil {
@@ -306,7 +307,7 @@ func (c *Client) generateOpenstack(ctx context.Context, options *generated.Kuber
 	}
 
 	if os.ExternalNetworkID == nil {
-		resource, err := c.defaultExternalNetwork(ctx)
+		resource, err := c.defaultExternalNetwork(ctx, provider)
 		if err != nil {
 			return nil, err
 		}
@@ -423,13 +424,13 @@ func generateAPI(options *generated.KubernetesCluster) (*unikornv1.KubernetesClu
 }
 
 // generateMachineGeneric generates a generic machine part of the cluster.
-func (c *Client) generateMachineGeneric(ctx context.Context, options *generated.KubernetesCluster, m *generated.OpenstackMachinePool) (*unikornv1.MachineGeneric, *generated.OpenstackFlavor, error) {
+func (c *Client) generateMachineGeneric(ctx context.Context, provider *openstack.Openstack, options *generated.KubernetesCluster, m *generated.OpenstackMachinePool) (*unikornv1.MachineGeneric, *generated.OpenstackFlavor, error) {
 	if m.Replicas == nil {
 		m.Replicas = util.ToPointer(3)
 	}
 
 	if m.ImageName == nil {
-		resource, err := c.defaultImage(ctx, options.Version)
+		resource, err := c.defaultImage(ctx, provider, options.Version)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -438,7 +439,7 @@ func (c *Client) generateMachineGeneric(ctx context.Context, options *generated.
 	}
 
 	// Lookup the flavor so we can assess whether to install GPU controllers.
-	flavor, err := c.openstack.GetFlavor(ctx, *m.FlavorName)
+	flavor, err := provider.GetFlavor(ctx, *m.FlavorName)
 	if err != nil {
 		if errors.IsHTTPNotFound(err) {
 			return nil, nil, errors.OAuth2InvalidRequest("invalid flavor").WithError(err)
@@ -470,7 +471,7 @@ func (c *Client) generateMachineGeneric(ctx context.Context, options *generated.
 }
 
 // generateControlPlane generates the control plane part of a cluster.
-func (c *Client) generateControlPlane(ctx context.Context, options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterControlPlaneSpec, error) {
+func (c *Client) generateControlPlane(ctx context.Context, provider *openstack.Openstack, options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterControlPlaneSpec, error) {
 	// Add in any missing defaults.
 	controlPlaneOptions := options.ControlPlane
 
@@ -479,7 +480,7 @@ func (c *Client) generateControlPlane(ctx context.Context, options *generated.Ku
 	}
 
 	if controlPlaneOptions.FlavorName == nil {
-		resource, err := c.defaultControlPlaneFlavor(ctx)
+		resource, err := c.defaultControlPlaneFlavor(ctx, provider)
 		if err != nil {
 			return nil, err
 		}
@@ -487,7 +488,7 @@ func (c *Client) generateControlPlane(ctx context.Context, options *generated.Ku
 		controlPlaneOptions.FlavorName = &resource.Name
 	}
 
-	machine, _, err := c.generateMachineGeneric(ctx, options, controlPlaneOptions)
+	machine, _, err := c.generateMachineGeneric(ctx, provider, options, controlPlaneOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -500,13 +501,13 @@ func (c *Client) generateControlPlane(ctx context.Context, options *generated.Ku
 }
 
 // generateWorkloadPools generates the workload pools part of a cluster.
-func (c *Client) generateWorkloadPools(ctx context.Context, clusterContext *generateContext, options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterWorkloadPoolsSpec, error) {
+func (c *Client) generateWorkloadPools(ctx context.Context, provider *openstack.Openstack, clusterContext *generateContext, options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterWorkloadPoolsSpec, error) {
 	workloadPools := &unikornv1.KubernetesClusterWorkloadPoolsSpec{}
 
 	for i := range options.WorkloadPools {
 		pool := &options.WorkloadPools[i]
 
-		machine, flavor, err := c.generateMachineGeneric(ctx, options, &pool.Machine)
+		machine, flavor, err := c.generateMachineGeneric(ctx, provider, options, &pool.Machine)
 		if err != nil {
 			return nil, err
 		}
@@ -570,10 +571,10 @@ func installNvidiaOperator(features *unikornv1.KubernetesClusterFeaturesSpec) bo
 }
 
 // generate generates the full cluster custom resource.
-func (c *Client) generate(ctx context.Context, controlPlane *controlplane.Meta, options *generated.KubernetesCluster) (*unikornv1.KubernetesCluster, error) {
+func (c *Client) generate(ctx context.Context, provider *openstack.Openstack, controlPlane *controlplane.Meta, options *generated.KubernetesCluster) (*unikornv1.KubernetesCluster, error) {
 	var clusterContext generateContext
 
-	openstack, err := c.generateOpenstack(ctx, options)
+	openstack, err := c.generateOpenstack(ctx, provider, options)
 	if err != nil {
 		return nil, err
 	}
@@ -588,12 +589,12 @@ func (c *Client) generate(ctx context.Context, controlPlane *controlplane.Meta, 
 		return nil, err
 	}
 
-	kubernetesControlPlane, err := c.generateControlPlane(ctx, options)
+	kubernetesControlPlane, err := c.generateControlPlane(ctx, provider, options)
 	if err != nil {
 		return nil, err
 	}
 
-	kubernetesWorkloadPools, err := c.generateWorkloadPools(ctx, &clusterContext, options)
+	kubernetesWorkloadPools, err := c.generateWorkloadPools(ctx, provider, &clusterContext, options)
 	if err != nil {
 		return nil, err
 	}
