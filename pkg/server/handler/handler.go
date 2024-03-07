@@ -175,13 +175,7 @@ func (h *Handler) PutApiV1ProjectsProjectNameControlplanesControlPlaneName(w htt
 }
 
 func (h *Handler) GetApiV1Clusters(w http.ResponseWriter, r *http.Request) {
-	provider, err := region.NewClient(h.client).Provider(r.Context(), "uk-manchester")
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := cluster.NewClient(h.client, &h.options.Cluster, provider).List(r.Context())
+	result, err := cluster.NewClient(h.client, &h.options.Cluster).List(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -199,13 +193,7 @@ func (h *Handler) PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClust
 		return
 	}
 
-	provider, err := region.NewClient(h.client).Provider(r.Context(), "uk-manchester")
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	if err := cluster.NewClient(h.client, &h.options.Cluster, provider).Create(r.Context(), projectName, controlPlaneName, request); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster).Create(r.Context(), projectName, controlPlaneName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -215,13 +203,7 @@ func (h *Handler) PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClust
 }
 
 func (h *Handler) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
-	provider, err := region.NewClient(h.client).Provider(r.Context(), "uk-manchester")
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	if err := cluster.NewClient(h.client, &h.options.Cluster, provider).Delete(r.Context(), projectName, controlPlaneName, clusterName); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster).Delete(r.Context(), projectName, controlPlaneName, clusterName); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -238,13 +220,7 @@ func (h *Handler) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameCluste
 		return
 	}
 
-	provider, err := region.NewClient(h.client).Provider(r.Context(), "uk-manchester")
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	if err := cluster.NewClient(h.client, &h.options.Cluster, provider).Update(r.Context(), projectName, controlPlaneName, clusterName, request); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster).Update(r.Context(), projectName, controlPlaneName, clusterName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -254,13 +230,7 @@ func (h *Handler) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameCluste
 }
 
 func (h *Handler) GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfig(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
-	provider, err := region.NewClient(h.client).Provider(r.Context(), "uk-manchester")
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := cluster.NewClient(h.client, &h.options.Cluster, provider).GetKubeconfig(r.Context(), projectName, controlPlaneName, clusterName)
+	result, err := cluster.NewClient(h.client, &h.options.Cluster).GetKubeconfig(r.Context(), projectName, controlPlaneName, clusterName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

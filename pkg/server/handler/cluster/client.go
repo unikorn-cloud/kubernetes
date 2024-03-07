@@ -35,6 +35,7 @@ import (
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/controlplane"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/providers/openstack"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/region"
 
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
@@ -71,19 +72,15 @@ type Client struct {
 	// client allows Kubernetes API access.
 	client client.Client
 
-	// TODO: This needs to be abstract!
-	openstack *openstack.Openstack
-
 	// options control various defaults and the like.
 	options *Options
 }
 
 // NewClient returns a new client with required parameters.
-func NewClient(client client.Client, options *Options, openstack *openstack.Openstack) *Client {
+func NewClient(client client.Client, options *Options) *Client {
 	return &Client{
-		client:    client,
-		openstack: openstack,
-		options:   options,
+		client:  client,
+		options: options,
 	}
 }
 
@@ -193,23 +190,23 @@ func (c *Client) GetKubeconfig(ctx context.Context, projectName generated.Projec
 }
 
 // createClientConfig creates an Openstack client configuration from the API.
-func (c *Client) createClientConfig(ctx context.Context, controlPlane *controlplane.Meta, name string) ([]byte, string, error) {
+func (c *Client) createClientConfig(ctx context.Context, provider *openstack.Openstack, controlPlane *controlplane.Meta, name string) ([]byte, string, error) {
 	// Name is fully qualified to avoid namespace clashes with control planes sharing
 	// the same project.
 	applicationCredentialName := controlPlane.Name + "-" + name
 
 	// Find and delete and existing credential.
-	if _, err := c.openstack.GetApplicationCredential(ctx, applicationCredentialName); err != nil {
+	if _, err := provider.GetApplicationCredential(ctx, applicationCredentialName); err != nil {
 		if !errors.IsHTTPNotFound(err) {
 			return nil, "", err
 		}
 	} else {
-		if err := c.openstack.DeleteApplicationCredential(ctx, applicationCredentialName); err != nil {
+		if err := provider.DeleteApplicationCredential(ctx, applicationCredentialName); err != nil {
 			return nil, "", err
 		}
 	}
 
-	ac, err := c.openstack.CreateApplicationCredential(ctx, applicationCredentialName)
+	ac, err := provider.CreateApplicationCredential(ctx, applicationCredentialName)
 	if err != nil {
 		return nil, "", err
 	}
@@ -238,13 +235,13 @@ func (c *Client) createClientConfig(ctx context.Context, controlPlane *controlpl
 }
 
 // createServerGroup creates an OpenStack server group.
-func (c *Client) createServerGroup(ctx context.Context, controlPlane *controlplane.Meta, name, kind string) (string, error) {
+func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Openstack, controlPlane *controlplane.Meta, name, kind string) (string, error) {
 	// Name is fully qualified to avoid namespace clashes with control planes sharing
 	// the same project.
 	serverGroupName := controlPlane.Name + "-" + name + "-" + kind
 
 	// Reuse the server group if it exists, otherwise create a new one.
-	sg, err := c.openstack.GetServerGroup(ctx, serverGroupName)
+	sg, err := provider.GetServerGroup(ctx, serverGroupName)
 	if err != nil {
 		if !errors.IsHTTPNotFound(err) {
 			return "", err
@@ -252,7 +249,7 @@ func (c *Client) createServerGroup(ctx context.Context, controlPlane *controlpla
 	}
 
 	if sg == nil {
-		if sg, err = c.openstack.CreateServerGroup(ctx, serverGroupName); err != nil {
+		if sg, err = provider.CreateServerGroup(ctx, serverGroupName); err != nil {
 			return "", err
 		}
 	}
@@ -271,17 +268,22 @@ func (c *Client) Create(ctx context.Context, projectName generated.ProjectNamePa
 		return errors.OAuth2InvalidRequest("control plane is being deleted")
 	}
 
-	cluster, err := c.generate(ctx, controlPlane, options)
+	provider, err := region.NewClient(c.client).Provider(ctx, options.Region)
 	if err != nil {
 		return err
 	}
 
-	clientConfig, cloud, err := c.createClientConfig(ctx, controlPlane, options.Name)
+	cluster, err := c.generate(ctx, provider, controlPlane, options)
 	if err != nil {
 		return err
 	}
 
-	serverGroupID, err := c.createServerGroup(ctx, controlPlane, options.Name, "control-plane")
+	clientConfig, cloud, err := c.createClientConfig(ctx, provider, controlPlane, options.Name)
+	if err != nil {
+		return err
+	}
+
+	serverGroupID, err := c.createServerGroup(ctx, provider, controlPlane, options.Name, "control-plane")
 	if err != nil {
 		return err
 	}
@@ -350,7 +352,12 @@ func (c *Client) Update(ctx context.Context, projectName generated.ProjectNamePa
 		return err
 	}
 
-	required, err := c.generate(ctx, controlPlane, request)
+	provider, err := region.NewClient(c.client).Provider(ctx, request.Region)
+	if err != nil {
+		return err
+	}
+
+	required, err := c.generate(ctx, provider, controlPlane, request)
 	if err != nil {
 		return err
 	}
