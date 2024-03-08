@@ -389,10 +389,6 @@ type ControlPlaneStatus struct {
 // MachineGeneric contains common things across all pool types, including
 // Kubernetes control plane nodes and workload pools.
 type MachineGeneric struct {
-	// Version is the Kubernetes version to install.  For performance
-	// reasons this should match what is already pre-installed on the
-	// provided image.
-	Version *SemanticVersion `json:"version"`
 	// Image is the OpenStack Glance image to deploy with.
 	Image *string `json:"image"`
 	// Flavor is the OpenStack Nova flavor to deploy with.
@@ -518,6 +514,10 @@ type KubernetesClusterSpec struct {
 	Pause bool `json:"pause,omitempty"`
 	// Region to provision the cluster in.
 	Region string `json:"region"`
+	// Version is the Kubernetes version to install.  For performance
+	// reasons this should match what is already pre-installed on the
+	// provided image.
+	Version *SemanticVersion `json:"version"`
 	// Openstack defines global Openstack related configuration.
 	Openstack *KubernetesClusterOpenstackSpec `json:"openstack"`
 	// Network defines the Kubernetes networking.
@@ -555,7 +555,7 @@ type KubernetesClusterOpenstackSpec struct {
 	// FailureDomain is the global failure domain to use.  The control plane
 	// will always be deployed in this region.  Individual worload pools will
 	// default to this, but can override it.
-	FailureDomain *string `json:"failureDomain"`
+	FailureDomain *string `json:"failureDomain,omitempty"`
 	// VolumeFailureDomain is the default failure domain to use for volumes
 	// as these needn't match compute.  For legacy reasons, this will default
 	// to FailureDomain, but you shouldn't reply on this behaviour.
@@ -648,7 +648,6 @@ type ControlPlaneApplicationBundleList struct {
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:resource:scope=Cluster,categories=unikorn
-// +kubebuilder:printcolumn:name="kind",type="string",JSONPath=".spec.kind"
 // +kubebuilder:printcolumn:name="version",type="string",JSONPath=".spec.version"
 // +kubebuilder:printcolumn:name="preview",type="string",JSONPath=".spec.preview"
 // +kubebuilder:printcolumn:name="end of life",type="string",JSONPath=".spec.endOfLife"
@@ -676,7 +675,6 @@ type KubernetesClusterApplicationBundleList struct {
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:resource:scope=Cluster,categories=unikorn
-// +kubebuilder:printcolumn:name="kind",type="string",JSONPath=".spec.kind"
 // +kubebuilder:printcolumn:name="version",type="string",JSONPath=".spec.version"
 // +kubebuilder:printcolumn:name="preview",type="string",JSONPath=".spec.preview"
 // +kubebuilder:printcolumn:name="end of life",type="string",JSONPath=".spec.endOfLife"

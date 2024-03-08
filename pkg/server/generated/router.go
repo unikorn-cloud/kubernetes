@@ -15,12 +15,6 @@ import (
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
-	// (GET /api/v1/applicationbundles/cluster)
-	GetApiV1ApplicationbundlesCluster(w http.ResponseWriter, r *http.Request)
-
-	// (GET /api/v1/applicationbundles/controlPlane)
-	GetApiV1ApplicationbundlesControlPlane(w http.ResponseWriter, r *http.Request)
-
 	// (GET /api/v1/applications)
 	GetApiV1Applications(w http.ResponseWriter, r *http.Request)
 
@@ -69,23 +63,11 @@ type ServerInterface interface {
 	// (GET /api/v1/regions)
 	GetApiV1Regions(w http.ResponseWriter, r *http.Request)
 
-	// (GET /api/v1/regions/{regionName}/availability-zones/block-storage)
-	GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(w http.ResponseWriter, r *http.Request, regionName RegionNameParameter)
-
-	// (GET /api/v1/regions/{regionName}/availability-zones/compute)
-	GetApiV1RegionsRegionNameAvailabilityZonesCompute(w http.ResponseWriter, r *http.Request, regionName RegionNameParameter)
-
-	// (GET /api/v1/regions/{regionName}/external-networks)
-	GetApiV1RegionsRegionNameExternalNetworks(w http.ResponseWriter, r *http.Request, regionName RegionNameParameter)
-
 	// (GET /api/v1/regions/{regionName}/flavors)
 	GetApiV1RegionsRegionNameFlavors(w http.ResponseWriter, r *http.Request, regionName RegionNameParameter)
 
 	// (GET /api/v1/regions/{regionName}/images)
 	GetApiV1RegionsRegionNameImages(w http.ResponseWriter, r *http.Request, regionName RegionNameParameter)
-
-	// (GET /api/v1/regions/{regionName}/key-pairs)
-	GetApiV1RegionsRegionNameKeyPairs(w http.ResponseWriter, r *http.Request, regionName RegionNameParameter)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -96,40 +78,6 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
-
-// GetApiV1ApplicationbundlesCluster operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1ApplicationbundlesCluster(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
-
-	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1ApplicationbundlesCluster(w, r)
-	})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// GetApiV1ApplicationbundlesControlPlane operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1ApplicationbundlesControlPlane(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
-
-	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1ApplicationbundlesControlPlane(w, r)
-	})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
 
 // GetApiV1Applications operation middleware
 func (siw *ServerInterfaceWrapper) GetApiV1Applications(w http.ResponseWriter, r *http.Request) {
@@ -572,90 +520,6 @@ func (siw *ServerInterfaceWrapper) GetApiV1Regions(w http.ResponseWriter, r *htt
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// ------------- Path parameter "regionName" -------------
-	var regionName RegionNameParameter
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "regionName", runtime.ParamLocationPath, chi.URLParam(r, "regionName"), &regionName)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "regionName", Err: err})
-		return
-	}
-
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
-
-	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(w, r, regionName)
-	})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// GetApiV1RegionsRegionNameAvailabilityZonesCompute operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionNameAvailabilityZonesCompute(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// ------------- Path parameter "regionName" -------------
-	var regionName RegionNameParameter
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "regionName", runtime.ParamLocationPath, chi.URLParam(r, "regionName"), &regionName)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "regionName", Err: err})
-		return
-	}
-
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
-
-	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1RegionsRegionNameAvailabilityZonesCompute(w, r, regionName)
-	})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// GetApiV1RegionsRegionNameExternalNetworks operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionNameExternalNetworks(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// ------------- Path parameter "regionName" -------------
-	var regionName RegionNameParameter
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "regionName", runtime.ParamLocationPath, chi.URLParam(r, "regionName"), &regionName)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "regionName", Err: err})
-		return
-	}
-
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
-
-	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1RegionsRegionNameExternalNetworks(w, r, regionName)
-	})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
 // GetApiV1RegionsRegionNameFlavors operation middleware
 func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionNameFlavors(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -703,34 +567,6 @@ func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionNameImages(w http.Respon
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiV1RegionsRegionNameImages(w, r, regionName)
-	})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// GetApiV1RegionsRegionNameKeyPairs operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionNameKeyPairs(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// ------------- Path parameter "regionName" -------------
-	var regionName RegionNameParameter
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "regionName", runtime.ParamLocationPath, chi.URLParam(r, "regionName"), &regionName)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "regionName", Err: err})
-		return
-	}
-
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
-
-	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1RegionsRegionNameKeyPairs(w, r, regionName)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -854,12 +690,6 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/applicationbundles/cluster", wrapper.GetApiV1ApplicationbundlesCluster)
-	})
-	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/applicationbundles/controlPlane", wrapper.GetApiV1ApplicationbundlesControlPlane)
-	})
-	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/v1/applications", wrapper.GetApiV1Applications)
 	})
 	r.Group(func(r chi.Router) {
@@ -908,22 +738,10 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/api/v1/regions", wrapper.GetApiV1Regions)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/regions/{regionName}/availability-zones/block-storage", wrapper.GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage)
-	})
-	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/regions/{regionName}/availability-zones/compute", wrapper.GetApiV1RegionsRegionNameAvailabilityZonesCompute)
-	})
-	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/regions/{regionName}/external-networks", wrapper.GetApiV1RegionsRegionNameExternalNetworks)
-	})
-	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/v1/regions/{regionName}/flavors", wrapper.GetApiV1RegionsRegionNameFlavors)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/v1/regions/{regionName}/images", wrapper.GetApiV1RegionsRegionNameImages)
-	})
-	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/regions/{regionName}/key-pairs", wrapper.GetApiV1RegionsRegionNameKeyPairs)
 	})
 
 	return r

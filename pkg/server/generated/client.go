@@ -89,12 +89,6 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// GetApiV1ApplicationbundlesCluster request
-	GetApiV1ApplicationbundlesCluster(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetApiV1ApplicationbundlesControlPlane request
-	GetApiV1ApplicationbundlesControlPlane(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetApiV1Applications request
 	GetApiV1Applications(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -153,47 +147,11 @@ type ClientInterface interface {
 	// GetApiV1Regions request
 	GetApiV1Regions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage request
-	GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetApiV1RegionsRegionNameAvailabilityZonesCompute request
-	GetApiV1RegionsRegionNameAvailabilityZonesCompute(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetApiV1RegionsRegionNameExternalNetworks request
-	GetApiV1RegionsRegionNameExternalNetworks(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetApiV1RegionsRegionNameFlavors request
 	GetApiV1RegionsRegionNameFlavors(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetApiV1RegionsRegionNameImages request
 	GetApiV1RegionsRegionNameImages(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetApiV1RegionsRegionNameKeyPairs request
-	GetApiV1RegionsRegionNameKeyPairs(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
-}
-
-func (c *Client) GetApiV1ApplicationbundlesCluster(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1ApplicationbundlesClusterRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetApiV1ApplicationbundlesControlPlane(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1ApplicationbundlesControlPlaneRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
 }
 
 func (c *Client) GetApiV1Applications(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -448,42 +406,6 @@ func (c *Client) GetApiV1Regions(ctx context.Context, reqEditors ...RequestEdito
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1RegionsRegionNameAvailabilityZonesBlockStorageRequest(c.Server, regionName)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetApiV1RegionsRegionNameAvailabilityZonesCompute(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1RegionsRegionNameAvailabilityZonesComputeRequest(c.Server, regionName)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetApiV1RegionsRegionNameExternalNetworks(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1RegionsRegionNameExternalNetworksRequest(c.Server, regionName)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) GetApiV1RegionsRegionNameFlavors(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetApiV1RegionsRegionNameFlavorsRequest(c.Server, regionName)
 	if err != nil {
@@ -506,72 +428,6 @@ func (c *Client) GetApiV1RegionsRegionNameImages(ctx context.Context, regionName
 		return nil, err
 	}
 	return c.Client.Do(req)
-}
-
-func (c *Client) GetApiV1RegionsRegionNameKeyPairs(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1RegionsRegionNameKeyPairsRequest(c.Server, regionName)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-// NewGetApiV1ApplicationbundlesClusterRequest generates requests for GetApiV1ApplicationbundlesCluster
-func NewGetApiV1ApplicationbundlesClusterRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/api/v1/applicationbundles/cluster")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetApiV1ApplicationbundlesControlPlaneRequest generates requests for GetApiV1ApplicationbundlesControlPlane
-func NewGetApiV1ApplicationbundlesControlPlaneRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/api/v1/applicationbundles/controlPlane")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
 }
 
 // NewGetApiV1ApplicationsRequest generates requests for GetApiV1Applications
@@ -1190,108 +1046,6 @@ func NewGetApiV1RegionsRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetApiV1RegionsRegionNameAvailabilityZonesBlockStorageRequest generates requests for GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage
-func NewGetApiV1RegionsRegionNameAvailabilityZonesBlockStorageRequest(server string, regionName RegionNameParameter) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "regionName", runtime.ParamLocationPath, regionName)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/api/v1/regions/%s/availability-zones/block-storage", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetApiV1RegionsRegionNameAvailabilityZonesComputeRequest generates requests for GetApiV1RegionsRegionNameAvailabilityZonesCompute
-func NewGetApiV1RegionsRegionNameAvailabilityZonesComputeRequest(server string, regionName RegionNameParameter) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "regionName", runtime.ParamLocationPath, regionName)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/api/v1/regions/%s/availability-zones/compute", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetApiV1RegionsRegionNameExternalNetworksRequest generates requests for GetApiV1RegionsRegionNameExternalNetworks
-func NewGetApiV1RegionsRegionNameExternalNetworksRequest(server string, regionName RegionNameParameter) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "regionName", runtime.ParamLocationPath, regionName)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/api/v1/regions/%s/external-networks", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 // NewGetApiV1RegionsRegionNameFlavorsRequest generates requests for GetApiV1RegionsRegionNameFlavors
 func NewGetApiV1RegionsRegionNameFlavorsRequest(server string, regionName RegionNameParameter) (*http.Request, error) {
 	var err error
@@ -1360,40 +1114,6 @@ func NewGetApiV1RegionsRegionNameImagesRequest(server string, regionName RegionN
 	return req, nil
 }
 
-// NewGetApiV1RegionsRegionNameKeyPairsRequest generates requests for GetApiV1RegionsRegionNameKeyPairs
-func NewGetApiV1RegionsRegionNameKeyPairsRequest(server string, regionName RegionNameParameter) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "regionName", runtime.ParamLocationPath, regionName)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/api/v1/regions/%s/key-pairs", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -1437,12 +1157,6 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// GetApiV1ApplicationbundlesCluster request
-	GetApiV1ApplicationbundlesClusterWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ApplicationbundlesClusterResponse, error)
-
-	// GetApiV1ApplicationbundlesControlPlane request
-	GetApiV1ApplicationbundlesControlPlaneWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ApplicationbundlesControlPlaneResponse, error)
-
 	// GetApiV1Applications request
 	GetApiV1ApplicationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ApplicationsResponse, error)
 
@@ -1501,73 +1215,11 @@ type ClientWithResponsesInterface interface {
 	// GetApiV1Regions request
 	GetApiV1RegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1RegionsResponse, error)
 
-	// GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage request
-	GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse, error)
-
-	// GetApiV1RegionsRegionNameAvailabilityZonesCompute request
-	GetApiV1RegionsRegionNameAvailabilityZonesComputeWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse, error)
-
-	// GetApiV1RegionsRegionNameExternalNetworks request
-	GetApiV1RegionsRegionNameExternalNetworksWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameExternalNetworksResponse, error)
-
 	// GetApiV1RegionsRegionNameFlavors request
 	GetApiV1RegionsRegionNameFlavorsWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameFlavorsResponse, error)
 
 	// GetApiV1RegionsRegionNameImages request
 	GetApiV1RegionsRegionNameImagesWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameImagesResponse, error)
-
-	// GetApiV1RegionsRegionNameKeyPairs request
-	GetApiV1RegionsRegionNameKeyPairsWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameKeyPairsResponse, error)
-}
-
-type GetApiV1ApplicationbundlesClusterResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *ApplicationBundles
-	JSON400      *Oauth2Error
-	JSON401      *Oauth2Error
-	JSON500      *Oauth2Error
-}
-
-// Status returns HTTPResponse.Status
-func (r GetApiV1ApplicationbundlesClusterResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1ApplicationbundlesClusterResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetApiV1ApplicationbundlesControlPlaneResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *ApplicationBundles
-	JSON400      *Oauth2Error
-	JSON401      *Oauth2Error
-	JSON500      *Oauth2Error
-}
-
-// Status returns HTTPResponse.Status
-func (r GetApiV1ApplicationbundlesControlPlaneResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1ApplicationbundlesControlPlaneResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
 }
 
 type GetApiV1ApplicationsResponse struct {
@@ -1971,81 +1623,6 @@ func (r GetApiV1RegionsResponse) StatusCode() int {
 	return 0
 }
 
-type GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *OpenstackAvailabilityZones
-	JSON400      *Oauth2Error
-	JSON401      *Oauth2Error
-	JSON500      *Oauth2Error
-}
-
-// Status returns HTTPResponse.Status
-func (r GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *OpenstackAvailabilityZones
-	JSON400      *Oauth2Error
-	JSON401      *Oauth2Error
-	JSON500      *Oauth2Error
-}
-
-// Status returns HTTPResponse.Status
-func (r GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetApiV1RegionsRegionNameExternalNetworksResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *OpenstackExternalNetworks
-	JSON400      *Oauth2Error
-	JSON401      *Oauth2Error
-	JSON500      *Oauth2Error
-}
-
-// Status returns HTTPResponse.Status
-func (r GetApiV1RegionsRegionNameExternalNetworksResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1RegionsRegionNameExternalNetworksResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type GetApiV1RegionsRegionNameFlavorsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -2094,49 +1671,6 @@ func (r GetApiV1RegionsRegionNameImagesResponse) StatusCode() int {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
-}
-
-type GetApiV1RegionsRegionNameKeyPairsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *OpenstackKeyPairs
-	JSON400      *Oauth2Error
-	JSON401      *Oauth2Error
-	JSON500      *Oauth2Error
-}
-
-// Status returns HTTPResponse.Status
-func (r GetApiV1RegionsRegionNameKeyPairsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1RegionsRegionNameKeyPairsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// GetApiV1ApplicationbundlesClusterWithResponse request returning *GetApiV1ApplicationbundlesClusterResponse
-func (c *ClientWithResponses) GetApiV1ApplicationbundlesClusterWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ApplicationbundlesClusterResponse, error) {
-	rsp, err := c.GetApiV1ApplicationbundlesCluster(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetApiV1ApplicationbundlesClusterResponse(rsp)
-}
-
-// GetApiV1ApplicationbundlesControlPlaneWithResponse request returning *GetApiV1ApplicationbundlesControlPlaneResponse
-func (c *ClientWithResponses) GetApiV1ApplicationbundlesControlPlaneWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ApplicationbundlesControlPlaneResponse, error) {
-	rsp, err := c.GetApiV1ApplicationbundlesControlPlane(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetApiV1ApplicationbundlesControlPlaneResponse(rsp)
 }
 
 // GetApiV1ApplicationsWithResponse request returning *GetApiV1ApplicationsResponse
@@ -2323,33 +1857,6 @@ func (c *ClientWithResponses) GetApiV1RegionsWithResponse(ctx context.Context, r
 	return ParseGetApiV1RegionsResponse(rsp)
 }
 
-// GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageWithResponse request returning *GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse
-func (c *ClientWithResponses) GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse, error) {
-	rsp, err := c.GetApiV1RegionsRegionNameAvailabilityZonesBlockStorage(ctx, regionName, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse(rsp)
-}
-
-// GetApiV1RegionsRegionNameAvailabilityZonesComputeWithResponse request returning *GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse
-func (c *ClientWithResponses) GetApiV1RegionsRegionNameAvailabilityZonesComputeWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse, error) {
-	rsp, err := c.GetApiV1RegionsRegionNameAvailabilityZonesCompute(ctx, regionName, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetApiV1RegionsRegionNameAvailabilityZonesComputeResponse(rsp)
-}
-
-// GetApiV1RegionsRegionNameExternalNetworksWithResponse request returning *GetApiV1RegionsRegionNameExternalNetworksResponse
-func (c *ClientWithResponses) GetApiV1RegionsRegionNameExternalNetworksWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameExternalNetworksResponse, error) {
-	rsp, err := c.GetApiV1RegionsRegionNameExternalNetworks(ctx, regionName, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetApiV1RegionsRegionNameExternalNetworksResponse(rsp)
-}
-
 // GetApiV1RegionsRegionNameFlavorsWithResponse request returning *GetApiV1RegionsRegionNameFlavorsResponse
 func (c *ClientWithResponses) GetApiV1RegionsRegionNameFlavorsWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameFlavorsResponse, error) {
 	rsp, err := c.GetApiV1RegionsRegionNameFlavors(ctx, regionName, reqEditors...)
@@ -2366,109 +1873,6 @@ func (c *ClientWithResponses) GetApiV1RegionsRegionNameImagesWithResponse(ctx co
 		return nil, err
 	}
 	return ParseGetApiV1RegionsRegionNameImagesResponse(rsp)
-}
-
-// GetApiV1RegionsRegionNameKeyPairsWithResponse request returning *GetApiV1RegionsRegionNameKeyPairsResponse
-func (c *ClientWithResponses) GetApiV1RegionsRegionNameKeyPairsWithResponse(ctx context.Context, regionName RegionNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionNameKeyPairsResponse, error) {
-	rsp, err := c.GetApiV1RegionsRegionNameKeyPairs(ctx, regionName, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetApiV1RegionsRegionNameKeyPairsResponse(rsp)
-}
-
-// ParseGetApiV1ApplicationbundlesClusterResponse parses an HTTP response from a GetApiV1ApplicationbundlesClusterWithResponse call
-func ParseGetApiV1ApplicationbundlesClusterResponse(rsp *http.Response) (*GetApiV1ApplicationbundlesClusterResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetApiV1ApplicationbundlesClusterResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ApplicationBundles
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetApiV1ApplicationbundlesControlPlaneResponse parses an HTTP response from a GetApiV1ApplicationbundlesControlPlaneWithResponse call
-func ParseGetApiV1ApplicationbundlesControlPlaneResponse(rsp *http.Response) (*GetApiV1ApplicationbundlesControlPlaneResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetApiV1ApplicationbundlesControlPlaneResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ApplicationBundles
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
 }
 
 // ParseGetApiV1ApplicationsResponse parses an HTTP response from a GetApiV1ApplicationsWithResponse call
@@ -3230,147 +2634,6 @@ func ParseGetApiV1RegionsResponse(rsp *http.Response) (*GetApiV1RegionsResponse,
 	return response, nil
 }
 
-// ParseGetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse parses an HTTP response from a GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageWithResponse call
-func ParseGetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse(rsp *http.Response) (*GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetApiV1RegionsRegionNameAvailabilityZonesBlockStorageResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest OpenstackAvailabilityZones
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetApiV1RegionsRegionNameAvailabilityZonesComputeResponse parses an HTTP response from a GetApiV1RegionsRegionNameAvailabilityZonesComputeWithResponse call
-func ParseGetApiV1RegionsRegionNameAvailabilityZonesComputeResponse(rsp *http.Response) (*GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetApiV1RegionsRegionNameAvailabilityZonesComputeResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest OpenstackAvailabilityZones
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetApiV1RegionsRegionNameExternalNetworksResponse parses an HTTP response from a GetApiV1RegionsRegionNameExternalNetworksWithResponse call
-func ParseGetApiV1RegionsRegionNameExternalNetworksResponse(rsp *http.Response) (*GetApiV1RegionsRegionNameExternalNetworksResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetApiV1RegionsRegionNameExternalNetworksResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest OpenstackExternalNetworks
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseGetApiV1RegionsRegionNameFlavorsResponse parses an HTTP response from a GetApiV1RegionsRegionNameFlavorsWithResponse call
 func ParseGetApiV1RegionsRegionNameFlavorsResponse(rsp *http.Response) (*GetApiV1RegionsRegionNameFlavorsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -3434,53 +2697,6 @@ func ParseGetApiV1RegionsRegionNameImagesResponse(rsp *http.Response) (*GetApiV1
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest OpenstackImages
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Oauth2Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetApiV1RegionsRegionNameKeyPairsResponse parses an HTTP response from a GetApiV1RegionsRegionNameKeyPairsWithResponse call
-func ParseGetApiV1RegionsRegionNameKeyPairsResponse(rsp *http.Response) (*GetApiV1RegionsRegionNameKeyPairsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetApiV1RegionsRegionNameKeyPairsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest OpenstackKeyPairs
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

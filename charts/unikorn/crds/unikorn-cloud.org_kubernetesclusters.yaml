@@ -287,12 +287,6 @@ spec:
                     description: ServerGroupID sets the server group of the control
                       plane in order to maintain anti-affinity rules.
                     type: string
-                  version:
-                    description: Version is the Kubernetes version to install.  For
-                      performance reasons this should match what is already pre-installed
-                      on the provided image.
-                    pattern: ^v(?:[0-9]+\.){2}(?:[0-9]+)$
-                    type: string
                   volumeFailureDomain:
                     description: VolumeFailureDomain allows the volume failure domain
                       to be set on a per machine deployment basis.
@@ -300,7 +294,6 @@ spec:
                 required:
                 - flavor
                 - image
-                - version
                 type: object
               features:
                 description: Features defines add-on features that can be enabled
@@ -404,13 +397,18 @@ spec:
                 - cloud
                 - cloudConfig
                 - externalNetworkId
-                - failureDomain
                 type: object
               pause:
                 description: Pause, if true, will inhibit reconciliation.
                 type: boolean
               region:
                 description: Region to provision the cluster in.
+                type: string
+              version:
+                description: Version is the Kubernetes version to install.  For performance
+                  reasons this should match what is already pre-installed on the provided
+                  image.
+                pattern: ^v(?:[0-9]+\.){2}(?:[0-9]+)$
                 type: string
               workloadPools:
                 description: WorkloadPools defines the workload cluster topology.
@@ -545,12 +543,6 @@ spec:
                           description: ServerGroupID sets the server group of the
                             control plane in order to maintain anti-affinity rules.
                           type: string
-                        version:
-                          description: Version is the Kubernetes version to install.  For
-                            performance reasons this should match what is already
-                            pre-installed on the provided image.
-                          pattern: ^v(?:[0-9]+\.){2}(?:[0-9]+)$
-                          type: string
                         volumeFailureDomain:
                           description: VolumeFailureDomain allows the volume failure
                             domain to be set on a per machine deployment basis.
@@ -559,7 +551,6 @@ spec:
                       - flavor
                       - image
                       - name
-                      - version
                       type: object
                     type: array
                 type: object
@@ -569,6 +560,7 @@ spec:
             - network
             - openstack
             - region
+            - version
             - workloadPools
             type: object
           status:

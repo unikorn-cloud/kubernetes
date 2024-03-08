@@ -20,7 +20,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
+	"github.com/unikorn-cloud/core/pkg/server/errors"
 )
 
 // NotFound is called from the router when a path is not found.

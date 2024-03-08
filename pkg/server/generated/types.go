@@ -57,36 +57,6 @@ type Application struct {
 	Versions ApplicationVersions `json:"versions"`
 }
 
-// ApplicationBundle A bundle of applications. This forms the basis of resource versions. Bundles marked
-// as preview should not be selected by default, and end of life bundles should not be
-// used to avoid unnecessary upgrades. If enabled, automatic upgrades will occur if
-// a newer version of a bundle exists that is not in preview. When a bundle's end of
-// life expires, resources will undergo a foreced upgrade, regardless of whether
-// automatic upgrade is enabled for a resource or not.
-type ApplicationBundle struct {
-	// EndOfLife When the bundle is end-of-life.
-	EndOfLife *time.Time `json:"endOfLife,omitempty"`
-
-	// Name The resource name.
-	Name string `json:"name"`
-
-	// Preview Whether the bundle is in preview.
-	Preview *bool `json:"preview,omitempty"`
-
-	// Version The bundle version.
-	Version string `json:"version"`
-}
-
-// ApplicationBundleAutoUpgrade When specified, enables auto upgrade of application bundles. All resources will be
-// automatically upgraded if the currently selected bundle is end of life.
-type ApplicationBundleAutoUpgrade struct {
-	// DaysOfWeek Days of the week and time windows that permit operations to be performed in.
-	DaysOfWeek *AutoUpgradeDaysOfWeek `json:"daysOfWeek,omitempty"`
-}
-
-// ApplicationBundles A list of application bundles.
-type ApplicationBundles = []ApplicationBundle
-
 // ApplicationDependencies A set of applications that will be installed before this application.
 type ApplicationDependencies = []ApplicationDependency
 
@@ -120,47 +90,8 @@ type ApplicationVersions = []ApplicationVersion
 // Applications A list of appications.
 type Applications = []Application
 
-// AutoUpgradeDaysOfWeek Days of the week and time windows that permit operations to be performed in.
-type AutoUpgradeDaysOfWeek struct {
-	// Friday A time window that wraps into the next day if required.
-	Friday *TimeWindow `json:"friday,omitempty"`
-
-	// Monday A time window that wraps into the next day if required.
-	Monday *TimeWindow `json:"monday,omitempty"`
-
-	// Saturday A time window that wraps into the next day if required.
-	Saturday *TimeWindow `json:"saturday,omitempty"`
-
-	// Sunday A time window that wraps into the next day if required.
-	Sunday *TimeWindow `json:"sunday,omitempty"`
-
-	// Thursday A time window that wraps into the next day if required.
-	Thursday *TimeWindow `json:"thursday,omitempty"`
-
-	// Tuesday A time window that wraps into the next day if required.
-	Tuesday *TimeWindow `json:"tuesday,omitempty"`
-
-	// Wednesday A time window that wraps into the next day if required.
-	Wednesday *TimeWindow `json:"wednesday,omitempty"`
-}
-
 // ControlPlane A control plane.
 type ControlPlane struct {
-	// ApplicationBundle A bundle of applications. This forms the basis of resource versions. Bundles marked
-	// as preview should not be selected by default, and end of life bundles should not be
-	// used to avoid unnecessary upgrades. If enabled, automatic upgrades will occur if
-	// a newer version of a bundle exists that is not in preview. When a bundle's end of
-	// life expires, resources will undergo a foreced upgrade, regardless of whether
-	// automatic upgrade is enabled for a resource or not.
-	ApplicationBundle *ApplicationBundle `json:"applicationBundle,omitempty"`
-
-	// ApplicationBundleAutoUpgrade Whether to enable auto upgrade or not.
-	ApplicationBundleAutoUpgrade *bool `json:"applicationBundleAutoUpgrade,omitempty"`
-
-	// ApplicationBundleAutoUpgradeSchedule When specified, enables auto upgrade of application bundles. All resources will be
-	// automatically upgraded if the currently selected bundle is end of life.
-	ApplicationBundleAutoUpgradeSchedule *ApplicationBundleAutoUpgrade `json:"applicationBundleAutoUpgradeSchedule,omitempty"`
-
 	// Metadata A resources's metadata
 	Metadata *ResourceMetadata `json:"metadata,omitempty"`
 
@@ -171,40 +102,13 @@ type ControlPlane struct {
 // ControlPlanes A list of control planes.
 type ControlPlanes = []ControlPlane
 
-// Hour An hour of the day in UTC.
-type Hour = int
-
 // KubernetesCluster Kubernetes cluster creation parameters.
 type KubernetesCluster struct {
-	// Api Kubernetes API settings.
-	Api *KubernetesClusterAPI `json:"api,omitempty"`
-
-	// ApplicationBundle A bundle of applications. This forms the basis of resource versions. Bundles marked
-	// as preview should not be selected by default, and end of life bundles should not be
-	// used to avoid unnecessary upgrades. If enabled, automatic upgrades will occur if
-	// a newer version of a bundle exists that is not in preview. When a bundle's end of
-	// life expires, resources will undergo a foreced upgrade, regardless of whether
-	// automatic upgrade is enabled for a resource or not.
-	ApplicationBundle *ApplicationBundle `json:"applicationBundle,omitempty"`
-
-	// ApplicationBundleAutoUpgrade When specified, enables auto upgrade of application bundles. All resources will be
-	// automatically upgraded if the currently selected bundle is end of life.
-	ApplicationBundleAutoUpgrade *ApplicationBundleAutoUpgrade `json:"applicationBundleAutoUpgrade,omitempty"`
-
-	// ControlPlane A Kubernetes cluster machine.
-	ControlPlane *OpenstackMachinePool `json:"controlPlane,omitempty"`
-
 	// Metadata A resources's metadata
 	Metadata *ResourceMetadata `json:"metadata,omitempty"`
 
 	// Name Cluster name.
 	Name string `json:"name"`
-
-	// Network A kubernetes cluster network settings.
-	Network *KubernetesClusterNetwork `json:"network,omitempty"`
-
-	// Openstack Kubernetes cluster creation OpenStack parameters.
-	Openstack *KubernetesClusterOpenStack `json:"openstack,omitempty"`
 
 	// Region The region to provision the cluster in.
 	Region string `json:"region"`
@@ -216,15 +120,6 @@ type KubernetesCluster struct {
 	WorkloadPools KubernetesClusterWorkloadPools `json:"workloadPools"`
 }
 
-// KubernetesClusterAPI Kubernetes API settings.
-type KubernetesClusterAPI struct {
-	// AllowedPrefixes Set of address prefixes to allow access to the Kubernetes API.
-	AllowedPrefixes *[]string `json:"allowedPrefixes,omitempty"`
-
-	// SubjectAlternativeNames Set of non-standard X.509 SANs to add to the API certificate.
-	SubjectAlternativeNames *[]string `json:"subjectAlternativeNames,omitempty"`
-}
-
 // KubernetesClusterAutoscaling A Kubernetes cluster workload pool autoscaling configuration. Cluster autoscaling
 // must also be enabled in the cluster features.
 type KubernetesClusterAutoscaling struct {
@@ -232,44 +127,11 @@ type KubernetesClusterAutoscaling struct {
 	MinimumReplicas int `json:"minimumReplicas"`
 }
 
-// KubernetesClusterNetwork A kubernetes cluster network settings.
-type KubernetesClusterNetwork struct {
-	// DnsNameservers A list of DNS name server to use.
-	DnsNameservers *[]string `json:"dnsNameservers,omitempty"`
-
-	// NodePrefix Network prefix to provision nodes in. Must be a valid CIDR block.
-	NodePrefix *string `json:"nodePrefix,omitempty"`
-
-	// PodPrefix Network prefix to provision pods in. Must be a valid CIDR block.
-	PodPrefix *string `json:"podPrefix,omitempty"`
-
-	// ServicePrefix Network prefix to provision services in. Must be a valid CIDR block.
-	ServicePrefix *string `json:"servicePrefix,omitempty"`
-}
-
-// KubernetesClusterOpenStack Kubernetes cluster creation OpenStack parameters.
-type KubernetesClusterOpenStack struct {
-	// ComputeAvailabilityZone Compute availability zone for control plane, and workload pool default.
-	ComputeAvailabilityZone *string `json:"computeAvailabilityZone,omitempty"`
-
-	// ExternalNetworkID OpenStack external network ID.
-	ExternalNetworkID *string `json:"externalNetworkID,omitempty"`
-
-	// SshKeyName OpenStack SSH Key to install on all machines.
-	SshKeyName *string `json:"sshKeyName,omitempty"`
-
-	// VolumeAvailabilityZone Volume availability zone for control plane, and workload pool default.
-	VolumeAvailabilityZone *string `json:"volumeAvailabilityZone,omitempty"`
-}
-
 // KubernetesClusterWorkloadPool A Kuberntes cluster workload pool.
 type KubernetesClusterWorkloadPool struct {
 	// Autoscaling A Kubernetes cluster workload pool autoscaling configuration. Cluster autoscaling
 	// must also be enabled in the cluster features.
 	Autoscaling *KubernetesClusterAutoscaling `json:"autoscaling,omitempty"`
-
-	// AvailabilityZone Workload pool availability zone. Overrides the cluster default.
-	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
 	// Labels Workload pool key value labels to apply on node creation.
 	Labels *map[string]string `json:"labels,omitempty"`
@@ -301,27 +163,6 @@ type Oauth2Error struct {
 
 // Oauth2ErrorError A terse error string expanding on the HTTP error code. Errors are based on the OAuth2 specification, but are expanded with proprietary status codes for APIs other than those specified by OAuth2.
 type Oauth2ErrorError string
-
-// OpenstackAvailabilityZone An OpenStack availability zone.
-type OpenstackAvailabilityZone struct {
-	// Name The availability zone name.
-	Name string `json:"name"`
-}
-
-// OpenstackAvailabilityZones A list of OpenStack availability zones.
-type OpenstackAvailabilityZones = []OpenstackAvailabilityZone
-
-// OpenstackExternalNetwork An OpenStack external network.
-type OpenstackExternalNetwork struct {
-	// Id OpenStack external network ID.
-	Id string `json:"id"`
-
-	// Name Opestack external network name.
-	Name string `json:"name"`
-}
-
-// OpenstackExternalNetworks A list of OpenStack external networks.
-type OpenstackExternalNetworks = []OpenstackExternalNetwork
 
 // OpenstackFlavor An OpenStack flavor.
 type OpenstackFlavor struct {
@@ -379,15 +220,6 @@ type OpenstackImageVersions struct {
 // OpenstackImages A list of OpenStack images that are compatible with this platform.
 type OpenstackImages = []OpenstackImage
 
-// OpenstackKeyPair An OpenStack SSH key pair.
-type OpenstackKeyPair struct {
-	// Name The key pair name.
-	Name string `json:"name"`
-}
-
-// OpenstackKeyPairs A list of OpenStack key pairs.
-type OpenstackKeyPairs = []OpenstackKeyPair
-
 // OpenstackMachinePool A Kubernetes cluster machine.
 type OpenstackMachinePool struct {
 	// Disk An OpenStack volume.
@@ -396,18 +228,12 @@ type OpenstackMachinePool struct {
 	// FlavorName OpenStack flavor name.
 	FlavorName *string `json:"flavorName,omitempty"`
 
-	// ImageName OpenStack image name.
-	ImageName *string `json:"imageName,omitempty"`
-
 	// Replicas Number of machines for a statically sized pool or the maximum for an auto-scaled pool.
 	Replicas *int `json:"replicas,omitempty"`
 }
 
 // OpenstackVolume An OpenStack volume.
 type OpenstackVolume struct {
-	// AvailabilityZone Volume availability zone. Overrides the cluster default.
-	AvailabilityZone *string `json:"availabilityZone,omitempty"`
-
 	// Size Disk size in GiB.
 	Size int `json:"size"`
 }
@@ -458,15 +284,6 @@ type ResourceMetadata struct {
 	Status string `json:"status"`
 }
 
-// TimeWindow A time window that wraps into the next day if required.
-type TimeWindow struct {
-	// End An hour of the day in UTC.
-	End Hour `json:"end"`
-
-	// Start An hour of the day in UTC.
-	Start Hour `json:"start"`
-}
-
 // ClusterNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type ClusterNameParameter = KubernetesNameParameter
 
@@ -478,9 +295,6 @@ type ProjectNameParameter = KubernetesNameParameter
 
 // RegionNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type RegionNameParameter = KubernetesNameParameter
-
-// ApplicationBundleResponse A list of application bundles.
-type ApplicationBundleResponse = ApplicationBundles
 
 // ApplicationResponse A list of appications.
 type ApplicationResponse = Applications
@@ -506,23 +320,11 @@ type KubernetesClustersResponse = KubernetesClusters
 // NotFoundResponse Generic error message.
 type NotFoundResponse = Oauth2Error
 
-// OpenstackBlockStorageAvailabilityZonesResponse A list of OpenStack availability zones.
-type OpenstackBlockStorageAvailabilityZonesResponse = OpenstackAvailabilityZones
-
-// OpenstackComputeAvailabilityZonesResponse A list of OpenStack availability zones.
-type OpenstackComputeAvailabilityZonesResponse = OpenstackAvailabilityZones
-
-// OpenstackExternalNetworksResponse A list of OpenStack external networks.
-type OpenstackExternalNetworksResponse = OpenstackExternalNetworks
-
 // OpenstackFlavorsResponse A list of OpenStack flavors.
 type OpenstackFlavorsResponse = OpenstackFlavors
 
 // OpenstackImagesResponse A list of OpenStack images that are compatible with this platform.
 type OpenstackImagesResponse = OpenstackImages
-
-// OpenstackKeyPairsResponse A list of OpenStack key pairs.
-type OpenstackKeyPairsResponse = OpenstackKeyPairs
 
 // ProjectsResponse A list of projects.
 type ProjectsResponse = Projects

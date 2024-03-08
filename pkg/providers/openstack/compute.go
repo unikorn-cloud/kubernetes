@@ -25,6 +25,7 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
+	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
@@ -36,6 +37,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/unikorn-cloud/core/pkg/util/cache"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/constants"
 )
@@ -55,11 +57,13 @@ var (
 type ComputeClient struct {
 	options *unikornv1.RegionOpenstackComputeSpec
 	client  *gophercloud.ServiceClient
+
+	flavorCache *cache.TimeoutCache[[]Flavor]
 }
 
 // NewComputeClient provides a simple one-liner to start computing.
-func NewComputeClient(ctx context.Context, options *unikornv1.RegionOpenstackComputeSpec, provider Provider) (*ComputeClient, error) {
-	providerClient, err := provider.Client(ctx)
+func NewComputeClient(ctx context.Context, provider CredentialProvider, options *unikornv1.RegionOpenstackComputeSpec) (*ComputeClient, error) {
+	providerClient, err := provider.Client()
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +78,9 @@ func NewComputeClient(ctx context.Context, options *unikornv1.RegionOpenstackCom
 	client.Microversion = "2.90"
 
 	c := &ComputeClient{
-		options: options,
-		client:  client,
+		options:     options,
+		client:      client,
+		flavorCache: cache.New[[]Flavor](time.Hour),
 	}
 
 	return c, nil
@@ -144,6 +149,10 @@ func ExtractFlavors(r pagination.Page) ([]Flavor, error) {
 
 // Flavors returns a list of flavors.
 func (c *ComputeClient) Flavors(ctx context.Context) ([]Flavor, error) {
+	if result, ok := c.flavorCache.Get(); ok {
+		return result, nil
+	}
+
 	tracer := otel.GetTracerProvider().Tracer(constants.Application)
 
 	_, span := tracer.Start(ctx, "/compute/v2/flavors", trace.WithSpanKind(trace.SpanKindClient))
@@ -187,6 +196,8 @@ func (c *ComputeClient) Flavors(ctx context.Context) ([]Flavor, error) {
 
 		return false
 	})
+
+	c.flavorCache.Set(flavors)
 
 	return flavors, nil
 }
@@ -239,26 +250,25 @@ func (c *ComputeClient) extraSpecToGPUs(name, value string) (int, error) {
 // FlavorGPUs returns metadata about GPUs, e.g. the number of GPUs.  Sadly there is absolutely
 // no way of assiging metadata to flavors without having to add those same values to your host
 // aggregates, so we have to have knowledge of flavors built in somewhere.
-func (c *ComputeClient) FlavorGPUs(flavor *Flavor) (*GPUMeta, error) {
+func (c *ComputeClient) FlavorGPUs(flavor *Flavor) (GPUMeta, error) {
+	var result GPUMeta
+
 	for name, value := range flavor.ExtraSpecs {
 		gpus, err := c.extraSpecToGPUs(name, value)
 		if err != nil {
-			return nil, err
+			return result, err
 		}
 
 		if gpus == -1 {
 			continue
 		}
 
-		meta := &GPUMeta{
-			GPUs: gpus,
-		}
+		result.GPUs = gpus
 
-		return meta, nil
+		break
 	}
 
-	//nolint:nilnil
-	return nil, nil
+	return result, nil
 }
 
 // AvailabilityZones returns a list of availability zones.
