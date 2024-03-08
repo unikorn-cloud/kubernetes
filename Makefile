@@ -3,7 +3,6 @@ VERSION = 0.0.0
 
 # Base go module name.
 MODULE := $(shell cat go.mod | grep -m1 module | awk '{print $$2}')
-CORE_MODULE := github.com/unikorn-cloud/core
 
 # Git revision.
 REVISION := $(shell git rev-parse HEAD)
@@ -68,7 +67,7 @@ GOPATH := $(shell go env GOPATH)
 GOBIN := $(if $(shell go env GOBIN),$(shell go env GOBIN),$(GOPATH)/bin)
 
 # Common linker flags.
-FLAGS=-trimpath -ldflags '-X $(CORE_MODULE)/pkg/constants.Version=$(VERSION) -X $(CORE_MODULE)/pkg/constants.Revision=$(REVISION)'
+FLAGS=-trimpath -ldflags '-X $(MODULE)/pkg/constants.Version=$(VERSION) -X $(MODULE)/pkg/constants.Revision=$(REVISION)'
 
 # Defines the linter version.
 LINT_VERSION=v1.54.2
