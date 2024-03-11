@@ -75,9 +75,10 @@ func (p *ApplicationCredentialProvider) Client() (*gophercloud.ProviderClient, e
 
 // PasswordProvider allows use of an application credential.
 type PasswordProvider struct {
-	endpoint string
-	username string
-	password string
+	endpoint  string
+	userID    string
+	password  string
+	projectID string
 }
 
 // Ensure the interface is implemented.
@@ -85,11 +86,12 @@ var _ CredentialProvider = &PasswordProvider{}
 
 // NewPasswordProvider creates a client that comsumes passwords
 // for authentication.
-func NewPasswordProvider(endpoint, username, password string) *PasswordProvider {
+func NewPasswordProvider(endpoint, userID, password, projectID string) *PasswordProvider {
 	return &PasswordProvider{
-		endpoint: endpoint,
-		username: username,
-		password: password,
+		endpoint:  endpoint,
+		userID:    userID,
+		password:  password,
+		projectID: projectID,
 	}
 }
 
@@ -97,10 +99,9 @@ func NewPasswordProvider(endpoint, username, password string) *PasswordProvider 
 func (p *PasswordProvider) Client() (*gophercloud.ProviderClient, error) {
 	options := gophercloud.AuthOptions{
 		IdentityEndpoint: p.endpoint,
-		DomainName:       "Default",
-		TenantName:       "admin",
-		Username:         p.username,
+		UserID:           p.userID,
 		Password:         p.password,
+		TenantID:         p.projectID,
 	}
 
 	return authenticatedClient(options)

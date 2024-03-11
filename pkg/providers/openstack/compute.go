@@ -43,12 +43,6 @@ import (
 )
 
 var (
-	// ErrParseError is for when we cannot parse Openstack data correctly.
-	ErrParseError = errors.New("unable to parse value")
-
-	// ErrFlag is raised when options parsing fails.
-	ErrFlag = errors.New("unable to parse flag")
-
 	// ErrExpression is raised at runtime when expression evaluation fails.
 	ErrExpression = errors.New("expression must contain exactly one sub match that yields a number string")
 )
@@ -148,6 +142,8 @@ func ExtractFlavors(r pagination.Page) ([]Flavor, error) {
 }
 
 // Flavors returns a list of flavors.
+//
+//nolint:cyclop
 func (c *ComputeClient) Flavors(ctx context.Context) ([]Flavor, error) {
 	if result, ok := c.flavorCache.Get(); ok {
 		return result, nil
@@ -169,6 +165,12 @@ func (c *ComputeClient) Flavors(ctx context.Context) ([]Flavor, error) {
 	}
 
 	flavors = slices.DeleteFunc(flavors, func(flavor Flavor) bool {
+		// We are admin, so see all the things, throw out private flavors.
+		// TODO: we _could_ allow if our project is in the allowed IDs.
+		if !flavor.IsPublic {
+			return true
+		}
+
 		// Kubeadm requires 2 VCPU, 2 "GB" of RAM (I'll pretend it's GiB) and no swap:
 		// https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 		if flavor.VCPUs < 2 {

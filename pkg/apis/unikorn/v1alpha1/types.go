@@ -495,7 +495,7 @@ type KubernetesClusterList struct {
 // +kubebuilder:resource:scope=Namespaced,categories=unikorn
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="bundle",type="string",JSONPath=".spec.applicationBundle"
-// +kubebuilder:printcolumn:name="version",type="string",JSONPath=".spec.controlPlane.version"
+// +kubebuilder:printcolumn:name="version",type="string",JSONPath=".spec.version"
 // +kubebuilder:printcolumn:name="image",type="string",JSONPath=".spec.controlPlane.image"
 // +kubebuilder:printcolumn:name="flavor",type="string",JSONPath=".spec.controlPlane.flavor"
 // +kubebuilder:printcolumn:name="replicas",type="string",JSONPath=".spec.controlPlane.replicas"
@@ -592,17 +592,6 @@ type KubernetesClusterFeaturesSpec struct {
 	// Autoscaling, if true, provisions a cluster autoscaler
 	// and allows workload pools to specify autoscaling configuration.
 	Autoscaling *bool `json:"autoscaling,omitempty"`
-	// Ingress, if true, provisions an Nginx ingress controller.
-	Ingress *bool `json:"ingress,omitempty"`
-	// CertManager, if true, provisions cert-manager.
-	CertManager *bool `json:"certManager,omitempty"`
-	// KubernetesDashboard, if true, provisions the kubernetes dashboard.
-	// Clients must also enable the Ingress and CertManager features.
-	KubernetesDashboard *bool `json:"kubernetesDashboard,omitempty"`
-	// FileStorage, if true, enables a POSIX read/write many file storage.
-	FileStorage *bool `json:"fileStorage,omitempty"`
-	// Prometheus, if true, installs the Prometheus Operator.
-	Prometheus *bool `json:"prometheus,omitempty"`
 	// NvidiaOperator, if false do not install the Nvidia Operator, otherwise
 	// install if GPU flavors are detected
 	NvidiaOperator *bool `json:"nvidiaOperator,omitempty"`

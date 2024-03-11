@@ -31,20 +31,14 @@ import (
 	provisionersutil "github.com/unikorn-cloud/core/pkg/provisioners/util"
 	"github.com/unikorn-cloud/core/pkg/util"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/certmanager"
-	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/certmanagerissuers"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/cilium"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusterautoscaler"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusterautoscaleropenstack"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
-	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/ingressnginx"
-	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/kubernetesdashboard"
-	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/longhorn"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/metricsserver"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/nvidiagpuoperator"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/openstackcloudprovider"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/openstackplugincindercsi"
-	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/prometheus"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/vcluster"
 
 	"k8s.io/apimachinery/pkg/labels"
@@ -79,14 +73,6 @@ func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name st
 	return bundle.Spec.GetApplication(name)
 }
 
-func (a *ApplicationReferenceGetter) certManager(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
-	return a.getApplication(ctx, "cert-manager")
-}
-
-func (a *ApplicationReferenceGetter) certManagerIssuers(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
-	return a.getApplication(ctx, "cert-manager-issuers")
-}
-
 func (a *ApplicationReferenceGetter) clusterOpenstack(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "cluster-openstack")
 }
@@ -117,22 +103,6 @@ func (a *ApplicationReferenceGetter) clusterAutoscaler(ctx context.Context) (*un
 
 func (a *ApplicationReferenceGetter) clusterAutoscalerOpenstack(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "cluster-autoscaler-openstack")
-}
-
-func (a *ApplicationReferenceGetter) ingressNginx(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
-	return a.getApplication(ctx, "ingress-nginx")
-}
-
-func (a *ApplicationReferenceGetter) kubernetesDashboard(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
-	return a.getApplication(ctx, "kubernetes-dashboard")
-}
-
-func (a *ApplicationReferenceGetter) longhorn(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
-	return a.getApplication(ctx, "longhorn")
-}
-
-func (a *ApplicationReferenceGetter) prometheus(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
-	return a.getApplication(ctx, "prometheus")
 }
 
 // Provisioner encapsulates control plane provisioning.
@@ -217,25 +187,10 @@ func (p *Provisioner) getProvisioner(ctx context.Context) (provisioners.Provisio
 		),
 	)
 
-	certManagerProvisioner := serial.New("cert-manager",
-		certmanager.New(apps.certManager),
-		certmanagerissuers.New(apps.certManagerIssuers),
-	)
-
-	addonsProvisioner := serial.New("cluster add-ons",
-		concurrent.New("cluster add-ons wave 1",
-			openstackplugincindercsi.New(apps.openstackPluginCinderCSI),
-			metricsserver.New(apps.metricsServer),
-			conditional.New("nvidia-gpu-operator", p.cluster.NvidiaOperatorEnabled, nvidiagpuoperator.New(apps.nvidiaGPUOperator)),
-			conditional.New("ingress-nginx", p.cluster.IngressEnabled, ingressnginx.New(apps.ingressNginx)),
-			conditional.New("cert-manager", p.cluster.CertManagerEnabled, certManagerProvisioner),
-			conditional.New("longhorn", p.cluster.FileStorageEnabled, longhorn.New(apps.longhorn)),
-			conditional.New("prometheus", p.cluster.PrometheusEnabled, prometheus.New(apps.prometheus)),
-		),
-		concurrent.New("cluster add-ons wave 2",
-			// TODO: this hack where it needs the remote is pretty ugly.
-			conditional.New("kubernetes-dashboard", p.cluster.KubernetesDashboardEnabled, kubernetesdashboard.New(apps.kubernetesDashboard)),
-		),
+	addonsProvisioner := concurrent.New("cluster add-ons",
+		openstackplugincindercsi.New(apps.openstackPluginCinderCSI),
+		metricsserver.New(apps.metricsServer),
+		conditional.New("nvidia-gpu-operator", p.cluster.NvidiaOperatorEnabled, nvidiagpuoperator.New(apps.nvidiaGPUOperator)),
 	)
 
 	// Create the cluster and the boostrap components in parallel, the cluster will

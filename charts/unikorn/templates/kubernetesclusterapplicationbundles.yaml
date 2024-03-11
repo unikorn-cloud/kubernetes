@@ -1,104 +1,15 @@
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: KubernetesClusterApplicationBundle
 metadata:
-  name: kubernetes-cluster-1.4.1
+  name: kubernetes-cluster-1.0.0
 spec:
-  version: 1.4.1
-  endOfLife: 2024-02-12T00:00:00Z
+  version: 1.0.0
   applications:
-  - name: cert-manager
-    reference:
-      kind: HelmApplication
-      name: cert-manager
-      version: v1.12.4
-  - name: cert-manager-issuers
-    reference:
-      kind: HelmApplication
-      name: cert-manager-issuers
-      version: 1.0.0
   - name: cluster-openstack
     reference:
       kind: HelmApplication
       name: cluster-openstack
-      version: v0.3.26
-  - name: cilium
-    reference:
-      kind: HelmApplication
-      name: cilium
-      version: 1.14.1
-  - name: openstack-cloud-provider
-    reference:
-      kind: HelmApplication
-      name: openstack-cloud-provider
-      version: 2.28.0
-  - name: openstack-plugin-cinder-csi
-    reference:
-      kind: HelmApplication
-      name: openstack-plugin-cinder-csi
-      version: 2.28.0
-  - name: metrics-server
-    reference:
-      kind: HelmApplication
-      name: metrics-server
-      version: 3.11.0
-  - name: nvidia-gpu-operator
-    reference:
-      kind: HelmApplication
-      name: nvidia-gpu-operator
-      version: v23.6.1
-  - name: cluster-autoscaler
-    reference:
-      kind: HelmApplication
-      name: cluster-autoscaler
-      version: 9.29.3
-  - name: cluster-autoscaler-openstack
-    reference:
-      kind: HelmApplication
-      name: cluster-autoscaler-openstack
-      version: v0.1.0
-  - name: ingress-nginx
-    reference:
-      kind: HelmApplication
-      name: ingress-nginx
-      version: 4.8.0
-  - name: kubernetes-dashboard
-    reference:
-      kind: HelmApplication
-      name: kubernetes-dashboard
-      version: 6.0.8
-  - name: longhorn
-    reference:
-      kind: HelmApplication
-      name: longhorn
-      version: 1.5.3
-  - name: prometheus
-    reference:
-      kind: HelmApplication
-      name: prometheus
-      version: 50.2.0
----
-apiVersion: unikorn-cloud.org/v1alpha1
-kind: KubernetesClusterApplicationBundle
-metadata:
-  name: kubernetes-cluster-1.4.2
-spec:
-  version: 1.4.2
-  applications:
-  - name: cert-manager
-    reference:
-      kind: HelmApplication
-      name: cert-manager
-      version: v1.12.4
-  - name: cert-manager-issuers
-    reference:
-      kind: HelmApplication
-      name: cert-manager-issuers
-      version: 1.0.0
-  - name: cluster-openstack
-    reference:
-      kind: HelmApplication
-      name: cluster-openstack
-      version: v0.3.26
+      version: v0.3.27
   - name: cilium
     reference:
       kind: HelmApplication
@@ -134,24 +45,4 @@ spec:
       kind: HelmApplication
       name: cluster-autoscaler-openstack
       version: v0.1.0
-  - name: ingress-nginx
-    reference:
-      kind: HelmApplication
-      name: ingress-nginx
-      version: 4.8.0
-  - name: kubernetes-dashboard
-    reference:
-      kind: HelmApplication
-      name: kubernetes-dashboard
-      version: 6.0.8
-  - name: longhorn
-    reference:
-      kind: HelmApplication
-      name: longhorn
-      version: 1.5.3
-  - name: prometheus
-    reference:
-      kind: HelmApplication
-      name: prometheus
-      version: 50.2.0
 

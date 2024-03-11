@@ -170,6 +170,8 @@ func generateWorkloadPoolSchedulerHelmValues(p *unikornv1.KubernetesClusterWorkl
 }
 
 // Generate implements the application.Generator interface.
+//
+//nolint:cyclop
 func (p *Provisioner) Values(ctx context.Context, version *string) (interface{}, error) {
 	//nolint:forcetypeassert
 	cluster := application.FromContext(ctx).(*unikornv1.KubernetesCluster)
@@ -189,11 +191,9 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 	}
 
 	openstackValues := map[string]interface{}{
-		"cloud":                *cluster.Spec.Openstack.Cloud,
-		"cloudsYAML":           base64.StdEncoding.EncodeToString(*cluster.Spec.Openstack.CloudConfig),
-		"computeFailureDomain": *cluster.Spec.Openstack.FailureDomain,
-		"volumeFailureDomain":  *volumeFailureDomain,
-		"externalNetworkID":    *cluster.Spec.Openstack.ExternalNetworkID,
+		"cloud":             *cluster.Spec.Openstack.Cloud,
+		"cloudsYAML":        base64.StdEncoding.EncodeToString(*cluster.Spec.Openstack.CloudConfig),
+		"externalNetworkID": *cluster.Spec.Openstack.ExternalNetworkID,
 	}
 
 	if cluster.Spec.Openstack.CACert != nil {
@@ -202,6 +202,14 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 
 	if cluster.Spec.Openstack.SSHKeyName != nil {
 		openstackValues["sshKeyName"] = *cluster.Spec.Openstack.SSHKeyName
+	}
+
+	if cluster.Spec.Openstack.FailureDomain != nil {
+		openstackValues["computeFailureDomain"] = *cluster.Spec.Openstack.FailureDomain
+	}
+
+	if volumeFailureDomain != nil {
+		openstackValues["volumeFailureDomain"] = *volumeFailureDomain
 	}
 
 	labels, err := cluster.ResourceLabels()
