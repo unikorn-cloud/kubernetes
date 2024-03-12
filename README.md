@@ -9,16 +9,14 @@
 
 Unikorn abstracts away installation of Cluster API.
 
-There are three resource types:
+There are four resource types:
 
+* Organizations, that are analogous to organizations defined for [Unikorn Identity](https://github.com/unikorn-cloud/identity), but in this component merely provide a namespace for projects.
 * Projects, that are a container for higher level abstractions.
 * ControlPlanes, that basically are instances of Cluster API that live in Projects.
-* Clusters, Kubernetes clusters.
+* Clusters, are Kubernetes clusters, and managed by control planes.
 
-Control planes are actually contained themselves in virtual clusters, as CAPI is pretty terrible at cleaning things up on OpenStack errors, so we make these cattle.
-One Kubernetes cluster to one instance of Cluster API.
-If something goes wrong, just delete the virtual cluster and restart.
-In future, when things get more stable, we can support many-to-one to save on resource costs, and even do away with virtual clusters entirely.
+Control planes are actually contained themselves in virtual clusters, this allows horizontal scaling and multi-tenant separation.
 
 Projects allow multiple control planes to be contained within them.
 These are useful for providing a boundary for billing etc.
@@ -209,7 +207,7 @@ YOu must deploy [Unikorn Identity](https://github.com/unikorn-cloud/identity) fi
 
 To enable Unikorn UI `--set ui.enabled=true`.
 This only enables the ingress route for now.
-You will also need to install the UI using Helm as described in the [unikorn-ui repository](https://github.com/unikorn-cloud/unikorn-ui).
+You will also need to install the UI using Helm as described in the [unikorn-ui repository](https://github.com/unikorn-cloud/ui).
 It **must** be installed in the same namespace as Unikorn server in order for the service to be seen by the Ingress.
 
 ## Monitoring & Logging
@@ -220,6 +218,12 @@ It **must** be installed in the same namespace as Unikorn server in order for th
 See the [monitoring & logging](docs/monitoring.md) documentation from more information on configuring those services in the first instance..
 
 ## Documentation
+
+### Region Providers
+
+These actually provide access to cloud resources and abstract away vendor specifics:
+
+* [OpenStack](pkg/providers/openstack/README.md)
 
 ### API (Unikorn Server)
 
