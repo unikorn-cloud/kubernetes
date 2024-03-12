@@ -365,6 +365,8 @@ func lookupFlavor(ctx context.Context, provider providers.Provider, name string)
 	return &flavors[index], nil
 }
 
+// installNvidiaOperator installs the nvidia operator if any workload pool flavor
+// has a GPU in it.
 func installNvidiaOperator(ctx context.Context, provider providers.Provider, cluster *unikornv1.KubernetesCluster) error {
 	for _, pool := range cluster.Spec.WorkloadPools.Pools {
 		flavor, err := lookupFlavor(ctx, provider, *pool.MachineGeneric.Flavor)
@@ -380,6 +382,19 @@ func installNvidiaOperator(ctx context.Context, provider providers.Provider, clu
 	}
 
 	return nil
+}
+
+// installClusterAutoscaler installs the cluster autoscaler if any workload pool has
+// autoscaling enabled.
+// TODO: probably push this down into the cluster manager.
+func installClusterAutoscaler(cluster *unikornv1.KubernetesCluster) {
+	for _, pool := range cluster.Spec.WorkloadPools.Pools {
+		if pool.Autoscaling != nil {
+			cluster.Spec.Features.Autoscaling = util.ToPointer(true)
+
+			return
+		}
+	}
 }
 
 // generate generates the full cluster custom resource.
@@ -426,6 +441,8 @@ func (c *Client) generate(ctx context.Context, provider providers.Provider, cont
 			Features:                     &unikornv1.KubernetesClusterFeaturesSpec{},
 		},
 	}
+
+	installClusterAutoscaler(cluster)
 
 	if err := installNvidiaOperator(ctx, provider, cluster); err != nil {
 		return nil, err

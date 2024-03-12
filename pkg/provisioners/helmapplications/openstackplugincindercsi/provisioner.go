@@ -54,13 +54,15 @@ func (p *Provisioner) generateStorageClass(cluster *unikornv1.KubernetesCluster,
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
-		Provisioner: "cinder.csi.openstack.org",
-		Parameters: map[string]string{
-			"availability": *cluster.Spec.Openstack.VolumeFailureDomain,
-		},
+		Provisioner:          "cinder.csi.openstack.org",
+		Parameters:           map[string]string{},
 		ReclaimPolicy:        &reclaimPolicy,
 		AllowVolumeExpansion: &volumeExpansion,
 		VolumeBindingMode:    &volumeBindingMode,
+	}
+
+	if cluster.Spec.Openstack.VolumeFailureDomain != nil {
+		class.Parameters["availability"] = *cluster.Spec.Openstack.VolumeFailureDomain
 	}
 
 	if isDefault {
