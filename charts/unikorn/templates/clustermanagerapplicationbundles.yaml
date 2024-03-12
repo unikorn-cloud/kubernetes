@@ -1,7 +1,7 @@
 apiVersion: unikorn-cloud.org/v1alpha1
-kind: ControlPlaneApplicationBundle
+kind: ClusterManagerApplicationBundle
 metadata:
-  name: control-plane-1.0.0
+  name: cluster-manager-1.0.0
 spec:
   version: 1.0.0
   applications:

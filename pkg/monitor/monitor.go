@@ -24,7 +24,7 @@ import (
 	"github.com/spf13/pflag"
 
 	upgradecluster "github.com/unikorn-cloud/unikorn/pkg/monitor/upgrade/cluster"
-	upgradecontrolplane "github.com/unikorn-cloud/unikorn/pkg/monitor/upgrade/controlplane"
+	upgradeclustermanager "github.com/unikorn-cloud/unikorn/pkg/monitor/upgrade/clustermanager"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -58,7 +58,7 @@ func Run(ctx context.Context, c client.Client, o *Options) {
 
 	checkers := []Checker{
 		upgradecluster.New(c),
-		upgradecontrolplane.New(c),
+		upgradeclustermanager.New(c),
 	}
 
 	for {

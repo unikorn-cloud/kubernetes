@@ -92,11 +92,11 @@ type ClientInterface interface {
 	// GetApiV1Applications request
 	GetApiV1Applications(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetApiV1Clustermanagers request
+	GetApiV1Clustermanagers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetApiV1Clusters request
 	GetApiV1Clusters(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetApiV1Controlplanes request
-	GetApiV1Controlplanes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteApiV1Organization request
 	DeleteApiV1Organization(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -115,34 +115,34 @@ type ClientInterface interface {
 	// DeleteApiV1ProjectsProjectName request
 	DeleteApiV1ProjectsProjectName(ctx context.Context, projectName ProjectNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostApiV1ProjectsProjectNameControlplanes request with any body
-	PostApiV1ProjectsProjectNameControlplanesWithBody(ctx context.Context, projectName ProjectNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// PostApiV1ProjectsProjectNameClustermanagers request with any body
+	PostApiV1ProjectsProjectNameClustermanagersWithBody(ctx context.Context, projectName ProjectNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostApiV1ProjectsProjectNameControlplanes(ctx context.Context, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameControlplanesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	PostApiV1ProjectsProjectNameClustermanagers(ctx context.Context, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameClustermanagersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeleteApiV1ProjectsProjectNameControlplanesControlPlaneName request
-	DeleteApiV1ProjectsProjectNameControlplanesControlPlaneName(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerName request
+	DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerName(ctx context.Context, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PutApiV1ProjectsProjectNameControlplanesControlPlaneName request with any body
-	PutApiV1ProjectsProjectNameControlplanesControlPlaneNameWithBody(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// PutApiV1ProjectsProjectNameClustermanagersClusterManagerName request with any body
+	PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameWithBody(ctx context.Context, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PutApiV1ProjectsProjectNameControlplanesControlPlaneName(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, body PutApiV1ProjectsProjectNameControlplanesControlPlaneNameJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	PutApiV1ProjectsProjectNameClustermanagersClusterManagerName(ctx context.Context, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, body PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClusters request with any body
-	PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersWithBody(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// PostApiV1ProjectsProjectNameClusters request with any body
+	PostApiV1ProjectsProjectNameClustersWithBody(ctx context.Context, projectName ProjectNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClusters(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, body PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	PostApiV1ProjectsProjectNameClusters(ctx context.Context, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameClustersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName request
-	DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeleteApiV1ProjectsProjectNameClustersClusterName request
+	DeleteApiV1ProjectsProjectNameClustersClusterName(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName request with any body
-	PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameWithBody(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// PutApiV1ProjectsProjectNameClustersClusterName request with any body
+	PutApiV1ProjectsProjectNameClustersClusterNameWithBody(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, body PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	PutApiV1ProjectsProjectNameClustersClusterName(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, body PutApiV1ProjectsProjectNameClustersClusterNameJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfig request
-	GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfig(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetApiV1ProjectsProjectNameClustersClusterNameKubeconfig request
+	GetApiV1ProjectsProjectNameClustersClusterNameKubeconfig(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetApiV1Regions request
 	GetApiV1Regions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -166,8 +166,8 @@ func (c *Client) GetApiV1Applications(ctx context.Context, reqEditors ...Request
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetApiV1Clusters(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1ClustersRequest(c.Server)
+func (c *Client) GetApiV1Clustermanagers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1ClustermanagersRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -178,8 +178,8 @@ func (c *Client) GetApiV1Clusters(ctx context.Context, reqEditors ...RequestEdit
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetApiV1Controlplanes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1ControlplanesRequest(c.Server)
+func (c *Client) GetApiV1Clusters(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1ClustersRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -262,8 +262,8 @@ func (c *Client) DeleteApiV1ProjectsProjectName(ctx context.Context, projectName
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostApiV1ProjectsProjectNameControlplanesWithBody(ctx context.Context, projectName ProjectNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostApiV1ProjectsProjectNameControlplanesRequestWithBody(c.Server, projectName, contentType, body)
+func (c *Client) PostApiV1ProjectsProjectNameClustermanagersWithBody(ctx context.Context, projectName ProjectNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostApiV1ProjectsProjectNameClustermanagersRequestWithBody(c.Server, projectName, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -274,8 +274,8 @@ func (c *Client) PostApiV1ProjectsProjectNameControlplanesWithBody(ctx context.C
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostApiV1ProjectsProjectNameControlplanes(ctx context.Context, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameControlplanesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostApiV1ProjectsProjectNameControlplanesRequest(c.Server, projectName, body)
+func (c *Client) PostApiV1ProjectsProjectNameClustermanagers(ctx context.Context, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameClustermanagersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostApiV1ProjectsProjectNameClustermanagersRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
 	}
@@ -286,8 +286,8 @@ func (c *Client) PostApiV1ProjectsProjectNameControlplanes(ctx context.Context, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneName(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameRequest(c.Server, projectName, controlPlaneName)
+func (c *Client) DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerName(ctx context.Context, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameRequest(c.Server, projectName, clusterManagerName)
 	if err != nil {
 		return nil, err
 	}
@@ -298,8 +298,8 @@ func (c *Client) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneName(ctx
 	return c.Client.Do(req)
 }
 
-func (c *Client) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameWithBody(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameRequestWithBody(c.Server, projectName, controlPlaneName, contentType, body)
+func (c *Client) PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameWithBody(ctx context.Context, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutApiV1ProjectsProjectNameClustermanagersClusterManagerNameRequestWithBody(c.Server, projectName, clusterManagerName, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -310,8 +310,8 @@ func (c *Client) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameWithBod
 	return c.Client.Do(req)
 }
 
-func (c *Client) PutApiV1ProjectsProjectNameControlplanesControlPlaneName(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, body PutApiV1ProjectsProjectNameControlplanesControlPlaneNameJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameRequest(c.Server, projectName, controlPlaneName, body)
+func (c *Client) PutApiV1ProjectsProjectNameClustermanagersClusterManagerName(ctx context.Context, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, body PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutApiV1ProjectsProjectNameClustermanagersClusterManagerNameRequest(c.Server, projectName, clusterManagerName, body)
 	if err != nil {
 		return nil, err
 	}
@@ -322,8 +322,8 @@ func (c *Client) PutApiV1ProjectsProjectNameControlplanesControlPlaneName(ctx co
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersWithBody(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersRequestWithBody(c.Server, projectName, controlPlaneName, contentType, body)
+func (c *Client) PostApiV1ProjectsProjectNameClustersWithBody(ctx context.Context, projectName ProjectNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostApiV1ProjectsProjectNameClustersRequestWithBody(c.Server, projectName, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -334,8 +334,8 @@ func (c *Client) PostApiV1ProjectsProjectNameControlplanesControlPlaneNameCluste
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClusters(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, body PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersRequest(c.Server, projectName, controlPlaneName, body)
+func (c *Client) PostApiV1ProjectsProjectNameClusters(ctx context.Context, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameClustersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostApiV1ProjectsProjectNameClustersRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
 	}
@@ -346,8 +346,8 @@ func (c *Client) PostApiV1ProjectsProjectNameControlplanesControlPlaneNameCluste
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameRequest(c.Server, projectName, controlPlaneName, clusterName)
+func (c *Client) DeleteApiV1ProjectsProjectNameClustersClusterName(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteApiV1ProjectsProjectNameClustersClusterNameRequest(c.Server, projectName, clusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -358,8 +358,8 @@ func (c *Client) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClus
 	return c.Client.Do(req)
 }
 
-func (c *Client) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameWithBody(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameRequestWithBody(c.Server, projectName, controlPlaneName, clusterName, contentType, body)
+func (c *Client) PutApiV1ProjectsProjectNameClustersClusterNameWithBody(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutApiV1ProjectsProjectNameClustersClusterNameRequestWithBody(c.Server, projectName, clusterName, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -370,8 +370,8 @@ func (c *Client) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameCluster
 	return c.Client.Do(req)
 }
 
-func (c *Client) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, body PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameRequest(c.Server, projectName, controlPlaneName, clusterName, body)
+func (c *Client) PutApiV1ProjectsProjectNameClustersClusterName(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, body PutApiV1ProjectsProjectNameClustersClusterNameJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutApiV1ProjectsProjectNameClustersClusterNameRequest(c.Server, projectName, clusterName, body)
 	if err != nil {
 		return nil, err
 	}
@@ -382,8 +382,8 @@ func (c *Client) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameCluster
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfig(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigRequest(c.Server, projectName, controlPlaneName, clusterName)
+func (c *Client) GetApiV1ProjectsProjectNameClustersClusterNameKubeconfig(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1ProjectsProjectNameClustersClusterNameKubeconfigRequest(c.Server, projectName, clusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -457,8 +457,8 @@ func NewGetApiV1ApplicationsRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetApiV1ClustersRequest generates requests for GetApiV1Clusters
-func NewGetApiV1ClustersRequest(server string) (*http.Request, error) {
+// NewGetApiV1ClustermanagersRequest generates requests for GetApiV1Clustermanagers
+func NewGetApiV1ClustermanagersRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -466,7 +466,7 @@ func NewGetApiV1ClustersRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/clusters")
+	operationPath := fmt.Sprintf("/api/v1/clustermanagers")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -484,8 +484,8 @@ func NewGetApiV1ClustersRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetApiV1ControlplanesRequest generates requests for GetApiV1Controlplanes
-func NewGetApiV1ControlplanesRequest(server string) (*http.Request, error) {
+// NewGetApiV1ClustersRequest generates requests for GetApiV1Clusters
+func NewGetApiV1ClustersRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -493,7 +493,7 @@ func NewGetApiV1ControlplanesRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/controlplanes")
+	operationPath := fmt.Sprintf("/api/v1/clusters")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -666,19 +666,19 @@ func NewDeleteApiV1ProjectsProjectNameRequest(server string, projectName Project
 	return req, nil
 }
 
-// NewPostApiV1ProjectsProjectNameControlplanesRequest calls the generic PostApiV1ProjectsProjectNameControlplanes builder with application/json body
-func NewPostApiV1ProjectsProjectNameControlplanesRequest(server string, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameControlplanesJSONRequestBody) (*http.Request, error) {
+// NewPostApiV1ProjectsProjectNameClustermanagersRequest calls the generic PostApiV1ProjectsProjectNameClustermanagers builder with application/json body
+func NewPostApiV1ProjectsProjectNameClustermanagersRequest(server string, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameClustermanagersJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPostApiV1ProjectsProjectNameControlplanesRequestWithBody(server, projectName, "application/json", bodyReader)
+	return NewPostApiV1ProjectsProjectNameClustermanagersRequestWithBody(server, projectName, "application/json", bodyReader)
 }
 
-// NewPostApiV1ProjectsProjectNameControlplanesRequestWithBody generates requests for PostApiV1ProjectsProjectNameControlplanes with any type of body
-func NewPostApiV1ProjectsProjectNameControlplanesRequestWithBody(server string, projectName ProjectNameParameter, contentType string, body io.Reader) (*http.Request, error) {
+// NewPostApiV1ProjectsProjectNameClustermanagersRequestWithBody generates requests for PostApiV1ProjectsProjectNameClustermanagers with any type of body
+func NewPostApiV1ProjectsProjectNameClustermanagersRequestWithBody(server string, projectName ProjectNameParameter, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -693,7 +693,7 @@ func NewPostApiV1ProjectsProjectNameControlplanesRequestWithBody(server string, 
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/projects/%s/controlplanes", pathParam0)
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/clustermanagers", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -713,8 +713,8 @@ func NewPostApiV1ProjectsProjectNameControlplanesRequestWithBody(server string, 
 	return req, nil
 }
 
-// NewDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameRequest generates requests for DeleteApiV1ProjectsProjectNameControlplanesControlPlaneName
-func NewDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameRequest(server string, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter) (*http.Request, error) {
+// NewDeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameRequest generates requests for DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerName
+func NewDeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameRequest(server string, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -726,7 +726,7 @@ func NewDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameRequest(serve
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "controlPlaneName", runtime.ParamLocationPath, controlPlaneName)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterManagerName", runtime.ParamLocationPath, clusterManagerName)
 	if err != nil {
 		return nil, err
 	}
@@ -736,7 +736,7 @@ func NewDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameRequest(serve
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/projects/%s/controlplanes/%s", pathParam0, pathParam1)
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/clustermanagers/%s", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -754,19 +754,19 @@ func NewDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameRequest(serve
 	return req, nil
 }
 
-// NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameRequest calls the generic PutApiV1ProjectsProjectNameControlplanesControlPlaneName builder with application/json body
-func NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameRequest(server string, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, body PutApiV1ProjectsProjectNameControlplanesControlPlaneNameJSONRequestBody) (*http.Request, error) {
+// NewPutApiV1ProjectsProjectNameClustermanagersClusterManagerNameRequest calls the generic PutApiV1ProjectsProjectNameClustermanagersClusterManagerName builder with application/json body
+func NewPutApiV1ProjectsProjectNameClustermanagersClusterManagerNameRequest(server string, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, body PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameRequestWithBody(server, projectName, controlPlaneName, "application/json", bodyReader)
+	return NewPutApiV1ProjectsProjectNameClustermanagersClusterManagerNameRequestWithBody(server, projectName, clusterManagerName, "application/json", bodyReader)
 }
 
-// NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameRequestWithBody generates requests for PutApiV1ProjectsProjectNameControlplanesControlPlaneName with any type of body
-func NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameRequestWithBody(server string, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, contentType string, body io.Reader) (*http.Request, error) {
+// NewPutApiV1ProjectsProjectNameClustermanagersClusterManagerNameRequestWithBody generates requests for PutApiV1ProjectsProjectNameClustermanagersClusterManagerName with any type of body
+func NewPutApiV1ProjectsProjectNameClustermanagersClusterManagerNameRequestWithBody(server string, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -778,7 +778,7 @@ func NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameRequestWithBody(
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "controlPlaneName", runtime.ParamLocationPath, controlPlaneName)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterManagerName", runtime.ParamLocationPath, clusterManagerName)
 	if err != nil {
 		return nil, err
 	}
@@ -788,7 +788,7 @@ func NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameRequestWithBody(
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/projects/%s/controlplanes/%s", pathParam0, pathParam1)
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/clustermanagers/%s", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -808,19 +808,19 @@ func NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameRequestWithBody(
 	return req, nil
 }
 
-// NewPostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersRequest calls the generic PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClusters builder with application/json body
-func NewPostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersRequest(server string, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, body PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersJSONRequestBody) (*http.Request, error) {
+// NewPostApiV1ProjectsProjectNameClustersRequest calls the generic PostApiV1ProjectsProjectNameClusters builder with application/json body
+func NewPostApiV1ProjectsProjectNameClustersRequest(server string, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameClustersJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersRequestWithBody(server, projectName, controlPlaneName, "application/json", bodyReader)
+	return NewPostApiV1ProjectsProjectNameClustersRequestWithBody(server, projectName, "application/json", bodyReader)
 }
 
-// NewPostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersRequestWithBody generates requests for PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClusters with any type of body
-func NewPostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersRequestWithBody(server string, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, contentType string, body io.Reader) (*http.Request, error) {
+// NewPostApiV1ProjectsProjectNameClustersRequestWithBody generates requests for PostApiV1ProjectsProjectNameClusters with any type of body
+func NewPostApiV1ProjectsProjectNameClustersRequestWithBody(server string, projectName ProjectNameParameter, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -830,19 +830,12 @@ func NewPostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersRequest
 		return nil, err
 	}
 
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "controlPlaneName", runtime.ParamLocationPath, controlPlaneName)
-	if err != nil {
-		return nil, err
-	}
-
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/projects/%s/controlplanes/%s/clusters", pathParam0, pathParam1)
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/clusters", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -862,8 +855,8 @@ func NewPostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersRequest
 	return req, nil
 }
 
-// NewDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameRequest generates requests for DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName
-func NewDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameRequest(server string, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter) (*http.Request, error) {
+// NewDeleteApiV1ProjectsProjectNameClustersClusterNameRequest generates requests for DeleteApiV1ProjectsProjectNameClustersClusterName
+func NewDeleteApiV1ProjectsProjectNameClustersClusterNameRequest(server string, projectName ProjectNameParameter, clusterName ClusterNameParameter) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -875,14 +868,7 @@ func NewDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClust
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "controlPlaneName", runtime.ParamLocationPath, controlPlaneName)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam2 string
-
-	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "clusterName", runtime.ParamLocationPath, clusterName)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterName", runtime.ParamLocationPath, clusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -892,7 +878,7 @@ func NewDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClust
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/projects/%s/controlplanes/%s/clusters/%s", pathParam0, pathParam1, pathParam2)
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/clusters/%s", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -910,19 +896,19 @@ func NewDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClust
 	return req, nil
 }
 
-// NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameRequest calls the generic PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName builder with application/json body
-func NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameRequest(server string, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, body PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameJSONRequestBody) (*http.Request, error) {
+// NewPutApiV1ProjectsProjectNameClustersClusterNameRequest calls the generic PutApiV1ProjectsProjectNameClustersClusterName builder with application/json body
+func NewPutApiV1ProjectsProjectNameClustersClusterNameRequest(server string, projectName ProjectNameParameter, clusterName ClusterNameParameter, body PutApiV1ProjectsProjectNameClustersClusterNameJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameRequestWithBody(server, projectName, controlPlaneName, clusterName, "application/json", bodyReader)
+	return NewPutApiV1ProjectsProjectNameClustersClusterNameRequestWithBody(server, projectName, clusterName, "application/json", bodyReader)
 }
 
-// NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameRequestWithBody generates requests for PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName with any type of body
-func NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameRequestWithBody(server string, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, contentType string, body io.Reader) (*http.Request, error) {
+// NewPutApiV1ProjectsProjectNameClustersClusterNameRequestWithBody generates requests for PutApiV1ProjectsProjectNameClustersClusterName with any type of body
+func NewPutApiV1ProjectsProjectNameClustersClusterNameRequestWithBody(server string, projectName ProjectNameParameter, clusterName ClusterNameParameter, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -934,14 +920,7 @@ func NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterN
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "controlPlaneName", runtime.ParamLocationPath, controlPlaneName)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam2 string
-
-	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "clusterName", runtime.ParamLocationPath, clusterName)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterName", runtime.ParamLocationPath, clusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -951,7 +930,7 @@ func NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterN
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/projects/%s/controlplanes/%s/clusters/%s", pathParam0, pathParam1, pathParam2)
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/clusters/%s", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -971,8 +950,8 @@ func NewPutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterN
 	return req, nil
 }
 
-// NewGetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigRequest generates requests for GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfig
-func NewGetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigRequest(server string, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter) (*http.Request, error) {
+// NewGetApiV1ProjectsProjectNameClustersClusterNameKubeconfigRequest generates requests for GetApiV1ProjectsProjectNameClustersClusterNameKubeconfig
+func NewGetApiV1ProjectsProjectNameClustersClusterNameKubeconfigRequest(server string, projectName ProjectNameParameter, clusterName ClusterNameParameter) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -984,14 +963,7 @@ func NewGetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterN
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "controlPlaneName", runtime.ParamLocationPath, controlPlaneName)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam2 string
-
-	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "clusterName", runtime.ParamLocationPath, clusterName)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterName", runtime.ParamLocationPath, clusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -1001,7 +973,7 @@ func NewGetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterN
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/projects/%s/controlplanes/%s/clusters/%s/kubeconfig", pathParam0, pathParam1, pathParam2)
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/clusters/%s/kubeconfig", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1160,11 +1132,11 @@ type ClientWithResponsesInterface interface {
 	// GetApiV1Applications request
 	GetApiV1ApplicationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ApplicationsResponse, error)
 
+	// GetApiV1Clustermanagers request
+	GetApiV1ClustermanagersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ClustermanagersResponse, error)
+
 	// GetApiV1Clusters request
 	GetApiV1ClustersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ClustersResponse, error)
-
-	// GetApiV1Controlplanes request
-	GetApiV1ControlplanesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ControlplanesResponse, error)
 
 	// DeleteApiV1Organization request
 	DeleteApiV1OrganizationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DeleteApiV1OrganizationResponse, error)
@@ -1183,34 +1155,34 @@ type ClientWithResponsesInterface interface {
 	// DeleteApiV1ProjectsProjectName request
 	DeleteApiV1ProjectsProjectNameWithResponse(ctx context.Context, projectName ProjectNameParameter, reqEditors ...RequestEditorFn) (*DeleteApiV1ProjectsProjectNameResponse, error)
 
-	// PostApiV1ProjectsProjectNameControlplanes request with any body
-	PostApiV1ProjectsProjectNameControlplanesWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameControlplanesResponse, error)
+	// PostApiV1ProjectsProjectNameClustermanagers request with any body
+	PostApiV1ProjectsProjectNameClustermanagersWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameClustermanagersResponse, error)
 
-	PostApiV1ProjectsProjectNameControlplanesWithResponse(ctx context.Context, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameControlplanesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameControlplanesResponse, error)
+	PostApiV1ProjectsProjectNameClustermanagersWithResponse(ctx context.Context, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameClustermanagersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameClustermanagersResponse, error)
 
-	// DeleteApiV1ProjectsProjectNameControlplanesControlPlaneName request
-	DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, reqEditors ...RequestEditorFn) (*DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse, error)
+	// DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerName request
+	DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, reqEditors ...RequestEditorFn) (*DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse, error)
 
-	// PutApiV1ProjectsProjectNameControlplanesControlPlaneName request with any body
-	PutApiV1ProjectsProjectNameControlplanesControlPlaneNameWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse, error)
+	// PutApiV1ProjectsProjectNameClustermanagersClusterManagerName request with any body
+	PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse, error)
 
-	PutApiV1ProjectsProjectNameControlplanesControlPlaneNameWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, body PutApiV1ProjectsProjectNameControlplanesControlPlaneNameJSONRequestBody, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse, error)
+	PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, body PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse, error)
 
-	// PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClusters request with any body
-	PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse, error)
+	// PostApiV1ProjectsProjectNameClusters request with any body
+	PostApiV1ProjectsProjectNameClustersWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameClustersResponse, error)
 
-	PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, body PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse, error)
+	PostApiV1ProjectsProjectNameClustersWithResponse(ctx context.Context, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameClustersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameClustersResponse, error)
 
-	// DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName request
-	DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse, error)
+	// DeleteApiV1ProjectsProjectNameClustersClusterName request
+	DeleteApiV1ProjectsProjectNameClustersClusterNameWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*DeleteApiV1ProjectsProjectNameClustersClusterNameResponse, error)
 
-	// PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName request with any body
-	PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse, error)
+	// PutApiV1ProjectsProjectNameClustersClusterName request with any body
+	PutApiV1ProjectsProjectNameClustersClusterNameWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameClustersClusterNameResponse, error)
 
-	PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, body PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameJSONRequestBody, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse, error)
+	PutApiV1ProjectsProjectNameClustersClusterNameWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, body PutApiV1ProjectsProjectNameClustersClusterNameJSONRequestBody, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameClustersClusterNameResponse, error)
 
-	// GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfig request
-	GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigResponse, error)
+	// GetApiV1ProjectsProjectNameClustersClusterNameKubeconfig request
+	GetApiV1ProjectsProjectNameClustersClusterNameKubeconfigWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1ProjectsProjectNameClustersClusterNameKubeconfigResponse, error)
 
 	// GetApiV1Regions request
 	GetApiV1RegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1RegionsResponse, error)
@@ -1247,6 +1219,32 @@ func (r GetApiV1ApplicationsResponse) StatusCode() int {
 	return 0
 }
 
+type GetApiV1ClustermanagersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ClusterManagers
+	JSON400      *Oauth2Error
+	JSON401      *Oauth2Error
+	JSON404      *Oauth2Error
+	JSON500      *Oauth2Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApiV1ClustermanagersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApiV1ClustermanagersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetApiV1ClustersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1267,32 +1265,6 @@ func (r GetApiV1ClustersResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetApiV1ClustersResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetApiV1ControlplanesResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *ControlPlanes
-	JSON400      *Oauth2Error
-	JSON401      *Oauth2Error
-	JSON404      *Oauth2Error
-	JSON500      *Oauth2Error
-}
-
-// Status returns HTTPResponse.Status
-func (r GetApiV1ControlplanesResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1ControlplanesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1423,7 +1395,7 @@ func (r DeleteApiV1ProjectsProjectNameResponse) StatusCode() int {
 	return 0
 }
 
-type PostApiV1ProjectsProjectNameControlplanesResponse struct {
+type PostApiV1ProjectsProjectNameClustermanagersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
@@ -1433,7 +1405,7 @@ type PostApiV1ProjectsProjectNameControlplanesResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r PostApiV1ProjectsProjectNameControlplanesResponse) Status() string {
+func (r PostApiV1ProjectsProjectNameClustermanagersResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1441,14 +1413,14 @@ func (r PostApiV1ProjectsProjectNameControlplanesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostApiV1ProjectsProjectNameControlplanesResponse) StatusCode() int {
+func (r PostApiV1ProjectsProjectNameClustermanagersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse struct {
+type DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
@@ -1458,7 +1430,7 @@ type DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse struct 
 }
 
 // Status returns HTTPResponse.Status
-func (r DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse) Status() string {
+func (r DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1466,14 +1438,14 @@ func (r DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse) Sta
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse) StatusCode() int {
+func (r DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse struct {
+type PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
@@ -1483,7 +1455,7 @@ type PutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r PutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse) Status() string {
+func (r PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1491,14 +1463,14 @@ func (r PutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse) Status
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse) StatusCode() int {
+func (r PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse struct {
+type PostApiV1ProjectsProjectNameClustersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
@@ -1509,7 +1481,7 @@ type PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse s
 }
 
 // Status returns HTTPResponse.Status
-func (r PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse) Status() string {
+func (r PostApiV1ProjectsProjectNameClustersResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1517,14 +1489,14 @@ func (r PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersRespons
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse) StatusCode() int {
+func (r PostApiV1ProjectsProjectNameClustersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse struct {
+type DeleteApiV1ProjectsProjectNameClustersClusterNameResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
@@ -1534,7 +1506,7 @@ type DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterN
 }
 
 // Status returns HTTPResponse.Status
-func (r DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse) Status() string {
+func (r DeleteApiV1ProjectsProjectNameClustersClusterNameResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1542,14 +1514,14 @@ func (r DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClust
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse) StatusCode() int {
+func (r DeleteApiV1ProjectsProjectNameClustersClusterNameResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse struct {
+type PutApiV1ProjectsProjectNameClustersClusterNameResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
@@ -1559,7 +1531,7 @@ type PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName
 }
 
 // Status returns HTTPResponse.Status
-func (r PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse) Status() string {
+func (r PutApiV1ProjectsProjectNameClustersClusterNameResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1567,14 +1539,14 @@ func (r PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterN
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse) StatusCode() int {
+func (r PutApiV1ProjectsProjectNameClustersClusterNameResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigResponse struct {
+type GetApiV1ProjectsProjectNameClustersClusterNameKubeconfigResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
@@ -1584,7 +1556,7 @@ type GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName
 }
 
 // Status returns HTTPResponse.Status
-func (r GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigResponse) Status() string {
+func (r GetApiV1ProjectsProjectNameClustersClusterNameKubeconfigResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1592,7 +1564,7 @@ func (r GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterN
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigResponse) StatusCode() int {
+func (r GetApiV1ProjectsProjectNameClustersClusterNameKubeconfigResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1626,7 +1598,7 @@ func (r GetApiV1RegionsResponse) StatusCode() int {
 type GetApiV1RegionsRegionNameFlavorsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *OpenstackFlavors
+	JSON200      *Flavors
 	JSON400      *Oauth2Error
 	JSON401      *Oauth2Error
 	JSON500      *Oauth2Error
@@ -1651,7 +1623,7 @@ func (r GetApiV1RegionsRegionNameFlavorsResponse) StatusCode() int {
 type GetApiV1RegionsRegionNameImagesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *OpenstackImages
+	JSON200      *Images
 	JSON400      *Oauth2Error
 	JSON401      *Oauth2Error
 	JSON500      *Oauth2Error
@@ -1682,6 +1654,15 @@ func (c *ClientWithResponses) GetApiV1ApplicationsWithResponse(ctx context.Conte
 	return ParseGetApiV1ApplicationsResponse(rsp)
 }
 
+// GetApiV1ClustermanagersWithResponse request returning *GetApiV1ClustermanagersResponse
+func (c *ClientWithResponses) GetApiV1ClustermanagersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ClustermanagersResponse, error) {
+	rsp, err := c.GetApiV1Clustermanagers(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApiV1ClustermanagersResponse(rsp)
+}
+
 // GetApiV1ClustersWithResponse request returning *GetApiV1ClustersResponse
 func (c *ClientWithResponses) GetApiV1ClustersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ClustersResponse, error) {
 	rsp, err := c.GetApiV1Clusters(ctx, reqEditors...)
@@ -1689,15 +1670,6 @@ func (c *ClientWithResponses) GetApiV1ClustersWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseGetApiV1ClustersResponse(rsp)
-}
-
-// GetApiV1ControlplanesWithResponse request returning *GetApiV1ControlplanesResponse
-func (c *ClientWithResponses) GetApiV1ControlplanesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ControlplanesResponse, error) {
-	rsp, err := c.GetApiV1Controlplanes(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetApiV1ControlplanesResponse(rsp)
 }
 
 // DeleteApiV1OrganizationWithResponse request returning *DeleteApiV1OrganizationResponse
@@ -1753,99 +1725,99 @@ func (c *ClientWithResponses) DeleteApiV1ProjectsProjectNameWithResponse(ctx con
 	return ParseDeleteApiV1ProjectsProjectNameResponse(rsp)
 }
 
-// PostApiV1ProjectsProjectNameControlplanesWithBodyWithResponse request with arbitrary body returning *PostApiV1ProjectsProjectNameControlplanesResponse
-func (c *ClientWithResponses) PostApiV1ProjectsProjectNameControlplanesWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameControlplanesResponse, error) {
-	rsp, err := c.PostApiV1ProjectsProjectNameControlplanesWithBody(ctx, projectName, contentType, body, reqEditors...)
+// PostApiV1ProjectsProjectNameClustermanagersWithBodyWithResponse request with arbitrary body returning *PostApiV1ProjectsProjectNameClustermanagersResponse
+func (c *ClientWithResponses) PostApiV1ProjectsProjectNameClustermanagersWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameClustermanagersResponse, error) {
+	rsp, err := c.PostApiV1ProjectsProjectNameClustermanagersWithBody(ctx, projectName, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostApiV1ProjectsProjectNameControlplanesResponse(rsp)
+	return ParsePostApiV1ProjectsProjectNameClustermanagersResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostApiV1ProjectsProjectNameControlplanesWithResponse(ctx context.Context, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameControlplanesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameControlplanesResponse, error) {
-	rsp, err := c.PostApiV1ProjectsProjectNameControlplanes(ctx, projectName, body, reqEditors...)
+func (c *ClientWithResponses) PostApiV1ProjectsProjectNameClustermanagersWithResponse(ctx context.Context, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameClustermanagersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameClustermanagersResponse, error) {
+	rsp, err := c.PostApiV1ProjectsProjectNameClustermanagers(ctx, projectName, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostApiV1ProjectsProjectNameControlplanesResponse(rsp)
+	return ParsePostApiV1ProjectsProjectNameClustermanagersResponse(rsp)
 }
 
-// DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameWithResponse request returning *DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse
-func (c *ClientWithResponses) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, reqEditors ...RequestEditorFn) (*DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse, error) {
-	rsp, err := c.DeleteApiV1ProjectsProjectNameControlplanesControlPlaneName(ctx, projectName, controlPlaneName, reqEditors...)
+// DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameWithResponse request returning *DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse
+func (c *ClientWithResponses) DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, reqEditors ...RequestEditorFn) (*DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse, error) {
+	rsp, err := c.DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerName(ctx, projectName, clusterManagerName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse(rsp)
+	return ParseDeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse(rsp)
 }
 
-// PutApiV1ProjectsProjectNameControlplanesControlPlaneNameWithBodyWithResponse request with arbitrary body returning *PutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse
-func (c *ClientWithResponses) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse, error) {
-	rsp, err := c.PutApiV1ProjectsProjectNameControlplanesControlPlaneNameWithBody(ctx, projectName, controlPlaneName, contentType, body, reqEditors...)
+// PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameWithBodyWithResponse request with arbitrary body returning *PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse
+func (c *ClientWithResponses) PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse, error) {
+	rsp, err := c.PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameWithBody(ctx, projectName, clusterManagerName, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse(rsp)
+	return ParsePutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse(rsp)
 }
 
-func (c *ClientWithResponses) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, body PutApiV1ProjectsProjectNameControlplanesControlPlaneNameJSONRequestBody, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse, error) {
-	rsp, err := c.PutApiV1ProjectsProjectNameControlplanesControlPlaneName(ctx, projectName, controlPlaneName, body, reqEditors...)
+func (c *ClientWithResponses) PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter, body PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse, error) {
+	rsp, err := c.PutApiV1ProjectsProjectNameClustermanagersClusterManagerName(ctx, projectName, clusterManagerName, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse(rsp)
+	return ParsePutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse(rsp)
 }
 
-// PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersWithBodyWithResponse request with arbitrary body returning *PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse
-func (c *ClientWithResponses) PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse, error) {
-	rsp, err := c.PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersWithBody(ctx, projectName, controlPlaneName, contentType, body, reqEditors...)
+// PostApiV1ProjectsProjectNameClustersWithBodyWithResponse request with arbitrary body returning *PostApiV1ProjectsProjectNameClustersResponse
+func (c *ClientWithResponses) PostApiV1ProjectsProjectNameClustersWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameClustersResponse, error) {
+	rsp, err := c.PostApiV1ProjectsProjectNameClustersWithBody(ctx, projectName, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse(rsp)
+	return ParsePostApiV1ProjectsProjectNameClustersResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, body PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse, error) {
-	rsp, err := c.PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClusters(ctx, projectName, controlPlaneName, body, reqEditors...)
+func (c *ClientWithResponses) PostApiV1ProjectsProjectNameClustersWithResponse(ctx context.Context, projectName ProjectNameParameter, body PostApiV1ProjectsProjectNameClustersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostApiV1ProjectsProjectNameClustersResponse, error) {
+	rsp, err := c.PostApiV1ProjectsProjectNameClusters(ctx, projectName, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse(rsp)
+	return ParsePostApiV1ProjectsProjectNameClustersResponse(rsp)
 }
 
-// DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameWithResponse request returning *DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse
-func (c *ClientWithResponses) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse, error) {
-	rsp, err := c.DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName(ctx, projectName, controlPlaneName, clusterName, reqEditors...)
+// DeleteApiV1ProjectsProjectNameClustersClusterNameWithResponse request returning *DeleteApiV1ProjectsProjectNameClustersClusterNameResponse
+func (c *ClientWithResponses) DeleteApiV1ProjectsProjectNameClustersClusterNameWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*DeleteApiV1ProjectsProjectNameClustersClusterNameResponse, error) {
+	rsp, err := c.DeleteApiV1ProjectsProjectNameClustersClusterName(ctx, projectName, clusterName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse(rsp)
+	return ParseDeleteApiV1ProjectsProjectNameClustersClusterNameResponse(rsp)
 }
 
-// PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameWithBodyWithResponse request with arbitrary body returning *PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse
-func (c *ClientWithResponses) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse, error) {
-	rsp, err := c.PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameWithBody(ctx, projectName, controlPlaneName, clusterName, contentType, body, reqEditors...)
+// PutApiV1ProjectsProjectNameClustersClusterNameWithBodyWithResponse request with arbitrary body returning *PutApiV1ProjectsProjectNameClustersClusterNameResponse
+func (c *ClientWithResponses) PutApiV1ProjectsProjectNameClustersClusterNameWithBodyWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameClustersClusterNameResponse, error) {
+	rsp, err := c.PutApiV1ProjectsProjectNameClustersClusterNameWithBody(ctx, projectName, clusterName, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse(rsp)
+	return ParsePutApiV1ProjectsProjectNameClustersClusterNameResponse(rsp)
 }
 
-func (c *ClientWithResponses) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, body PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameJSONRequestBody, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse, error) {
-	rsp, err := c.PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName(ctx, projectName, controlPlaneName, clusterName, body, reqEditors...)
+func (c *ClientWithResponses) PutApiV1ProjectsProjectNameClustersClusterNameWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, body PutApiV1ProjectsProjectNameClustersClusterNameJSONRequestBody, reqEditors ...RequestEditorFn) (*PutApiV1ProjectsProjectNameClustersClusterNameResponse, error) {
+	rsp, err := c.PutApiV1ProjectsProjectNameClustersClusterName(ctx, projectName, clusterName, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse(rsp)
+	return ParsePutApiV1ProjectsProjectNameClustersClusterNameResponse(rsp)
 }
 
-// GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigWithResponse request returning *GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigResponse
-func (c *ClientWithResponses) GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigWithResponse(ctx context.Context, projectName ProjectNameParameter, controlPlaneName ControlPlaneNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigResponse, error) {
-	rsp, err := c.GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfig(ctx, projectName, controlPlaneName, clusterName, reqEditors...)
+// GetApiV1ProjectsProjectNameClustersClusterNameKubeconfigWithResponse request returning *GetApiV1ProjectsProjectNameClustersClusterNameKubeconfigResponse
+func (c *ClientWithResponses) GetApiV1ProjectsProjectNameClustersClusterNameKubeconfigWithResponse(ctx context.Context, projectName ProjectNameParameter, clusterName ClusterNameParameter, reqEditors ...RequestEditorFn) (*GetApiV1ProjectsProjectNameClustersClusterNameKubeconfigResponse, error) {
+	rsp, err := c.GetApiV1ProjectsProjectNameClustersClusterNameKubeconfig(ctx, projectName, clusterName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigResponse(rsp)
+	return ParseGetApiV1ProjectsProjectNameClustersClusterNameKubeconfigResponse(rsp)
 }
 
 // GetApiV1RegionsWithResponse request returning *GetApiV1RegionsResponse
@@ -1922,22 +1894,22 @@ func ParseGetApiV1ApplicationsResponse(rsp *http.Response) (*GetApiV1Application
 	return response, nil
 }
 
-// ParseGetApiV1ClustersResponse parses an HTTP response from a GetApiV1ClustersWithResponse call
-func ParseGetApiV1ClustersResponse(rsp *http.Response) (*GetApiV1ClustersResponse, error) {
+// ParseGetApiV1ClustermanagersResponse parses an HTTP response from a GetApiV1ClustermanagersWithResponse call
+func ParseGetApiV1ClustermanagersResponse(rsp *http.Response) (*GetApiV1ClustermanagersResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetApiV1ClustersResponse{
+	response := &GetApiV1ClustermanagersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest KubernetesClusters
+		var dest ClusterManagers
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1976,22 +1948,22 @@ func ParseGetApiV1ClustersResponse(rsp *http.Response) (*GetApiV1ClustersRespons
 	return response, nil
 }
 
-// ParseGetApiV1ControlplanesResponse parses an HTTP response from a GetApiV1ControlplanesWithResponse call
-func ParseGetApiV1ControlplanesResponse(rsp *http.Response) (*GetApiV1ControlplanesResponse, error) {
+// ParseGetApiV1ClustersResponse parses an HTTP response from a GetApiV1ClustersWithResponse call
+func ParseGetApiV1ClustersResponse(rsp *http.Response) (*GetApiV1ClustersResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetApiV1ControlplanesResponse{
+	response := &GetApiV1ClustersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ControlPlanes
+		var dest KubernetesClusters
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2258,15 +2230,15 @@ func ParseDeleteApiV1ProjectsProjectNameResponse(rsp *http.Response) (*DeleteApi
 	return response, nil
 }
 
-// ParsePostApiV1ProjectsProjectNameControlplanesResponse parses an HTTP response from a PostApiV1ProjectsProjectNameControlplanesWithResponse call
-func ParsePostApiV1ProjectsProjectNameControlplanesResponse(rsp *http.Response) (*PostApiV1ProjectsProjectNameControlplanesResponse, error) {
+// ParsePostApiV1ProjectsProjectNameClustermanagersResponse parses an HTTP response from a PostApiV1ProjectsProjectNameClustermanagersWithResponse call
+func ParsePostApiV1ProjectsProjectNameClustermanagersResponse(rsp *http.Response) (*PostApiV1ProjectsProjectNameClustermanagersResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostApiV1ProjectsProjectNameControlplanesResponse{
+	response := &PostApiV1ProjectsProjectNameClustermanagersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2305,15 +2277,15 @@ func ParsePostApiV1ProjectsProjectNameControlplanesResponse(rsp *http.Response) 
 	return response, nil
 }
 
-// ParseDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse parses an HTTP response from a DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameWithResponse call
-func ParseDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse(rsp *http.Response) (*DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse, error) {
+// ParseDeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse parses an HTTP response from a DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameWithResponse call
+func ParseDeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse(rsp *http.Response) (*DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse{
+	response := &DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2352,15 +2324,15 @@ func ParseDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse(rs
 	return response, nil
 }
 
-// ParsePutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse parses an HTTP response from a PutApiV1ProjectsProjectNameControlplanesControlPlaneNameWithResponse call
-func ParsePutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse(rsp *http.Response) (*PutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse, error) {
+// ParsePutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse parses an HTTP response from a PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameWithResponse call
+func ParsePutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse(rsp *http.Response) (*PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse{
+	response := &PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2399,15 +2371,15 @@ func ParsePutApiV1ProjectsProjectNameControlplanesControlPlaneNameResponse(rsp *
 	return response, nil
 }
 
-// ParsePostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse parses an HTTP response from a PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersWithResponse call
-func ParsePostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse(rsp *http.Response) (*PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse, error) {
+// ParsePostApiV1ProjectsProjectNameClustersResponse parses an HTTP response from a PostApiV1ProjectsProjectNameClustersWithResponse call
+func ParsePostApiV1ProjectsProjectNameClustersResponse(rsp *http.Response) (*PostApiV1ProjectsProjectNameClustersResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersResponse{
+	response := &PostApiV1ProjectsProjectNameClustersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2453,15 +2425,15 @@ func ParsePostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersRespo
 	return response, nil
 }
 
-// ParseDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse parses an HTTP response from a DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameWithResponse call
-func ParseDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse(rsp *http.Response) (*DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse, error) {
+// ParseDeleteApiV1ProjectsProjectNameClustersClusterNameResponse parses an HTTP response from a DeleteApiV1ProjectsProjectNameClustersClusterNameWithResponse call
+func ParseDeleteApiV1ProjectsProjectNameClustersClusterNameResponse(rsp *http.Response) (*DeleteApiV1ProjectsProjectNameClustersClusterNameResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse{
+	response := &DeleteApiV1ProjectsProjectNameClustersClusterNameResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2500,15 +2472,15 @@ func ParseDeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClu
 	return response, nil
 }
 
-// ParsePutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse parses an HTTP response from a PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameWithResponse call
-func ParsePutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse(rsp *http.Response) (*PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse, error) {
+// ParsePutApiV1ProjectsProjectNameClustersClusterNameResponse parses an HTTP response from a PutApiV1ProjectsProjectNameClustersClusterNameWithResponse call
+func ParsePutApiV1ProjectsProjectNameClustersClusterNameResponse(rsp *http.Response) (*PutApiV1ProjectsProjectNameClustersClusterNameResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameResponse{
+	response := &PutApiV1ProjectsProjectNameClustersClusterNameResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2547,15 +2519,15 @@ func ParsePutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersCluste
 	return response, nil
 }
 
-// ParseGetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigResponse parses an HTTP response from a GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigWithResponse call
-func ParseGetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigResponse(rsp *http.Response) (*GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigResponse, error) {
+// ParseGetApiV1ProjectsProjectNameClustersClusterNameKubeconfigResponse parses an HTTP response from a GetApiV1ProjectsProjectNameClustersClusterNameKubeconfigWithResponse call
+func ParseGetApiV1ProjectsProjectNameClustersClusterNameKubeconfigResponse(rsp *http.Response) (*GetApiV1ProjectsProjectNameClustersClusterNameKubeconfigResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfigResponse{
+	response := &GetApiV1ProjectsProjectNameClustersClusterNameKubeconfigResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2649,7 +2621,7 @@ func ParseGetApiV1RegionsRegionNameFlavorsResponse(rsp *http.Response) (*GetApiV
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest OpenstackFlavors
+		var dest Flavors
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2696,7 +2668,7 @@ func ParseGetApiV1RegionsRegionNameImagesResponse(rsp *http.Response) (*GetApiV1
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest OpenstackImages
+		var dest Images
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

@@ -19,9 +19,9 @@ package main
 
 import (
 	"github.com/unikorn-cloud/core/pkg/manager"
-	"github.com/unikorn-cloud/unikorn/pkg/managers/controlplane"
+	"github.com/unikorn-cloud/unikorn/pkg/managers/clustermanager"
 )
 
 func main() {
-	manager.Run(&controlplane.Factory{})
+	manager.Run(&clustermanager.Factory{})
 }

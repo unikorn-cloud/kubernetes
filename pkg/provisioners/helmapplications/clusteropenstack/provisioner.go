@@ -36,15 +36,15 @@ const (
 
 // Provisioner encapsulates control plane provisioning.
 type Provisioner struct {
-	// controlPlanePrefix contains the IP address prefix to add
+	// clusterManagerPrefix contains the IP address prefix to add
 	// to the cluster firewall if, required.
-	controlPlanePrefix string
+	clusterManagerPrefix string
 }
 
 // New returns a new initialized provisioner object.
-func New(getApplication application.GetterFunc, controlPlanePrefix string) *application.Provisioner {
+func New(getApplication application.GetterFunc, clusterManagerPrefix string) *application.Provisioner {
 	provisioner := &Provisioner{
-		controlPlanePrefix: controlPlanePrefix,
+		clusterManagerPrefix: clusterManagerPrefix,
 	}
 
 	return application.New(getApplication).WithApplicationName(legacyApplicationName).WithGenerator(provisioner).AllowDegraded()
@@ -218,9 +218,8 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 	}
 
 	serverMetadata := map[string]interface{}{
-		"cluster":      cluster.Name,
-		"controlPlane": labels[constants.ControlPlaneLabel],
-		"project":      labels[constants.ProjectLabel],
+		"cluster": cluster.Name,
+		"project": labels[constants.ProjectLabel],
 	}
 
 	// TODO: generate types from the Helm values schema.
@@ -242,7 +241,7 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 			},
 			"serverMetadata": serverMetadata,
 		},
-		"controlPlane": map[string]interface{}{
+		"clusterManager": map[string]interface{}{
 			"replicas": *cluster.Spec.ControlPlane.Replicas,
 			"machine":  p.generateMachineHelmValues(&cluster.Spec.ControlPlane.MachineGeneric, nil),
 		},
@@ -269,7 +268,7 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 		if cluster.Spec.API.AllowedPrefixes != nil {
 			// Add the SNAT IP so CAPI can manage the cluster.
 			allowList := []interface{}{
-				p.controlPlanePrefix,
+				p.clusterManagerPrefix,
 			}
 
 			for _, prefix := range cluster.Spec.API.AllowedPrefixes {

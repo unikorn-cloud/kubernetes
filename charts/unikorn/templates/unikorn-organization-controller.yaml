@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: unikorn-organization-manager
+  name: unikorn-organization-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 {{- with ( include "unikorn.imagePullSecrets" . ) }}
@@ -12,7 +12,7 @@ imagePullSecrets:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: unikorn-organization-manager
+  name: unikorn-organization-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 rules:
@@ -66,7 +66,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: unikorn-organization-manager
+  name: unikorn-organization-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 rules:
@@ -90,52 +90,52 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: unikorn-organization-manager
+  name: unikorn-organization-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 subjects:
 - kind: ServiceAccount
   namespace: {{ .Release.Namespace }}
-  name: unikorn-organization-manager
+  name: unikorn-organization-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: unikorn-organization-manager
+  name: unikorn-organization-controller
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: unikorn-organization-manager
+  name: unikorn-organization-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 subjects:
 - kind: ServiceAccount
   namespace: {{ .Release.Namespace }}
-  name: unikorn-organization-manager
+  name: unikorn-organization-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: unikorn-organization-manager
+  name: unikorn-organization-controller
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: unikorn-organization-manager
+  name: unikorn-organization-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: unikorn-organization-manager
+      app: unikorn-organization-controller
   template:
     metadata:
       labels:
-        app: unikorn-organization-manager
+        app: unikorn-organization-controller
     spec:
       containers:
-      - name: unikorn-organization-manager
-        image: {{ include "unikorn.organizationManagerImage" . }}
+      - name: unikorn-organization-controller
+        image: {{ include "unikorn.organizationControllerImage" . }}
         ports:
         - name: prometheus
           containerPort: 8080
@@ -148,20 +148,20 @@ spec:
             memory: 100Mi
         securityContext:
           readOnlyRootFilesystem: true
-      serviceAccountName: unikorn-organization-manager
+      serviceAccountName: unikorn-organization-controller
       securityContext:
         runAsNonRoot: true
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: unikorn-organization-manager
+  name: unikorn-organization-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
-    {{- include "unikorn.prometheusLabels" (dict "job" "unikorn-organization-manager") | nindent 4 }}
+    {{- include "unikorn.prometheusLabels" (dict "job" "unikorn-organization-controller") | nindent 4 }}
 spec:
   selector:
-    app: unikorn-organization-manager
+    app: unikorn-organization-controller
   ports:
   - name: prometheus
     port: 8080

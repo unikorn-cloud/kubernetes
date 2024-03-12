@@ -42,7 +42,7 @@ import (
 func releaseName(cluster *unikornv1.KubernetesCluster) string {
 	// This must be no longer than 53 characters and unique across all control
 	// planes to avoid OpenStack network aliasing.
-	sum := sha256.Sum256([]byte(cluster.Labels[constants.ControlPlaneLabel] + ":" + cluster.Name))
+	sum := sha256.Sum256([]byte(cluster.Name))
 
 	hash := fmt.Sprintf("%x", sum)
 

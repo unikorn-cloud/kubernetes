@@ -23,15 +23,6 @@ spec:
     - jsonPath: .spec.version
       name: version
       type: string
-    - jsonPath: .spec.controlPlane.image
-      name: image
-      type: string
-    - jsonPath: .spec.controlPlane.flavor
-      name: flavor
-      type: string
-    - jsonPath: .spec.controlPlane.replicas
-      name: replicas
-      type: string
     - jsonPath: .status.conditions[?(@.type=="Available")].reason
       name: status
       type: string
@@ -260,8 +251,12 @@ spec:
                         type: object
                     type: object
                 type: object
+              clusterManager:
+                description: ClusterManager that provides lifecycle management for
+                  the cluster.
+                type: string
               controlPlane:
-                description: ControlPlane defines the control plane topology.
+                description: ControlPlane defines the cluster manager topology.
                 properties:
                   diskSize:
                     anyOf:
@@ -284,8 +279,8 @@ spec:
                     minimum: 0
                     type: integer
                   serverGroupId:
-                    description: ServerGroupID sets the server group of the control
-                      plane in order to maintain anti-affinity rules.
+                    description: ServerGroupID sets the server group of the cluster
+                      manager in order to maintain anti-affinity rules.
                     type: string
                   volumeFailureDomain:
                     description: VolumeFailureDomain allows the volume failure domain
@@ -353,7 +348,7 @@ spec:
                     type: string
                   cloudConfig:
                     description: CloudConfig is a base64 encoded minimal clouds.yaml
-                      file for use by the ControlPlane to provision the IaaS bits.
+                      file for use by the ClusterManager to provision the IaaS bits.
                     format: byte
                     type: string
                   externalNetworkId:
@@ -362,7 +357,7 @@ spec:
                     type: string
                   failureDomain:
                     description: FailureDomain is the global failure domain to use.  The
-                      control plane will always be deployed in this region.  Individual
+                      cluster manager will always be deployed in this region.  Individual
                       worload pools will default to this, but can override it.
                     type: string
                   sshKeyName:
@@ -523,7 +518,7 @@ spec:
                           type: integer
                         serverGroupId:
                           description: ServerGroupID sets the server group of the
-                            control plane in order to maintain anti-affinity rules.
+                            cluster manager in order to maintain anti-affinity rules.
                           type: string
                         volumeFailureDomain:
                           description: VolumeFailureDomain allows the volume failure
@@ -538,6 +533,7 @@ spec:
                 type: object
             required:
             - applicationBundle
+            - clusterManager
             - controlPlane
             - network
             - openstack

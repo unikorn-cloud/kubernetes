@@ -13,7 +13,7 @@ require (
 	github.com/prometheus/client_golang v1.18.0
 	github.com/spdx/tools-golang v0.5.3
 	github.com/spf13/pflag v1.0.5
-	github.com/unikorn-cloud/core v0.1.8
+	github.com/unikorn-cloud/core v0.1.9
 	go.opentelemetry.io/otel v1.24.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.22.0
 	go.opentelemetry.io/otel/sdk v1.22.0

@@ -19,6 +19,8 @@ package cluster
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
@@ -44,6 +46,10 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+var (
+	ErrClusterManager = errors.New("cluster manager lookup failed")
 )
 
 type ApplicationReferenceGetter struct {
@@ -125,8 +131,8 @@ func (p *Provisioner) Object() unikornv1core.ManagableResourceInterface {
 	return &p.cluster
 }
 
-// getControlPlane gets the control plane object that owns this cluster.
-func (p *Provisioner) getControlPlane(ctx context.Context) (*unikornv1.ControlPlane, error) {
+// getClusterManager gets the control plane object that owns this cluster.
+func (p *Provisioner) getClusterManager(ctx context.Context) (*unikornv1.ClusterManager, error) {
 	// TODO: error checking.
 	projectLabels := labels.Set{
 		constants.KindLabel:    constants.KindLabelValueProject,
@@ -138,38 +144,38 @@ func (p *Provisioner) getControlPlane(ctx context.Context) (*unikornv1.ControlPl
 		return nil, err
 	}
 
-	var controlPlane unikornv1.ControlPlane
+	var clusterManager unikornv1.ClusterManager
 
 	key := client.ObjectKey{
 		Namespace: projectNamespace.Name,
-		Name:      p.cluster.Labels[constants.ControlPlaneLabel],
+		Name:      p.cluster.Spec.ClusterManager,
 	}
 
-	if err := coreclient.StaticClientFromContext(ctx).Get(ctx, key, &controlPlane); err != nil {
-		return nil, err
+	if err := coreclient.StaticClientFromContext(ctx).Get(ctx, key, &clusterManager); err != nil {
+		return nil, fmt.Errorf("%w: %s", ErrClusterManager, err.Error())
 	}
 
-	return &controlPlane, nil
+	return &clusterManager, nil
 }
 
 func (p *Provisioner) getProvisioner(ctx context.Context) (provisioners.Provisioner, error) {
 	apps := newApplicationReferenceGetter(&p.cluster)
 
-	controlPlane, err := p.getControlPlane(ctx)
+	clusterManager, err := p.getClusterManager(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	remoteControlPlane := remotecluster.New(vcluster.NewRemoteCluster(p.cluster.Namespace, controlPlane), false)
+	remoteClusterManager := remotecluster.New(vcluster.NewRemoteCluster(p.cluster.Namespace, clusterManager.Name, clusterManager), false)
 
-	controlPlanePrefix, err := util.GetNATPrefix(ctx)
+	clusterManagerPrefix, err := util.GetNATPrefix(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	remoteCluster := remotecluster.New(clusteropenstack.NewRemoteCluster(&p.cluster), true)
 
-	clusterProvisioner := clusteropenstack.New(apps.clusterOpenstack, controlPlanePrefix).InNamespace(p.cluster.Name)
+	clusterProvisioner := clusteropenstack.New(apps.clusterOpenstack, clusterManagerPrefix).InNamespace(p.cluster.Name)
 
 	// These applications are required to get the cluster up and running, they must
 	// tolerate control plane taints, be scheduled onto control plane nodes and allow
@@ -197,7 +203,7 @@ func (p *Provisioner) getProvisioner(ctx context.Context) (provisioners.Provisio
 	// come up but never reach healthy until the CNI and cloud controller manager
 	// are added.  Follow that up by the autoscaler as some addons may require worker
 	// nodes to schedule onto.
-	provisioner := remoteControlPlane.ProvisionOn(
+	provisioner := remoteClusterManager.ProvisionOn(
 		serial.New("kubernetes cluster",
 			concurrent.New("kubernetes cluster",
 				clusterProvisioner,
@@ -229,6 +235,10 @@ func (p *Provisioner) Provision(ctx context.Context) error {
 func (p *Provisioner) Deprovision(ctx context.Context) error {
 	provisioner, err := p.getProvisioner(ctx)
 	if err != nil {
+		if errors.Is(err, ErrClusterManager) {
+			return nil
+		}
+
 		return err
 	}
 

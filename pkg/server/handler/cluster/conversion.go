@@ -31,7 +31,7 @@ import (
 	"github.com/unikorn-cloud/unikorn/pkg/providers"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/controlplane"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/project"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,14 +42,14 @@ var (
 )
 
 // convertMachine converts from a custom resource into the API definition.
-func convertMachine(in *unikornv1.MachineGeneric) *generated.OpenstackMachinePool {
-	machine := &generated.OpenstackMachinePool{
+func convertMachine(in *unikornv1.MachineGeneric) *generated.MachinePool {
+	machine := &generated.MachinePool{
 		Replicas:   in.Replicas,
 		FlavorName: in.Flavor,
 	}
 
 	if in.DiskSize != nil {
-		machine.Disk = &generated.OpenstackVolume{
+		machine.Disk = &generated.Volume{
 			Size: int(in.DiskSize.Value()) >> 30,
 		}
 	}
@@ -97,11 +97,9 @@ func convertMetadata(in *unikornv1.KubernetesCluster) (*generated.ResourceMetada
 
 	// Validated to exist by ResourceLabels()
 	project := labels[constants.ProjectLabel]
-	controlplane := labels[constants.ControlPlaneLabel]
 
 	out := &generated.ResourceMetadata{
 		Project:      &project,
-		Controlplane: &controlplane,
 		Region:       &in.Spec.Region,
 		CreationTime: in.CreationTimestamp.Time,
 		Status:       "Unknown",
@@ -235,7 +233,7 @@ func (c *Client) generateNetwork() *unikornv1.KubernetesClusterNetworkSpec {
 }
 
 // generateMachineGeneric generates a generic machine part of the cluster.
-func (c *Client) generateMachineGeneric(ctx context.Context, provider providers.Provider, options *generated.KubernetesCluster, m *generated.OpenstackMachinePool) (*unikornv1.MachineGeneric, error) {
+func (c *Client) generateMachineGeneric(ctx context.Context, provider providers.Provider, options *generated.KubernetesCluster, m *generated.MachinePool) (*unikornv1.MachineGeneric, error) {
 	if m.Replicas == nil {
 		m.Replicas = util.ToPointer(3)
 	}
@@ -271,7 +269,7 @@ func (c *Client) generateControlPlane(ctx context.Context, provider providers.Pr
 		return nil, err
 	}
 
-	machineOptions := &generated.OpenstackMachinePool{
+	machineOptions := &generated.MachinePool{
 		FlavorName: &resource.Name,
 	}
 
@@ -280,11 +278,11 @@ func (c *Client) generateControlPlane(ctx context.Context, provider providers.Pr
 		return nil, err
 	}
 
-	controlPlane := &unikornv1.KubernetesClusterControlPlaneSpec{
+	project := &unikornv1.KubernetesClusterControlPlaneSpec{
 		MachineGeneric: *machine,
 	}
 
-	return controlPlane, nil
+	return project, nil
 }
 
 // generateWorkloadPools generates the workload pools part of a cluster.
@@ -398,7 +396,7 @@ func installClusterAutoscaler(cluster *unikornv1.KubernetesCluster) {
 }
 
 // generate generates the full cluster custom resource.
-func (c *Client) generate(ctx context.Context, provider providers.Provider, controlPlane *controlplane.Meta, options *generated.KubernetesCluster) (*unikornv1.KubernetesCluster, error) {
+func (c *Client) generate(ctx context.Context, provider providers.Provider, project *project.Meta, options *generated.KubernetesCluster) (*unikornv1.KubernetesCluster, error) {
 	kubernetesControlPlane, err := c.generateControlPlane(ctx, provider, options)
 	if err != nil {
 		return nil, err
@@ -422,16 +420,16 @@ func (c *Client) generate(ctx context.Context, provider providers.Provider, cont
 	cluster := &unikornv1.KubernetesCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
-			Namespace: controlPlane.Namespace,
+			Namespace: project.Namespace,
 			Labels: map[string]string{
 				constants.VersionLabel:      constants.Version,
-				constants.OrganizationLabel: controlPlane.Project.Organization.Name,
-				constants.ProjectLabel:      controlPlane.Project.Name,
-				constants.ControlPlaneLabel: controlPlane.Name,
+				constants.OrganizationLabel: project.Organization.Name,
+				constants.ProjectLabel:      project.Name,
 			},
 		},
 		Spec: unikornv1.KubernetesClusterSpec{
 			Region:                       options.Region,
+			ClusterManager:               *options.ClusterManager,
 			Version:                      util.ToPointer(unikornv1.SemanticVersion(version)),
 			ApplicationBundle:            &applicationBundle.Name,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},

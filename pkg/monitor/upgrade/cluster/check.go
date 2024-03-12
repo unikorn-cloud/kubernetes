@@ -134,7 +134,6 @@ func (c *Checker) Check(ctx context.Context) error {
 		logger := logger.WithValues(
 			"organization", resource.Labels[constants.OrganizationLabel],
 			"project", resource.Labels[constants.ProjectLabel],
-			"controlplane", resource.Labels[constants.ControlPlaneLabel],
 			"cluster", resource.Name,
 		)
 

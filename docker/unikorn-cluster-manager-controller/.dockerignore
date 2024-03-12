@@ -1,0 +1,3 @@
+*
+!bin/*-linux-gnu/unikorn-cluster-manager-controller
+!hack/passwd.nonroot

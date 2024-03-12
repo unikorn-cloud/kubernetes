@@ -32,6 +32,9 @@ type RemoteCluster struct {
 	// namespace tells us where the vcluster lives.
 	namespace string
 
+	// name is the user supplied vcluster name.
+	name string
+
 	// labeller is used to identify the owner of and uniquely identify
 	// a remote cluster instance.
 	labeller unikornv1core.ResourceLabeller
@@ -41,9 +44,10 @@ type RemoteCluster struct {
 var _ provisioners.RemoteCluster = &RemoteCluster{}
 
 // NewRemoteCluster return a new instance of a remote cluster generator.
-func NewRemoteCluster(namespace string, labeller unikornv1core.ResourceLabeller) *RemoteCluster {
+func NewRemoteCluster(namespace, name string, labeller unikornv1core.ResourceLabeller) *RemoteCluster {
 	return &RemoteCluster{
 		namespace: namespace,
+		name:      name,
 		labeller:  labeller,
 	}
 }
@@ -65,7 +69,7 @@ func (g *RemoteCluster) ID() *cd.ResourceIdentifier {
 	}
 
 	return &cd.ResourceIdentifier{
-		Name:   "vcluster",
+		Name:   vclusterName + "-" + g.name,
 		Labels: labels,
 	}
 }

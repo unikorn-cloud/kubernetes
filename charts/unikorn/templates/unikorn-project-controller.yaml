@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: unikorn-control-plane-manager
+  name: unikorn-project-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 {{- with ( include "unikorn.imagePullSecrets" . ) }}
@@ -12,15 +12,15 @@ imagePullSecrets:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: unikorn-control-plane-manager
+  name: unikorn-project-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 rules:
-# Manage control planes (my job).
+# Manage projects (my job).
 - apiGroups:
   - unikorn-cloud.org
   resources:
-  - controlplanes
+  - projects
   verbs:
   - list
   - get
@@ -30,7 +30,7 @@ rules:
 - apiGroups:
   - unikorn-cloud.org
   resources:
-  - controlplanes/status
+  - projects/status
   verbs:
   - update
 - apiGroups:
@@ -44,36 +44,15 @@ rules:
   - watch
   - delete
   - update
-# Manage clusters (cascading deletion).
+# Manage projects (cascading deletion).
 - apiGroups:
   - unikorn-cloud.org
   resources:
-  - kubernetesclusters
+  - clustermanagers
   verbs:
   - list
   - get
   - watch
-  - delete
-# Get application bundles
-- apiGroups:
-  - unikorn-cloud.org
-  resources:
-  - helmapplications
-  - controlplaneapplicationbundles
-  verbs:
-  - list
-  - watch
-# ArgoCD integration.
-- apiGroups:
-  - argoproj.io
-  resources:
-  - applications
-  verbs:
-  - create
-  - list
-  - get
-  - watch
-  - patch
   - delete
 # ArgoCD integration (access to API secret).
 - apiGroups:
@@ -83,14 +62,11 @@ rules:
   verbs:
   - list
   - watch
-  - create
-  - patch
-  - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: unikorn-control-plane-manager
+  name: unikorn-project-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 rules:
@@ -114,52 +90,52 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: unikorn-control-plane-manager
+  name: unikorn-project-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 subjects:
 - kind: ServiceAccount
   namespace: {{ .Release.Namespace }}
-  name: unikorn-control-plane-manager
+  name: unikorn-project-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: unikorn-control-plane-manager
+  name: unikorn-project-controller
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: unikorn-control-plane-manager
+  name: unikorn-project-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 subjects:
 - kind: ServiceAccount
   namespace: {{ .Release.Namespace }}
-  name: unikorn-control-plane-manager
+  name: unikorn-project-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: unikorn-control-plane-manager
+  name: unikorn-project-controller
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: unikorn-control-plane-manager
+  name: unikorn-project-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: unikorn-control-plane-manager
+      app: unikorn-project-controller
   template:
     metadata:
       labels:
-        app: unikorn-control-plane-manager
+        app: unikorn-project-controller
     spec:
       containers:
-      - name: unikorn-control-plane-manager
-        image: {{ include "unikorn.controlPlaneManagerImage" . }}
+      - name: unikorn-project-controller
+        image: {{ include "unikorn.projectControllerImage" . }}
         ports:
         - name: prometheus
           containerPort: 8080
@@ -172,20 +148,20 @@ spec:
             memory: 100Mi
         securityContext:
           readOnlyRootFilesystem: true
-      serviceAccountName: unikorn-control-plane-manager
+      serviceAccountName: unikorn-project-controller
       securityContext:
         runAsNonRoot: true
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: unikorn-control-plane-manager
+  name: unikorn-project-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
-    {{- include "unikorn.prometheusLabels" (dict "job" "unikorn-control-plane-manager") | nindent 4 }}
+    {{- include "unikorn.prometheusLabels" (dict "job" "unikorn-project-controller") | nindent 4 }}
 spec:
   selector:
-    app: unikorn-control-plane-manager
+    app: unikorn-project-controller
   ports:
   - name: prometheus
     port: 8080

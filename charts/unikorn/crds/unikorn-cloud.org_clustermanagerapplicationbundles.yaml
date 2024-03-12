@@ -4,16 +4,16 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.12.1
-  name: controlplaneapplicationbundles.unikorn-cloud.org
+  name: clustermanagerapplicationbundles.unikorn-cloud.org
 spec:
   group: unikorn-cloud.org
   names:
     categories:
     - unikorn
-    kind: ControlPlaneApplicationBundle
-    listKind: ControlPlaneApplicationBundleList
-    plural: controlplaneapplicationbundles
-    singular: controlplaneapplicationbundle
+    kind: ClusterManagerApplicationBundle
+    listKind: ClusterManagerApplicationBundleList
+    plural: clustermanagerapplicationbundles
+    singular: clustermanagerapplicationbundle
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -32,11 +32,11 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: ControlPlaneApplicationBundle defines a bundle of applications
-          related with a particular custom resource e.g. a ControlPlane has vcluster,
+        description: ClusterManagerApplicationBundle defines a bundle of applications
+          related with a particular custom resource e.g. a ClusterManager has vcluster,
           cert-manager and cluster-api applications associated with it.  This forms
-          the backbone of upgrades by allowing bundles to be switched out in control
-          planes etc.
+          the backbone of upgrades by allowing bundles to be switched out in cluster
+          managers etc.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation

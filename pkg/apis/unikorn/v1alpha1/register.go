@@ -51,9 +51,9 @@ func init() {
 	SchemeBuilder.Register(&Region{}, &RegionList{})
 	SchemeBuilder.Register(&Organization{}, &OrganizationList{})
 	SchemeBuilder.Register(&Project{}, &ProjectList{})
-	SchemeBuilder.Register(&ControlPlane{}, &ControlPlaneList{})
+	SchemeBuilder.Register(&ClusterManager{}, &ClusterManagerList{})
 	SchemeBuilder.Register(&KubernetesCluster{}, &KubernetesClusterList{})
-	SchemeBuilder.Register(&ControlPlaneApplicationBundle{}, &ControlPlaneApplicationBundleList{})
+	SchemeBuilder.Register(&ClusterManagerApplicationBundle{}, &ClusterManagerApplicationBundleList{})
 	SchemeBuilder.Register(&KubernetesClusterApplicationBundle{}, &KubernetesClusterApplicationBundleList{})
 }
 

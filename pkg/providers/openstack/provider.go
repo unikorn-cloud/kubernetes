@@ -312,7 +312,6 @@ const (
 	// in order to be able to reason about who they really belong to.
 	OrganizationTag = "organization"
 	ProjectTag      = "project"
-	ControlPlaneTag = "controlplane"
 	ClusterTag      = "cluster"
 )
 
@@ -326,7 +325,6 @@ func (p *Provider) provisionProject(ctx context.Context, identityService *Identi
 	tags := []string{
 		OrganizationTag + "=" + cluster.Labels[constants.OrganizationLabel],
 		ProjectTag + "=" + cluster.Labels[constants.ProjectLabel],
-		ControlPlaneTag + "=" + cluster.Labels[constants.ControlPlaneLabel],
 		ClusterTag + "=" + cluster.Name,
 	}
 

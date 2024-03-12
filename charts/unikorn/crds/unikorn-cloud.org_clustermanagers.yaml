@@ -4,24 +4,21 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.12.1
-  name: controlplanes.unikorn-cloud.org
+  name: clustermanagers.unikorn-cloud.org
 spec:
   group: unikorn-cloud.org
   names:
     categories:
     - unikorn
-    kind: ControlPlane
-    listKind: ControlPlaneList
-    plural: controlplanes
-    singular: controlplane
+    kind: ClusterManager
+    listKind: ClusterManagerList
+    plural: clustermanagers
+    singular: clustermanager
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
     - jsonPath: .spec.applicationBundle
       name: bundle
-      type: string
-    - jsonPath: .status.namespace
-      name: namespace
       type: string
     - jsonPath: .status.conditions[?(@.type=="Available")].reason
       name: status
@@ -32,7 +29,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: ControlPlane is an abstraction around resource provisioning,
+        description: ClusterManager is an abstraction around resource provisioning,
           for example it may contain a provider like Cluster API that can provision
           KubernetesCluster resources.
         properties:
@@ -49,11 +46,11 @@ spec:
           metadata:
             type: object
           spec:
-            description: ControlPlaneSpec defines any control plane specific options.
+            description: ClusterManagerSpec defines any cluster manager specific options.
             properties:
               applicationBundle:
                 description: ApplicationBundle defines the applications used to create
-                  the control plane. Change this to a new bundle to start an upgrade.
+                  the cluster manager. Change this to a new bundle to start an upgrade.
                 type: string
               applicationBundleAutoUpgrade:
                 description: ApplicationBundleAutoUpgrade enables automatic upgrade
@@ -239,10 +236,10 @@ spec:
             - applicationBundle
             type: object
           status:
-            description: ControlPlaneStatus defines the status of the project.
+            description: ClusterManagerStatus defines the status of the project.
             properties:
               conditions:
-                description: Current service state of a control plane.
+                description: Current service state of a cluster manager.
                 items:
                   description: Condition is a generic condition type for use across
                     all resource types. It's generic so that the underlying controller-manager
@@ -285,10 +282,6 @@ spec:
                   - type
                   type: object
                 type: array
-              namespace:
-                description: Namespace defines the namespace a control plane resides
-                  in.
-                type: string
             type: object
         required:
         - spec

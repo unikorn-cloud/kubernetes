@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controlplane
+package clustermanager
 
 import (
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
@@ -23,7 +23,7 @@ import (
 	coremanager "github.com/unikorn-cloud/core/pkg/manager"
 	"github.com/unikorn-cloud/core/pkg/manager/options"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/unikorn/pkg/provisioners/managers/controlplane"
+	"github.com/unikorn-cloud/unikorn/pkg/provisioners/managers/clustermanager"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -46,12 +46,12 @@ func (*Factory) Metadata() (string, string, string) {
 
 // Reconciler returns a new reconciler instance.
 func (*Factory) Reconciler(options *options.Options, manager manager.Manager) reconcile.Reconciler {
-	return coremanager.NewReconciler(options, manager.GetClient(), controlplane.New)
+	return coremanager.NewReconciler(options, manager.GetClient(), clustermanager.New)
 }
 
 // RegisterWatches adds any watches that would trigger a reconcile.
 func (*Factory) RegisterWatches(manager manager.Manager, controller controller.Controller) error {
-	if err := controller.Watch(source.Kind(manager.GetCache(), &unikornv1.ControlPlane{}), &handler.EnqueueRequestForObject{}, &predicate.GenerationChangedPredicate{}); err != nil {
+	if err := controller.Watch(source.Kind(manager.GetCache(), &unikornv1.ClusterManager{}), &handler.EnqueueRequestForObject{}, &predicate.GenerationChangedPredicate{}); err != nil {
 		return err
 	}
 

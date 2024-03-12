@@ -29,7 +29,7 @@ import (
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/application"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/cluster"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/controlplane"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/clustermanager"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/project"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/region"
@@ -120,8 +120,8 @@ func (h *Handler) DeleteApiV1ProjectsProjectName(w http.ResponseWriter, r *http.
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) GetApiV1Controlplanes(w http.ResponseWriter, r *http.Request) {
-	result, err := controlplane.NewClient(h.client).List(r.Context())
+func (h *Handler) GetApiV1Clustermanagers(w http.ResponseWriter, r *http.Request) {
+	result, err := clustermanager.NewClient(h.client).List(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -131,15 +131,15 @@ func (h *Handler) GetApiV1Controlplanes(w http.ResponseWriter, r *http.Request) 
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) PostApiV1ProjectsProjectNameControlplanes(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter) {
-	request := &generated.ControlPlane{}
+func (h *Handler) PostApiV1ProjectsProjectNameClustermanagers(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter) {
+	request := &generated.ClusterManager{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if err := controlplane.NewClient(h.client).Create(r.Context(), projectName, request); err != nil {
+	if err := clustermanager.NewClient(h.client).Create(r.Context(), projectName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -148,8 +148,8 @@ func (h *Handler) PostApiV1ProjectsProjectNameControlplanes(w http.ResponseWrite
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter) {
-	if err := controlplane.NewClient(h.client).Delete(r.Context(), projectName, controlPlaneName); err != nil {
+func (h *Handler) DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, clusterManagerName generated.ClusterManagerNameParameter) {
+	if err := clustermanager.NewClient(h.client).Delete(r.Context(), projectName, clusterManagerName); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -158,15 +158,15 @@ func (h *Handler) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneName(w 
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) PutApiV1ProjectsProjectNameControlplanesControlPlaneName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter) {
-	request := &generated.ControlPlane{}
+func (h *Handler) PutApiV1ProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ClusterManagerNameParameter) {
+	request := &generated.ClusterManager{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if err := controlplane.NewClient(h.client).Update(r.Context(), projectName, controlPlaneName, request); err != nil {
+	if err := clustermanager.NewClient(h.client).Update(r.Context(), projectName, controlPlaneName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -186,7 +186,7 @@ func (h *Handler) GetApiV1Clusters(w http.ResponseWriter, r *http.Request) {
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClusters(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter) {
+func (h *Handler) PostApiV1ProjectsProjectNameClusters(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter) {
 	request := &generated.KubernetesCluster{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -194,7 +194,7 @@ func (h *Handler) PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClust
 		return
 	}
 
-	if err := cluster.NewClient(h.client, &h.options.Cluster).Create(r.Context(), projectName, controlPlaneName, request); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster).Create(r.Context(), projectName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -203,8 +203,8 @@ func (h *Handler) PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClust
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
-	if err := cluster.NewClient(h.client, &h.options.Cluster).Delete(r.Context(), projectName, controlPlaneName, clusterName); err != nil {
+func (h *Handler) DeleteApiV1ProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
+	if err := cluster.NewClient(h.client, &h.options.Cluster).Delete(r.Context(), projectName, clusterName); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -213,7 +213,7 @@ func (h *Handler) DeleteApiV1ProjectsProjectNameControlplanesControlPlaneNameClu
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
+func (h *Handler) PutApiV1ProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
 	request := &generated.KubernetesCluster{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -221,7 +221,7 @@ func (h *Handler) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameCluste
 		return
 	}
 
-	if err := cluster.NewClient(h.client, &h.options.Cluster).Update(r.Context(), projectName, controlPlaneName, clusterName, request); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster).Update(r.Context(), projectName, clusterName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -230,8 +230,8 @@ func (h *Handler) PutApiV1ProjectsProjectNameControlplanesControlPlaneNameCluste
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) GetApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameKubeconfig(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, clusterName generated.ClusterNameParameter) {
-	result, err := cluster.NewClient(h.client, &h.options.Cluster).GetKubeconfig(r.Context(), projectName, controlPlaneName, clusterName)
+func (h *Handler) GetApiV1ProjectsProjectNameClustersClusterNameKubeconfig(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
+	result, err := cluster.NewClient(h.client, &h.options.Cluster).GetKubeconfig(r.Context(), projectName, clusterName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -279,10 +279,10 @@ func (h *Handler) GetApiV1RegionsRegionNameFlavors(w http.ResponseWriter, r *htt
 	// Apply ordering guarantees.
 	sort.Stable(result)
 
-	out := make(generated.OpenstackFlavors, 0, len(result))
+	out := make(generated.Flavors, 0, len(result))
 
 	for _, r := range result {
-		t := generated.OpenstackFlavor{
+		t := generated.Flavor{
 			Name:   r.Name,
 			Cpus:   r.CPUs,
 			Memory: int(r.Memory.Value()) >> 30,
@@ -316,14 +316,14 @@ func (h *Handler) GetApiV1RegionsRegionNameImages(w http.ResponseWriter, r *http
 	// Apply ordering guarantees.
 	sort.Stable(result)
 
-	out := make(generated.OpenstackImages, 0, len(result))
+	out := make(generated.Images, 0, len(result))
 
 	for _, r := range result {
-		out = append(out, generated.OpenstackImage{
+		out = append(out, generated.Image{
 			Name:     r.Name,
 			Created:  r.Created,
 			Modified: r.Modified,
-			Versions: generated.OpenstackImageVersions{
+			Versions: generated.ImageVersions{
 				Kubernetes: r.KubernetesVersion,
 			},
 		})
