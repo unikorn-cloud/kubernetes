@@ -309,10 +309,6 @@ func (c *Client) Update(ctx context.Context, projectName generated.ProjectNamePa
 	temp.Spec = required.Spec
 
 	/*
-		temp.Spec.Openstack.CACert = resource.Spec.Openstack.CACert
-		temp.Spec.Openstack.Cloud = resource.Spec.Openstack.Cloud
-		temp.Spec.Openstack.CloudConfig = resource.Spec.Openstack.CloudConfig
-
 		temp.Spec.ControlPlane.ServerGroupID = resource.Spec.ControlPlane.ServerGroupID
 	*/
 
