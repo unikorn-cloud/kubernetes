@@ -565,31 +565,6 @@ func (in *KubernetesClusterFeaturesSpec) DeepCopyInto(out *KubernetesClusterFeat
 		*out = new(bool)
 		**out = **in
 	}
-	if in.Ingress != nil {
-		in, out := &in.Ingress, &out.Ingress
-		*out = new(bool)
-		**out = **in
-	}
-	if in.CertManager != nil {
-		in, out := &in.CertManager, &out.CertManager
-		*out = new(bool)
-		**out = **in
-	}
-	if in.KubernetesDashboard != nil {
-		in, out := &in.KubernetesDashboard, &out.KubernetesDashboard
-		*out = new(bool)
-		**out = **in
-	}
-	if in.FileStorage != nil {
-		in, out := &in.FileStorage, &out.FileStorage
-		*out = new(bool)
-		**out = **in
-	}
-	if in.Prometheus != nil {
-		in, out := &in.Prometheus, &out.Prometheus
-		*out = new(bool)
-		**out = **in
-	}
 	if in.NvidiaOperator != nil {
 		in, out := &in.NvidiaOperator, &out.NvidiaOperator
 		*out = new(bool)

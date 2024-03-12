@@ -90,7 +90,7 @@ spec:
   tags:
   - infrastructure
   versions:
-  - version: v0.1.10
+  - version: v0.1.11
     repo: https://unikorn-cloud.github.io/helm-cluster-api
     chart: cluster-api
     interface: 1.0.0
@@ -139,7 +139,7 @@ spec:
   tags:
   - infrastructure
   versions:
-  - version: v0.3.26
+  - version: v0.3.27
     repo: https://unikorn-cloud.github.io/helm-cluster-api
     chart: cluster-api-cluster-openstack
     createNamespace: true
@@ -331,8 +331,6 @@ spec:
     chart: ingress-nginx
     createNamespace: true
     parameters:
-    - name: controller.service.annotations.unikorn\.eschercloud\.ai/ingress-endpoint
-      value: 'true'
     - name: controller.kind
       value: DaemonSet
     - name: controller.enableAnnotationValidations

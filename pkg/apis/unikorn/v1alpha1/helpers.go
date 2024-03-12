@@ -230,31 +230,6 @@ func (c *KubernetesCluster) AutoscalingEnabled() bool {
 	return c.Spec.Features != nil && c.Spec.Features.Autoscaling != nil && *c.Spec.Features.Autoscaling
 }
 
-// IngressEnabled indicates whether an ingress controller is required.
-func (c *KubernetesCluster) IngressEnabled() bool {
-	return c.Spec.Features != nil && c.Spec.Features.Ingress != nil && *c.Spec.Features.Ingress
-}
-
-// CertManagerEnabled indicates whether cert-manager is required.
-func (c *KubernetesCluster) CertManagerEnabled() bool {
-	return c.Spec.Features != nil && c.Spec.Features.CertManager != nil && *c.Spec.Features.CertManager
-}
-
-// KubernetesDashboardEnabled indicates whether the Kubernetes dashboard is required.
-func (c *KubernetesCluster) KubernetesDashboardEnabled() bool {
-	return c.Spec.Features != nil && c.Spec.Features.KubernetesDashboard != nil && *c.Spec.Features.KubernetesDashboard
-}
-
-// FileStorageEnabled indicates whether a POSIX file storage CSI is required.
-func (c *KubernetesCluster) FileStorageEnabled() bool {
-	return c.Spec.Features != nil && c.Spec.Features.FileStorage != nil && *c.Spec.Features.FileStorage
-}
-
-// PrometheusEnabled indicates whether the Prometheus Operator is required.
-func (c *KubernetesCluster) PrometheusEnabled() bool {
-	return c.Spec.Features != nil && c.Spec.Features.Prometheus != nil && *c.Spec.Features.Prometheus
-}
-
 // NvidiaOperatorEnabled indicates whether to install the Nvidia GPU operator.
 func (c *KubernetesCluster) NvidiaOperatorEnabled() bool {
 	return c.Spec.Features != nil && c.Spec.Features.NvidiaOperator != nil && *c.Spec.Features.NvidiaOperator

@@ -187,51 +187,6 @@ func (c *Client) GetKubeconfig(ctx context.Context, projectName generated.Projec
 }
 
 /*
-// createClientConfig creates an Openstack client configuration from the API.
-func (c *Client) createClientConfig(ctx context.Context, provider *openstack.Openstack, controlPlane *controlplane.Meta, name string) ([]byte, string, error) {
-	// Name is fully qualified to avoid namespace clashes with control planes sharing
-	// the same project.
-	applicationCredentialName := controlPlane.Name + "-" + name
-
-	// Find and delete and existing credential.
-	if _, err := provider.GetApplicationCredential(ctx, applicationCredentialName); err != nil {
-		if !errors.IsHTTPNotFound(err) {
-			return nil, "", err
-		}
-	} else {
-		if err := provider.DeleteApplicationCredential(ctx, applicationCredentialName); err != nil {
-			return nil, "", err
-		}
-	}
-
-	ac, err := provider.CreateApplicationCredential(ctx, applicationCredentialName)
-	if err != nil {
-		return nil, "", err
-	}
-
-	cloud := "cloud"
-
-	clientConfig := &clientconfig.Clouds{
-		Clouds: map[string]clientconfig.Cloud{
-			cloud: {
-				AuthType: clientconfig.AuthV3ApplicationCredential,
-				AuthInfo: &clientconfig.AuthInfo{
-					AuthURL:                     c.authenticator.Keystone.Endpoint(),
-					ApplicationCredentialID:     ac.ID,
-					ApplicationCredentialSecret: ac.Secret,
-				},
-			},
-		},
-	}
-
-	clientConfigYAML, err := yaml.Marshal(clientConfig)
-	if err != nil {
-		return nil, "", errors.OAuth2ServerError("unable to create cloud config").WithError(err)
-	}
-
-	return clientConfigYAML, cloud, nil
-}
-
 // createServerGroup creates an OpenStack server group.
 func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Openstack, controlPlane *controlplane.Meta, name, kind string) (string, error) {
 	// Name is fully qualified to avoid namespace clashes with control planes sharing
@@ -280,26 +235,6 @@ func (c *Client) Create(ctx context.Context, projectName generated.ProjectNamePa
 	if err := provider.ConfigureCluster(ctx, cluster); err != nil {
 		return err
 	}
-
-	/*
-		clientConfig, cloud, err := c.createClientConfig(ctx, provider, controlPlane, options.Name)
-		if err != nil {
-			return err
-		}
-
-		serverGroupID, err := c.createServerGroup(ctx, provider, controlPlane, options.Name, "control-plane")
-		if err != nil {
-			return err
-		}
-
-		// TODO: should allow a private/self-signed CA via the API, or perhaps provide a
-		// default.
-		cluster.Spec.Openstack.Cloud = &cloud
-		cluster.Spec.Openstack.CloudConfig = &clientConfig
-
-		cluster.Spec.ControlPlane.ServerGroupID = &serverGroupID
-
-	*/
 
 	if err := c.client.Create(ctx, cluster); err != nil {
 		// TODO: we can do a cached lookup to save the API traffic.

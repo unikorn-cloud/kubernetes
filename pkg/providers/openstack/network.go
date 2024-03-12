@@ -19,7 +19,6 @@ package openstack
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -32,10 +31,6 @@ import (
 
 	"github.com/unikorn-cloud/core/pkg/util/cache"
 	"github.com/unikorn-cloud/unikorn/pkg/constants"
-)
-
-var (
-	ErrNoMatchingResource = errors.New("unable to find a matching resource")
 )
 
 // NetworkClient wraps the generic client because gophercloud is unsafe.
@@ -102,7 +97,7 @@ func (c *NetworkClient) defaultExternalNetwork(ctx context.Context) (*networks.N
 	}
 
 	if len(externalNetworks) == 0 {
-		return nil, fmt.Errorf("%w: default external network", ErrNoMatchingResource)
+		return nil, fmt.Errorf("%w: default external network", ErrResourceNotFound)
 	}
 
 	return &externalNetworks[0], nil

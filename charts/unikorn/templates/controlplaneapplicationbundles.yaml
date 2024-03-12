@@ -1,9 +1,9 @@
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: ControlPlaneApplicationBundle
 metadata:
-  name: control-plane-1.2.0
+  name: control-plane-1.0.0
 spec:
-  version: 1.2.0
+  version: 1.0.0
   applications:
   - name: vcluster
     reference:
@@ -19,4 +19,4 @@ spec:
     reference:
       kind: HelmApplication
       name: cluster-api
-      version: v0.1.10
+      version: v0.1.11

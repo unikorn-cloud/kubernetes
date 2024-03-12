@@ -20,7 +20,7 @@ spec:
     - jsonPath: .spec.applicationBundle
       name: bundle
       type: string
-    - jsonPath: .spec.controlPlane.version
+    - jsonPath: .spec.version
       name: version
       type: string
     - jsonPath: .spec.controlPlane.image
@@ -303,27 +303,9 @@ spec:
                     description: Autoscaling, if true, provisions a cluster autoscaler
                       and allows workload pools to specify autoscaling configuration.
                     type: boolean
-                  certManager:
-                    description: CertManager, if true, provisions cert-manager.
-                    type: boolean
-                  fileStorage:
-                    description: FileStorage, if true, enables a POSIX read/write
-                      many file storage.
-                    type: boolean
-                  ingress:
-                    description: Ingress, if true, provisions an Nginx ingress controller.
-                    type: boolean
-                  kubernetesDashboard:
-                    description: KubernetesDashboard, if true, provisions the kubernetes
-                      dashboard. Clients must also enable the Ingress and CertManager
-                      features.
-                    type: boolean
                   nvidiaOperator:
                     description: NvidiaOperator, if false do not install the Nvidia
                       Operator, otherwise install if GPU flavors are detected
-                    type: boolean
-                  prometheus:
-                    description: Prometheus, if true, installs the Prometheus Operator.
                     type: boolean
                 type: object
               network:

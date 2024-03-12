@@ -19,22 +19,27 @@ package openstack
 
 import (
 	"context"
+	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/applicationcredentials"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/unikorn-cloud/core/pkg/util/cache"
 	"github.com/unikorn-cloud/unikorn/pkg/constants"
 )
 
 // IdentityClient wraps up gophercloud identity management.
 type IdentityClient struct {
 	client *gophercloud.ServiceClient
+
+	roleCache *cache.TimeoutCache[[]roles.Role]
 }
 
 // NewIdentityClient returns a new identity client.
@@ -50,7 +55,8 @@ func NewIdentityClient(ctx context.Context, provider CredentialProvider) (*Ident
 	}
 
 	client := &IdentityClient{
-		client: identity,
+		client:    identity,
+		roleCache: cache.New[[]roles.Role](time.Hour),
 	}
 
 	return client, nil
@@ -155,6 +161,23 @@ func (c *IdentityClient) CreateToken(ctx context.Context, options CreateTokenOpt
 	return token, user, nil
 }
 
+// CreateProject creates the named project.
+func (c *IdentityClient) CreateProject(ctx context.Context, domainID, name string, tags []string) (*projects.Project, error) {
+	tracer := otel.GetTracerProvider().Tracer(constants.Application)
+
+	_, span := tracer.Start(ctx, "/identity/v3/auth/projects", trace.WithSpanKind(trace.SpanKindClient))
+	defer span.End()
+
+	// TODO: pass ID in from configuration.
+	opts := &projects.CreateOpts{
+		DomainID: domainID,
+		Name:     name,
+		Tags:     tags,
+	}
+
+	return projects.Create(c.client, opts).Extract()
+}
+
 // ListAvailableProjects lists projects that an authenticated (but unscoped) user can
 // scope to.
 func (c *IdentityClient) ListAvailableProjects(ctx context.Context) ([]projects.Project, error) {
@@ -174,6 +197,52 @@ func (c *IdentityClient) ListAvailableProjects(ctx context.Context) ([]projects.
 	}
 
 	return items, nil
+}
+
+// ListRoles grabs a set of roles that are on the provider.
+func (c *IdentityClient) ListRoles(ctx context.Context) ([]roles.Role, error) {
+	if result, ok := c.roleCache.Get(); ok {
+		return result, nil
+	}
+
+	tracer := otel.GetTracerProvider().Tracer(constants.Application)
+
+	_, span := tracer.Start(ctx, "/identity/v3/auth/roles", trace.WithSpanKind(trace.SpanKindClient))
+	defer span.End()
+
+	page, err := roles.List(c.client, &roles.ListOpts{}).AllPages()
+	if err != nil {
+		return nil, err
+	}
+
+	items, err := roles.ExtractRoles(page)
+	if err != nil {
+		return nil, err
+	}
+
+	c.roleCache.Set(items)
+
+	return items, nil
+}
+
+// CreateRoleAssignment creates a role between a user and a project.
+func (c *IdentityClient) CreateRoleAssignment(ctx context.Context, userID, projectID, roleID string) error {
+	tracer := otel.GetTracerProvider().Tracer(constants.Application)
+
+	_, span := tracer.Start(ctx, "/identity/v3/auth/role_assignments", trace.WithSpanKind(trace.SpanKindClient))
+	defer span.End()
+
+	opts := roles.AssignOpts{
+		UserID:    userID,
+		ProjectID: projectID,
+	}
+
+	err := roles.Assign(c.client, roleID, opts).ExtractErr()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // ListApplicationCredentials lists application credentials for the scoped user.

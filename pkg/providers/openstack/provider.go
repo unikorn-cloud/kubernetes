@@ -23,13 +23,21 @@ import (
 	"reflect"
 	"sync"
 
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/applicationcredentials"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
+	"github.com/gophercloud/utils/openstack/clientconfig"
+
+	"github.com/unikorn-cloud/core/pkg/constants"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/providers"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/rand"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/yaml"
 )
 
 var (
@@ -45,6 +53,10 @@ type Provider struct {
 
 	// secret is the current region secret.
 	secret *corev1.Secret
+
+	domainID string
+	userID   string
+	password string
 
 	// DO NOT USE DIRECTLY, CALL AN ACCESSOR.
 	_identity     *IdentityClient
@@ -107,14 +119,15 @@ func (p *Provider) serviceClientRefresh(ctx context.Context) error {
 		return nil
 	}
 
-	// Save the current configuration for checking next time.
-	p.region = region
-	p.secret = secret
-
 	// Create the core credential provider.
-	username, ok := secret.Data["username"]
+	domainID, ok := secret.Data["domain-id"]
 	if !ok {
-		return fmt.Errorf("%w: username", ErrKeyUndefined)
+		return fmt.Errorf("%w: domain-id", ErrKeyUndefined)
+	}
+
+	userID, ok := secret.Data["user-id"]
+	if !ok {
+		return fmt.Errorf("%w: user-id", ErrKeyUndefined)
 	}
 
 	password, ok := secret.Data["password"]
@@ -122,7 +135,8 @@ func (p *Provider) serviceClientRefresh(ctx context.Context) error {
 		return fmt.Errorf("%w: password", ErrKeyUndefined)
 	}
 
-	providerClient := NewPasswordProvider(region.Spec.Openstack.Endpoint, string(username), string(password))
+	// Pass in an empty string to use the default project.
+	providerClient := NewPasswordProvider(region.Spec.Openstack.Endpoint, string(userID), string(password), "")
 
 	// Create the clients.
 	identity, err := NewIdentityClient(ctx, providerClient)
@@ -150,6 +164,15 @@ func (p *Provider) serviceClientRefresh(ctx context.Context) error {
 		return err
 	}
 
+	// Save the current configuration for checking next time.
+	p.region = region
+	p.secret = secret
+
+	p.domainID = string(domainID)
+	p.userID = string(userID)
+	p.password = string(password)
+
+	// Seve the clients
 	p._identity = identity
 	p._compute = compute
 	p._image = image
@@ -159,7 +182,6 @@ func (p *Provider) serviceClientRefresh(ctx context.Context) error {
 	return nil
 }
 
-//nolint:unused
 func (p *Provider) identity(ctx context.Context) (*IdentityClient, error) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
@@ -282,8 +304,163 @@ func (p *Provider) Images(ctx context.Context) (providers.ImageList, error) {
 	return result, nil
 }
 
+const (
+	// ProjectIDAnnotation records the project ID created for a cluster.
+	ProjectIDAnnotation = "openstack.unikorn-cloud.org/project-id"
+
+	// Projects are randomly named to avoid clashes, so we need to add some tags
+	// in order to be able to reason about who they really belong to.
+	OrganizationTag = "organization"
+	ProjectTag      = "project"
+	ControlPlaneTag = "controlplane"
+	ClusterTag      = "cluster"
+)
+
+// provisionProject creates a project per-cluster.  Cluster API provider Openstack is
+// somewhat broken in that networks can alias and cause all kinds of disasters, so it's
+// safest to have one cluster in one project so it has its own namespace.
+func (p *Provider) provisionProject(ctx context.Context, identityService *IdentityClient, cluster *unikornv1.KubernetesCluster) (*projects.Project, error) {
+	name := "unikorn-" + rand.String(8)
+
+	// Set some tags so we can audit who owns this projects.
+	tags := []string{
+		OrganizationTag + "=" + cluster.Labels[constants.OrganizationLabel],
+		ProjectTag + "=" + cluster.Labels[constants.ProjectLabel],
+		ControlPlaneTag + "=" + cluster.Labels[constants.ControlPlaneLabel],
+		ClusterTag + "=" + cluster.Name,
+	}
+
+	project, err := identityService.CreateProject(ctx, p.domainID, name, tags)
+	if err != nil {
+		return nil, err
+	}
+
+	if cluster.Annotations == nil {
+		cluster.Annotations = map[string]string{}
+	}
+
+	// Annotate the cluster with the project ID so we know a) we have created it
+	// and b) we can find it to make modifications e.g. add tags for garbage collection.
+	cluster.Annotations[ProjectIDAnnotation] = project.ID
+
+	return project, nil
+}
+
+// roleNameToID maps from something human readable to something Openstack will operate with
+// because who doesn't like extra, slow, API calls...
+func roleNameToID(roles []roles.Role, name string) (string, error) {
+	for _, role := range roles {
+		if role.Name == name {
+			return role.ID, nil
+		}
+	}
+
+	return "", fmt.Errorf("%w: role %s", ErrResourceNotFound, name)
+}
+
+// TODO: make this configurable, this is just a default.
+func (p *Provider) getRequiredRoles() []string {
+	defaultRoles := []string{
+		"member",
+		"load-balancer_member",
+	}
+
+	return defaultRoles
+}
+
+// provisionProjectRoles creates a binding between our service account and the project
+// with the required roles to provision an application credential that will allow cluster
+// creation, deletion and life-cycle management.
+func (p *Provider) provisionProjectRoles(ctx context.Context, identityService *IdentityClient, project *projects.Project) error {
+	allRoles, err := identityService.ListRoles(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, name := range p.getRequiredRoles() {
+		roleID, err := roleNameToID(allRoles, name)
+		if err != nil {
+			return err
+		}
+
+		if err := identityService.CreateRoleAssignment(ctx, p.userID, project.ID, roleID); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (p *Provider) provisionApplicationCredential(ctx context.Context, project *projects.Project) (*applicationcredentials.ApplicationCredential, error) {
+	// Rescope to the project...
+	providerClient := NewPasswordProvider(p.region.Spec.Openstack.Endpoint, p.userID, p.password, project.ID)
+
+	projectScopedIdentity, err := NewIdentityClient(ctx, providerClient)
+	if err != nil {
+		return nil, err
+	}
+
+	// Application crdentials are scoped to the user, not the project, so the name needs
+	// to be unique, so just use the project name.
+	return projectScopedIdentity.CreateApplicationCredential(ctx, p.userID, project.Name, "IaaS lifecycle management", p.getRequiredRoles())
+}
+
+func (p *Provider) createClientConfig(cluster *unikornv1.KubernetesCluster, applicationCredential *applicationcredentials.ApplicationCredential) error {
+	cloud := "cloud"
+
+	clientConfig := &clientconfig.Clouds{
+		Clouds: map[string]clientconfig.Cloud{
+			cloud: {
+				AuthType: clientconfig.AuthV3ApplicationCredential,
+				AuthInfo: &clientconfig.AuthInfo{
+					AuthURL:                     p.region.Spec.Openstack.Endpoint,
+					ApplicationCredentialID:     applicationCredential.ID,
+					ApplicationCredentialSecret: applicationCredential.Secret,
+				},
+			},
+		},
+	}
+
+	clientConfigYAML, err := yaml.Marshal(clientConfig)
+	if err != nil {
+		return err
+	}
+
+	if cluster.Spec.Openstack == nil {
+		cluster.Spec.Openstack = &unikornv1.KubernetesClusterOpenstackSpec{}
+	}
+
+	cluster.Spec.Openstack.Cloud = &cloud
+	cluster.Spec.Openstack.CloudConfig = &clientConfigYAML
+
+	return nil
+}
+
 // ConfigureCluster does any provider specific configuration for a cluster.
 func (p *Provider) ConfigureCluster(ctx context.Context, cluster *unikornv1.KubernetesCluster) error {
+	identityService, err := p.identity(ctx)
+	if err != nil {
+		return err
+	}
+
+	project, err := p.provisionProject(ctx, identityService, cluster)
+	if err != nil {
+		return err
+	}
+
+	if err := p.provisionProjectRoles(ctx, identityService, project); err != nil {
+		return err
+	}
+
+	applicationCredential, err := p.provisionApplicationCredential(ctx, project)
+	if err != nil {
+		return err
+	}
+
+	if err := p.createClientConfig(cluster, applicationCredential); err != nil {
+		return err
+	}
+
 	networkService, err := p.network(ctx)
 	if err != nil {
 		return err
