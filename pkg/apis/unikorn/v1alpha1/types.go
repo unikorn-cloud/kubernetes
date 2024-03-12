@@ -336,15 +336,15 @@ type ProjectStatus struct {
 	Conditions []unikornv1core.Condition `json:"conditions,omitempty"`
 }
 
-// ControlPlaneList is a typed list of control planes.
+// ClusterManagerList is a typed list of cluster managers.
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-type ControlPlaneList struct {
+type ClusterManagerList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []ControlPlane `json:"items"`
+	Items           []ClusterManager `json:"items"`
 }
 
-// ControlPlane is an abstraction around resource provisioning, for example
+// ClusterManager is an abstraction around resource provisioning, for example
 // it may contain a provider like Cluster API that can provision KubernetesCluster
 // resources.
 // +genclient
@@ -352,21 +352,20 @@ type ControlPlaneList struct {
 // +kubebuilder:resource:scope=Namespaced,categories=unikorn
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="bundle",type="string",JSONPath=".spec.applicationBundle"
-// +kubebuilder:printcolumn:name="namespace",type="string",JSONPath=".status.namespace"
 // +kubebuilder:printcolumn:name="status",type="string",JSONPath=".status.conditions[?(@.type==\"Available\")].reason"
 // +kubebuilder:printcolumn:name="age",type="date",JSONPath=".metadata.creationTimestamp"
-type ControlPlane struct {
+type ClusterManager struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              ControlPlaneSpec   `json:"spec"`
-	Status            ControlPlaneStatus `json:"status,omitempty"`
+	Spec              ClusterManagerSpec   `json:"spec"`
+	Status            ClusterManagerStatus `json:"status,omitempty"`
 }
 
-// ControlPlaneSpec defines any control plane specific options.
-type ControlPlaneSpec struct {
+// ClusterManagerSpec defines any cluster manager specific options.
+type ClusterManagerSpec struct {
 	// Pause, if true, will inhibit reconciliation.
 	Pause bool `json:"pause,omitempty"`
-	// ApplicationBundle defines the applications used to create the control plane.
+	// ApplicationBundle defines the applications used to create the cluster manager.
 	// Change this to a new bundle to start an upgrade.
 	ApplicationBundle *string `json:"applicationBundle"`
 	// ApplicationBundleAutoUpgrade enables automatic upgrade of application bundles.
@@ -377,17 +376,14 @@ type ControlPlaneSpec struct {
 	ApplicationBundleAutoUpgrade *ApplicationBundleAutoUpgradeSpec `json:"applicationBundleAutoUpgrade,omitempty"`
 }
 
-// ControlPlaneStatus defines the status of the project.
-type ControlPlaneStatus struct {
-	// Namespace defines the namespace a control plane resides in.
-	Namespace string `json:"namespace,omitempty"`
-
-	// Current service state of a control plane.
+// ClusterManagerStatus defines the status of the project.
+type ClusterManagerStatus struct {
+	// Current service state of a cluster manager.
 	Conditions []unikornv1core.Condition `json:"conditions,omitempty"`
 }
 
 // MachineGeneric contains common things across all pool types, including
-// Kubernetes control plane nodes and workload pools.
+// Kubernetes cluster manager nodes and workload pools.
 type MachineGeneric struct {
 	// Image is the OpenStack Glance image to deploy with.
 	Image *string `json:"image"`
@@ -403,7 +399,7 @@ type MachineGeneric struct {
 	// +kubebuilder:validation:Minimum=0
 	// +kubebuilder:default=3
 	Replicas *int `json:"replicas,omitempty"`
-	// ServerGroupID sets the server group of the control plane in
+	// ServerGroupID sets the server group of the cluster manager in
 	// order to maintain anti-affinity rules.
 	ServerGroupID *string `json:"serverGroupId,omitempty"`
 }
@@ -496,9 +492,6 @@ type KubernetesClusterList struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="bundle",type="string",JSONPath=".spec.applicationBundle"
 // +kubebuilder:printcolumn:name="version",type="string",JSONPath=".spec.version"
-// +kubebuilder:printcolumn:name="image",type="string",JSONPath=".spec.controlPlane.image"
-// +kubebuilder:printcolumn:name="flavor",type="string",JSONPath=".spec.controlPlane.flavor"
-// +kubebuilder:printcolumn:name="replicas",type="string",JSONPath=".spec.controlPlane.replicas"
 // +kubebuilder:printcolumn:name="status",type="string",JSONPath=".status.conditions[?(@.type==\"Available\")].reason"
 // +kubebuilder:printcolumn:name="age",type="date",JSONPath=".metadata.creationTimestamp"
 type KubernetesCluster struct {
@@ -514,6 +507,8 @@ type KubernetesClusterSpec struct {
 	Pause bool `json:"pause,omitempty"`
 	// Region to provision the cluster in.
 	Region string `json:"region"`
+	// ClusterManager that provides lifecycle management for the cluster.
+	ClusterManager string `json:"clusterManager"`
 	// Version is the Kubernetes version to install.  For performance
 	// reasons this should match what is already pre-installed on the
 	// provided image.
@@ -524,7 +519,7 @@ type KubernetesClusterSpec struct {
 	Network *KubernetesClusterNetworkSpec `json:"network"`
 	// API defines Kubernetes API specific options.
 	API *KubernetesClusterAPISpec `json:"api,omitempty"`
-	// ControlPlane defines the control plane topology.
+	// ControlPlane defines the cluster manager topology.
 	ControlPlane *KubernetesClusterControlPlaneSpec `json:"controlPlane"`
 	// WorkloadPools defines the workload cluster topology.
 	WorkloadPools *KubernetesClusterWorkloadPoolsSpec `json:"workloadPools"`
@@ -545,14 +540,14 @@ type KubernetesClusterOpenstackSpec struct {
 	// CACert is the CA used to trust the Openstack endpoint.
 	CACert *[]byte `json:"caCert,omitempty"`
 	// CloudConfig is a base64 encoded minimal clouds.yaml file for
-	// use by the ControlPlane to provision the IaaS bits.
+	// use by the ClusterManager to provision the IaaS bits.
 	CloudConfig *[]byte `json:"cloudConfig"`
 	// Cloud is the clouds.yaml key that identifes the configuration
 	// to use for provisioning.
 	Cloud *string `json:"cloud"`
 	// SSHKeyName is the SSH key name to use to provide access to the VMs.
 	SSHKeyName *string `json:"sshKeyName,omitempty"`
-	// FailureDomain is the global failure domain to use.  The control plane
+	// FailureDomain is the global failure domain to use.  The cluster manager
 	// will always be deployed in this region.  Individual worload pools will
 	// default to this, but can override it.
 	FailureDomain *string `json:"failureDomain,omitempty"`
@@ -621,18 +616,18 @@ type KubernetesClusterStatus struct {
 	Conditions []unikornv1core.Condition `json:"conditions,omitempty"`
 }
 
-// ControlPlaneApplicationBundleList defines a list of application bundles.
+// ClusterManagerApplicationBundleList defines a list of application bundles.
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-type ControlPlaneApplicationBundleList struct {
+type ClusterManagerApplicationBundleList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []ControlPlaneApplicationBundle `json:"items"`
+	Items           []ClusterManagerApplicationBundle `json:"items"`
 }
 
-// ControlPlaneApplicationBundle defines a bundle of applications related with a particular custom
-// resource e.g. a ControlPlane has vcluster, cert-manager and cluster-api applications
+// ClusterManagerApplicationBundle defines a bundle of applications related with a particular custom
+// resource e.g. a ClusterManager has vcluster, cert-manager and cluster-api applications
 // associated with it.  This forms the backbone of upgrades by allowing bundles to be
-// switched out in control planes etc.
+// switched out in cluster managers etc.
 // +genclient
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -641,7 +636,7 @@ type ControlPlaneApplicationBundleList struct {
 // +kubebuilder:printcolumn:name="preview",type="string",JSONPath=".spec.preview"
 // +kubebuilder:printcolumn:name="end of life",type="string",JSONPath=".spec.endOfLife"
 // +kubebuilder:printcolumn:name="age",type="date",JSONPath=".metadata.creationTimestamp"
-type ControlPlaneApplicationBundle struct {
+type ClusterManagerApplicationBundle struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	Spec              ApplicationBundleSpec   `json:"spec"`
@@ -657,9 +652,9 @@ type KubernetesClusterApplicationBundleList struct {
 }
 
 // KubernetesClusterApplicationBundle defines a bundle of applications related with a particular custom
-// resource e.g. a ControlPlane has vcluster, cert-manager and cluster-api applications
+// resource e.g. a ClusterManager has vcluster, cert-manager and cluster-api applications
 // associated with it.  This forms the backbone of upgrades by allowing bundles to be
-// switched out in control planes etc.
+// switched out in cluster managers etc.
 // +genclient
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

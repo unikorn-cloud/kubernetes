@@ -40,8 +40,8 @@ func NewClient(client client.Client) *Client {
 	}
 }
 
-func (c *Client) GetControlPlane(ctx context.Context, name string) (*unikornv1.ControlPlaneApplicationBundle, error) {
-	result := &unikornv1.ControlPlaneApplicationBundle{}
+func (c *Client) GetClusterManager(ctx context.Context, name string) (*unikornv1.ClusterManagerApplicationBundle, error) {
+	result := &unikornv1.ClusterManagerApplicationBundle{}
 
 	if err := c.client.Get(ctx, client.ObjectKey{Name: name}, result); err != nil {
 		return nil, errors.HTTPNotFound().WithError(err)
@@ -60,14 +60,14 @@ func (c *Client) GetKubernetesCluster(ctx context.Context, name string) (*unikor
 	return result, nil
 }
 
-func (c *Client) ListControlPlane(ctx context.Context) (*unikornv1.ControlPlaneApplicationBundleList, error) {
-	result := &unikornv1.ControlPlaneApplicationBundleList{}
+func (c *Client) ListClusterManager(ctx context.Context) (*unikornv1.ClusterManagerApplicationBundleList, error) {
+	result := &unikornv1.ClusterManagerApplicationBundleList{}
 
 	if err := c.client.List(ctx, result); err != nil {
 		return nil, errors.OAuth2ServerError("failed to list application bundles").WithError(err)
 	}
 
-	slices.SortStableFunc(result.Items, unikornv1.CompareControlPlaneApplicationBundle)
+	slices.SortStableFunc(result.Items, unikornv1.CompareClusterManagerApplicationBundle)
 
 	return result, nil
 }

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: unikorn-project-manager
+  name: unikorn-cluster-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 {{- with ( include "unikorn.imagePullSecrets" . ) }}
@@ -12,47 +12,62 @@ imagePullSecrets:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: unikorn-project-manager
+  name: unikorn-cluster-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 rules:
-# Manage projects (my job).
+# Manage kubernetes clusters (my job).
 - apiGroups:
   - unikorn-cloud.org
   resources:
-  - projects
+  - kubernetesclusters
   verbs:
   - list
   - get
+  - patch
   - watch
   - update
-  - patch
 - apiGroups:
   - unikorn-cloud.org
   resources:
-  - projects/status
+  - kubernetesclusters/status
   verbs:
   - update
+# Get my owning control plane.
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - clustermanagers
+  verbs:
+  - list
+  - watch
 - apiGroups:
   - ""
   resources:
   - namespaces
   verbs:
-  - create
-  - get
   - list
   - watch
-  - delete
-  - update
-# Manage projects (cascading deletion).
+# Get application bundles
 - apiGroups:
   - unikorn-cloud.org
   resources:
-  - controlplanes
+  - helmapplications
+  - kubernetesclusterapplicationbundles
   verbs:
+  - list
+  - watch
+# ArgoCD integration.
+- apiGroups:
+  - argoproj.io
+  resources:
+  - applications
+  verbs:
+  - create
   - list
   - get
   - watch
+  - patch
   - delete
 # ArgoCD integration (access to API secret).
 - apiGroups:
@@ -62,11 +77,14 @@ rules:
   verbs:
   - list
   - watch
+  - create
+  - patch
+  - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: unikorn-project-manager
+  name: unikorn-cluster-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 rules:
@@ -90,52 +108,52 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: unikorn-project-manager
+  name: unikorn-cluster-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 subjects:
 - kind: ServiceAccount
   namespace: {{ .Release.Namespace }}
-  name: unikorn-project-manager
+  name: unikorn-cluster-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: unikorn-project-manager
+  name: unikorn-cluster-controller
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: unikorn-project-manager
+  name: unikorn-cluster-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 subjects:
 - kind: ServiceAccount
   namespace: {{ .Release.Namespace }}
-  name: unikorn-project-manager
+  name: unikorn-cluster-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: unikorn-project-manager
+  name: unikorn-cluster-controller
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: unikorn-project-manager
+  name: unikorn-cluster-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: unikorn-project-manager
+      app: unikorn-cluster-controller
   template:
     metadata:
       labels:
-        app: unikorn-project-manager
+        app: unikorn-cluster-controller
     spec:
       containers:
-      - name: unikorn-project-manager
-        image: {{ include "unikorn.projectManagerImage" . }}
+      - name: unikorn-cluster-controller
+        image: {{ include "unikorn.clusterControllerImage" . }}
         ports:
         - name: prometheus
           containerPort: 8080
@@ -148,20 +166,20 @@ spec:
             memory: 100Mi
         securityContext:
           readOnlyRootFilesystem: true
-      serviceAccountName: unikorn-project-manager
+      serviceAccountName: unikorn-cluster-controller
       securityContext:
         runAsNonRoot: true
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: unikorn-project-manager
+  name: unikorn-cluster-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
-    {{- include "unikorn.prometheusLabels" (dict "job" "unikorn-project-manager") | nindent 4 }}
+    {{- include "unikorn.prometheusLabels" (dict "job" "unikorn-cluster-controller") | nindent 4 }}
 spec:
   selector:
-    app: unikorn-project-manager
+    app: unikorn-cluster-controller
   ports:
   - name: prometheus
     port: 8080

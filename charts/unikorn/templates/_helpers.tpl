@@ -72,20 +72,20 @@ Create the container images
 {{- end }}
 {{- end }}
 
-{{- define "unikorn.organizationManagerImage" -}}
-{{- .Values.organizationManager.image | default (printf "%s/unikorn-organization-manager:%s" (include "unikorn.defaultRepositoryPath" .) (.Values.tag | default .Chart.Version)) }}
+{{- define "unikorn.organizationControllerImage" -}}
+{{- .Values.organizationController.image | default (printf "%s/unikorn-organization-controller:%s" (include "unikorn.defaultRepositoryPath" .) (.Values.tag | default .Chart.Version)) }}
 {{- end }}
 
-{{- define "unikorn.projectManagerImage" -}}
-{{- .Values.projectManager.image | default (printf "%s/unikorn-project-manager:%s" (include "unikorn.defaultRepositoryPath" .) (.Values.tag | default .Chart.Version)) }}
+{{- define "unikorn.projectControllerImage" -}}
+{{- .Values.projectController.image | default (printf "%s/unikorn-project-controller:%s" (include "unikorn.defaultRepositoryPath" .) (.Values.tag | default .Chart.Version)) }}
 {{- end }}
 
-{{- define "unikorn.controlPlaneManagerImage" -}}
-{{- .Values.controlPlaneManager.image | default (printf "%s/unikorn-control-plane-manager:%s" (include "unikorn.defaultRepositoryPath" .) (.Values.tag | default .Chart.Version)) }}
+{{- define "unikorn.clusterManagerControllerImage" -}}
+{{- .Values.clusterManagerController.image | default (printf "%s/unikorn-cluster-manager-controller:%s" (include "unikorn.defaultRepositoryPath" .) (.Values.tag | default .Chart.Version)) }}
 {{- end }}
 
-{{- define "unikorn.clusterManagerImage" -}}
-{{- .Values.clusterManager.image | default (printf "%s/unikorn-cluster-manager:%s" (include "unikorn.defaultRepositoryPath" .) (.Values.tag | default .Chart.Version)) }}
+{{- define "unikorn.clusterControllerImage" -}}
+{{- .Values.clusterController.image | default (printf "%s/unikorn-cluster-controller:%s" (include "unikorn.defaultRepositoryPath" .) (.Values.tag | default .Chart.Version)) }}
 {{- end }}
 
 {{- define "unikorn.monitorImage" -}}

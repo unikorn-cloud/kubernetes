@@ -68,7 +68,7 @@ func (c *Project) Paused() bool {
 }
 
 // Paused implements the ReconcilePauser interface.
-func (c *ControlPlane) Paused() bool {
+func (c *ClusterManager) Paused() bool {
 	return c.Spec.Pause
 }
 
@@ -83,7 +83,7 @@ func (c *Organization) StatusConditionRead(t unikornv1core.ConditionType) (*unik
 	return unikornv1core.GetCondition(c.Status.Conditions, t)
 }
 
-// StatusConditionWrite either adds or updates a condition in the control plane status.
+// StatusConditionWrite either adds or updates a condition in the cluster manager status.
 // If the condition, status and message match an existing condition the update is
 // ignored.
 func (c *Organization) StatusConditionWrite(t unikornv1core.ConditionType, status corev1.ConditionStatus, reason unikornv1core.ConditionReason, message string) {
@@ -107,7 +107,7 @@ func (c *Project) StatusConditionRead(t unikornv1core.ConditionType) (*unikornv1
 	return unikornv1core.GetCondition(c.Status.Conditions, t)
 }
 
-// StatusConditionWrite either adds or updates a condition in the control plane status.
+// StatusConditionWrite either adds or updates a condition in the cluster manager status.
 // If the condition, status and message match an existing condition the update is
 // ignored.
 func (c *Project) StatusConditionWrite(t unikornv1core.ConditionType, status corev1.ConditionStatus, reason unikornv1core.ConditionReason, message string) {
@@ -133,20 +133,20 @@ func (c *Project) ResourceLabels() (labels.Set, error) {
 
 // StatusConditionRead scans the status conditions for an existing condition whose type
 // matches.
-func (c *ControlPlane) StatusConditionRead(t unikornv1core.ConditionType) (*unikornv1core.Condition, error) {
+func (c *ClusterManager) StatusConditionRead(t unikornv1core.ConditionType) (*unikornv1core.Condition, error) {
 	return unikornv1core.GetCondition(c.Status.Conditions, t)
 }
 
-// StatusConditionWrite either adds or updates a condition in the control plane status.
+// StatusConditionWrite either adds or updates a condition in the cluster manager status.
 // If the condition, status and message match an existing condition the update is
 // ignored.
-func (c *ControlPlane) StatusConditionWrite(t unikornv1core.ConditionType, status corev1.ConditionStatus, reason unikornv1core.ConditionReason, message string) {
+func (c *ClusterManager) StatusConditionWrite(t unikornv1core.ConditionType, status corev1.ConditionStatus, reason unikornv1core.ConditionReason, message string) {
 	unikornv1core.UpdateCondition(&c.Status.Conditions, t, status, reason, message)
 }
 
 // ResourceLabels generates a set of labels to uniquely identify the resource
 // if it were to be placed in a single global namespace.
-func (c *ControlPlane) ResourceLabels() (labels.Set, error) {
+func (c *ClusterManager) ResourceLabels() (labels.Set, error) {
 	organization, ok := c.Labels[constants.OrganizationLabel]
 	if !ok {
 		return nil, ErrMissingLabel
@@ -158,20 +158,20 @@ func (c *ControlPlane) ResourceLabels() (labels.Set, error) {
 	}
 
 	labels := labels.Set{
-		constants.KindLabel:         constants.KindLabelValueControlPlane,
-		constants.OrganizationLabel: organization,
-		constants.ProjectLabel:      project,
-		constants.ControlPlaneLabel: c.Name,
+		constants.KindLabel:           constants.KindLabelValueClusterManager,
+		constants.OrganizationLabel:   organization,
+		constants.ProjectLabel:        project,
+		constants.ClusterManagerLabel: c.Name,
 	}
 
 	return labels, nil
 }
 
-func (c ControlPlane) Entropy() []byte {
+func (c ClusterManager) Entropy() []byte {
 	return []byte(c.UID)
 }
 
-func (c ControlPlane) UpgradeSpec() *ApplicationBundleAutoUpgradeSpec {
+func (c ClusterManager) UpgradeSpec() *ApplicationBundleAutoUpgradeSpec {
 	return c.Spec.ApplicationBundleAutoUpgrade
 }
 
@@ -201,16 +201,10 @@ func (c *KubernetesCluster) ResourceLabels() (labels.Set, error) {
 		return nil, ErrMissingLabel
 	}
 
-	controlPlane, ok := c.Labels[constants.ControlPlaneLabel]
-	if !ok {
-		return nil, ErrMissingLabel
-	}
-
 	labels := labels.Set{
 		constants.KindLabel:              constants.KindLabelValueKubernetesCluster,
 		constants.OrganizationLabel:      organization,
 		constants.ProjectLabel:           project,
-		constants.ControlPlaneLabel:      controlPlane,
 		constants.KubernetesClusterLabel: c.Name,
 	}
 
@@ -239,7 +233,7 @@ func CompareProject(a, b Project) int {
 	return strings.Compare(a.Name, b.Name)
 }
 
-func CompareControlPlane(a, b ControlPlane) int {
+func CompareClusterManager(a, b ClusterManager) int {
 	return strings.Compare(a.Name, b.Name)
 }
 
@@ -247,7 +241,7 @@ func CompareKubernetesCluster(a, b KubernetesCluster) int {
 	return strings.Compare(a.Name, b.Name)
 }
 
-func CompareControlPlaneApplicationBundle(a, b ControlPlaneApplicationBundle) int {
+func CompareClusterManagerApplicationBundle(a, b ClusterManagerApplicationBundle) int {
 	// TODO: while this works now, it won't unless we parse and compare as
 	// a semantic version.
 	return strings.Compare(*a.Spec.Version, *b.Spec.Version)
@@ -260,7 +254,7 @@ func CompareKubernetesClusterApplicationBundle(a, b KubernetesClusterApplication
 }
 
 // Get retrieves the named bundle.
-func (l ControlPlaneApplicationBundleList) Get(name string) *ControlPlaneApplicationBundle {
+func (l ClusterManagerApplicationBundleList) Get(name string) *ClusterManagerApplicationBundle {
 	for i := range l.Items {
 		if l.Items[i].Name == name {
 			return &l.Items[i]
@@ -282,8 +276,8 @@ func (l KubernetesClusterApplicationBundleList) Get(name string) *KubernetesClus
 
 // Upgradable returns a new list of bundles that are "stable" e.g. not end of life and
 // not a preview.
-func (l ControlPlaneApplicationBundleList) Upgradable() *ControlPlaneApplicationBundleList {
-	result := &ControlPlaneApplicationBundleList{}
+func (l ClusterManagerApplicationBundleList) Upgradable() *ClusterManagerApplicationBundleList {
+	result := &ClusterManagerApplicationBundleList{}
 
 	for _, bundle := range l.Items {
 		if bundle.Spec.Preview != nil && *bundle.Spec.Preview {

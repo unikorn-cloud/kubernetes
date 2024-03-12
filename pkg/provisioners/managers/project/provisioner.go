@@ -22,6 +22,7 @@ import (
 	"errors"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
+	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	"github.com/unikorn-cloud/core/pkg/provisioners"
 	"github.com/unikorn-cloud/core/pkg/provisioners/resource"
 	"github.com/unikorn-cloud/core/pkg/provisioners/util"
@@ -29,6 +30,8 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -90,6 +93,24 @@ func (p *Provisioner) Provision(ctx context.Context) error {
 	return nil
 }
 
+// deprovisionClusters removes any kubernetes clusters, and frees up OpenStack resources.
+func (p *Provisioner) deprovisionClusters(ctx context.Context, namespace string) error {
+	c := coreclient.StaticClientFromContext(ctx)
+
+	clusters := &unikornv1.KubernetesClusterList{}
+	if err := c.List(ctx, clusters, &client.ListOptions{Namespace: namespace}); err != nil {
+		return err
+	}
+
+	for i := range clusters.Items {
+		if err := resource.New(&clusters.Items[i]).Deprovision(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Deprovision implements the Provision interface.
 func (p *Provisioner) Deprovision(ctx context.Context) error {
 	labels, err := p.project.ResourceLabels()
@@ -105,6 +126,12 @@ func (p *Provisioner) Deprovision(ctx context.Context) error {
 			return nil
 		}
 
+		return err
+	}
+
+	// Delete clusters first as their cluster managers need to exist in order to free
+	// up th resources.
+	if err := p.deprovisionClusters(ctx, namespace.Name); err != nil {
 		return err
 	}
 

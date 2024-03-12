@@ -31,8 +31,9 @@ import (
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/vcluster"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/controlplane"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/clustermanager"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/project"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/region"
 
 	corev1 "k8s.io/api/core/v1"
@@ -135,8 +136,8 @@ func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.Ku
 }
 
 // GetKubeconfig returns the kubernetes configuation associated with a cluster.
-func (c *Client) GetKubeconfig(ctx context.Context, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, name generated.ClusterNameParameter) ([]byte, error) {
-	controlPlane, err := controlplane.NewClient(c.client).GetMetadata(ctx, projectName, controlPlaneName)
+func (c *Client) GetKubeconfig(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ClusterNameParameter) ([]byte, error) {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +148,7 @@ func (c *Client) GetKubeconfig(ctx context.Context, projectName generated.Projec
 
 	vc := vcluster.NewControllerRuntimeClient()
 
-	vclusterConfig, err := vc.RESTConfig(ctx, controlPlane.Namespace, false)
+	vclusterConfig, err := vc.RESTConfig(ctx, project.Namespace, false)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed to get control plane rest config").WithError(err)
 	}
@@ -158,7 +159,7 @@ func (c *Client) GetKubeconfig(ctx context.Context, projectName generated.Projec
 	}
 
 	clusterObjectKey := client.ObjectKey{
-		Namespace: controlPlane.Namespace,
+		Namespace: project.Namespace,
 		Name:      name,
 	}
 
@@ -188,10 +189,10 @@ func (c *Client) GetKubeconfig(ctx context.Context, projectName generated.Projec
 
 /*
 // createServerGroup creates an OpenStack server group.
-func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Openstack, controlPlane *controlplane.Meta, name, kind string) (string, error) {
+func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Openstack, project *project.Meta, name, kind string) (string, error) {
 	// Name is fully qualified to avoid namespace clashes with control planes sharing
 	// the same project.
-	serverGroupName := controlPlane.Name + "-" + name + "-" + kind
+	serverGroupName := project.Name + "-" + name + "-" + kind
 
 	// Reuse the server group if it exists, otherwise create a new one.
 	sg, err := provider.GetServerGroup(ctx, serverGroupName)
@@ -212,13 +213,24 @@ func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Open
 */
 
 // Create creates the implicit cluster indentified by the JTW claims.
-func (c *Client) Create(ctx context.Context, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, options *generated.KubernetesCluster) error {
-	controlPlane, err := controlplane.NewClient(c.client).GetOrCreateMetadata(ctx, projectName, controlPlaneName)
+func (c *Client) Create(ctx context.Context, projectName generated.ProjectNameParameter, options *generated.KubernetesCluster) error {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
 	if err != nil {
 		return err
 	}
 
-	if controlPlane.Deleting {
+	// Implicitly create the controller manager.
+	clusterManagerName := "default"
+
+	if options.ClusterManager == nil {
+		clusterManagerName = *options.ClusterManager
+	}
+
+	if _, err := clustermanager.NewClient(c.client).GetOrCreateMetadata(ctx, project.Name, clusterManagerName); err != nil {
+		return err
+	}
+
+	if project.Deleting {
 		return errors.OAuth2InvalidRequest("control plane is being deleted")
 	}
 
@@ -227,7 +239,7 @@ func (c *Client) Create(ctx context.Context, projectName generated.ProjectNamePa
 		return err
 	}
 
-	cluster, err := c.generate(ctx, provider, controlPlane, options)
+	cluster, err := c.generate(ctx, provider, project, options)
 	if err != nil {
 		return err
 	}
@@ -249,20 +261,20 @@ func (c *Client) Create(ctx context.Context, projectName generated.ProjectNamePa
 }
 
 // Delete deletes the implicit cluster indentified by the JTW claims.
-func (c *Client) Delete(ctx context.Context, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, name generated.ClusterNameParameter) error {
-	controlPlane, err := controlplane.NewClient(c.client).GetMetadata(ctx, projectName, controlPlaneName)
+func (c *Client) Delete(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ClusterNameParameter) error {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
 	if err != nil {
 		return err
 	}
 
-	if controlPlane.Deleting {
+	if project.Deleting {
 		return errors.OAuth2InvalidRequest("control plane is being deleted")
 	}
 
 	cluster := &unikornv1.KubernetesCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
-			Namespace: controlPlane.Namespace,
+			Namespace: project.Namespace,
 		},
 	}
 
@@ -278,17 +290,17 @@ func (c *Client) Delete(ctx context.Context, projectName generated.ProjectNamePa
 }
 
 // Update implements read/modify/write for the cluster.
-func (c *Client) Update(ctx context.Context, projectName generated.ProjectNameParameter, controlPlaneName generated.ControlPlaneNameParameter, name generated.ClusterNameParameter, request *generated.KubernetesCluster) error {
-	controlPlane, err := controlplane.NewClient(c.client).GetMetadata(ctx, projectName, controlPlaneName)
+func (c *Client) Update(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ClusterNameParameter, request *generated.KubernetesCluster) error {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
 	if err != nil {
 		return err
 	}
 
-	if controlPlane.Deleting {
+	if project.Deleting {
 		return errors.OAuth2InvalidRequest("control plane is being deleted")
 	}
 
-	resource, err := c.get(ctx, controlPlane.Namespace, name)
+	resource, err := c.get(ctx, project.Namespace, name)
 	if err != nil {
 		return err
 	}
@@ -298,7 +310,7 @@ func (c *Client) Update(ctx context.Context, projectName generated.ProjectNamePa
 		return err
 	}
 
-	required, err := c.generate(ctx, provider, controlPlane, request)
+	required, err := c.generate(ctx, provider, project, request)
 	if err != nil {
 		return err
 	}

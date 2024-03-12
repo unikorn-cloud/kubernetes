@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controlplane
+package clustermanager
 
 import (
 	"context"
@@ -64,10 +64,6 @@ type Meta struct {
 	// can reference it.
 	Name string
 
-	// Namespace is the namespace that is provisioned by the control plane.
-	// Should be usable and set when the project is active.
-	Namespace string
-
 	// Deleting tells us if we should allow new child objects to be created
 	// in this resource's namespace.
 	Deleting bool
@@ -86,19 +82,9 @@ var (
 	ErrApplicationBundle = goerrors.New("no application bundle found")
 )
 
-// active returns true if the project is usable.
-func active(c *unikornv1.ControlPlane) error {
-	// No namespace created yet, you cannot provision any child resources.
-	if c.Status.Namespace == "" {
-		return ErrNamespaceUnset
-	}
-
-	return nil
-}
-
-// provisionDefaultControlPlane is called when a cluster creation call is made and the
+// provisionDefaultClusterManager is called when a cluster creation call is made and the
 // control plane does not exist.
-func (c *Client) provisionDefaultControlPlane(ctx context.Context, projectName, name string) error {
+func (c *Client) provisionDefaultClusterManager(ctx context.Context, projectName, name string) error {
 	log := log.FromContext(ctx)
 
 	log.Info("creating implicit control plane", "name", name)
@@ -106,11 +92,11 @@ func (c *Client) provisionDefaultControlPlane(ctx context.Context, projectName, 
 	// GetMetadata should be called by descendents of the control
 	// plane e.g. clusters. Rather than delegate creation to each
 	// and every client implicitly create it.
-	defaultControlPlane := &generated.ControlPlane{
+	defaultClusterManager := &generated.ClusterManager{
 		Name: name,
 	}
 
-	if err := c.Create(ctx, projectName, defaultControlPlane); err != nil {
+	if err := c.Create(ctx, projectName, defaultClusterManager); err != nil {
 		return err
 	}
 
@@ -130,10 +116,9 @@ func (c *Client) GetMetadata(ctx context.Context, projectName, name string) (*Me
 	}
 
 	metadata := &Meta{
-		Project:   project,
-		Name:      name,
-		Namespace: result.Status.Namespace,
-		Deleting:  result.DeletionTimestamp != nil,
+		Project:  project,
+		Name:     name,
+		Deleting: result.DeletionTimestamp != nil,
 	}
 
 	return metadata, nil
@@ -151,7 +136,7 @@ func (c *Client) GetOrCreateMetadata(ctx context.Context, projectName, name stri
 			return nil, err
 		}
 
-		if err := c.provisionDefaultControlPlane(ctx, projectName, name); err != nil {
+		if err := c.provisionDefaultClusterManager(ctx, projectName, name); err != nil {
 			return nil, err
 		}
 	}
@@ -175,10 +160,6 @@ func (c *Client) GetOrCreateMetadata(ctx context.Context, projectName, name stri
 			return err
 		}
 
-		if err := active(result); err != nil {
-			return err
-		}
-
 		return nil
 	}
 
@@ -187,16 +168,15 @@ func (c *Client) GetOrCreateMetadata(ctx context.Context, projectName, name stri
 	}
 
 	metadata := &Meta{
-		Project:   project,
-		Name:      name,
-		Namespace: result.Status.Namespace,
-		Deleting:  result.DeletionTimestamp != nil,
+		Project:  project,
+		Name:     name,
+		Deleting: result.DeletionTimestamp != nil,
 	}
 
 	return metadata, nil
 }
 
-func convertMetadata(in *unikornv1.ControlPlane) (*generated.ResourceMetadata, error) {
+func convertMetadata(in *unikornv1.ClusterManager) (*generated.ResourceMetadata, error) {
 	labels, err := in.ResourceLabels()
 	if err != nil {
 		return nil, err
@@ -223,13 +203,13 @@ func convertMetadata(in *unikornv1.ControlPlane) (*generated.ResourceMetadata, e
 }
 
 // convert converts from Kubernetes into OpenAPI types.
-func (c *Client) convert(in *unikornv1.ControlPlane) (*generated.ControlPlane, error) {
+func (c *Client) convert(in *unikornv1.ClusterManager) (*generated.ClusterManager, error) {
 	metadata, err := convertMetadata(in)
 	if err != nil {
 		return nil, err
 	}
 
-	out := &generated.ControlPlane{
+	out := &generated.ClusterManager{
 		Metadata: metadata,
 		Name:     in.Name,
 	}
@@ -238,8 +218,8 @@ func (c *Client) convert(in *unikornv1.ControlPlane) (*generated.ControlPlane, e
 }
 
 // convertList converts from Kubernetes into OpenAPI types.
-func (c *Client) convertList(in *unikornv1.ControlPlaneList) ([]*generated.ControlPlane, error) {
-	out := make([]*generated.ControlPlane, len(in.Items))
+func (c *Client) convertList(in *unikornv1.ClusterManagerList) ([]*generated.ClusterManager, error) {
+	out := make([]*generated.ClusterManager, len(in.Items))
 
 	for i := range in.Items {
 		item, err := c.convert(&in.Items[i])
@@ -254,7 +234,7 @@ func (c *Client) convertList(in *unikornv1.ControlPlaneList) ([]*generated.Contr
 }
 
 // List returns all control planes.
-func (c *Client) List(ctx context.Context) ([]*generated.ControlPlane, error) {
+func (c *Client) List(ctx context.Context) ([]*generated.ClusterManager, error) {
 	selector := labels.NewSelector()
 
 	// TODO: a super-admin isn't scoped to a single organization!
@@ -275,13 +255,13 @@ func (c *Client) List(ctx context.Context) ([]*generated.ControlPlane, error) {
 		LabelSelector: selector,
 	}
 
-	result := &unikornv1.ControlPlaneList{}
+	result := &unikornv1.ClusterManagerList{}
 
 	if err := c.client.List(ctx, result, options); err != nil {
 		return nil, errors.OAuth2ServerError("failed to list control planes").WithError(err)
 	}
 
-	slices.SortStableFunc(result.Items, unikornv1.CompareControlPlane)
+	slices.SortStableFunc(result.Items, unikornv1.CompareClusterManager)
 
 	out, err := c.convertList(result)
 	if err != nil {
@@ -292,8 +272,8 @@ func (c *Client) List(ctx context.Context) ([]*generated.ControlPlane, error) {
 }
 
 // get returns the control plane.
-func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.ControlPlane, error) {
-	result := &unikornv1.ControlPlane{}
+func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.ClusterManager, error) {
+	result := &unikornv1.ClusterManager{}
 
 	if err := c.client.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, result); err != nil {
 		if kerrors.IsNotFound(err) {
@@ -307,13 +287,13 @@ func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.Co
 }
 
 // defaultApplicationBundle returns a default application bundle.
-func (c *Client) defaultApplicationBundle(ctx context.Context) (*unikornv1.ControlPlaneApplicationBundle, error) {
-	applicationBundles, err := applicationbundle.NewClient(c.client).ListControlPlane(ctx)
+func (c *Client) defaultApplicationBundle(ctx context.Context) (*unikornv1.ClusterManagerApplicationBundle, error) {
+	applicationBundles, err := applicationbundle.NewClient(c.client).ListClusterManager(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	applicationBundles.Items = slices.DeleteFunc(applicationBundles.Items, func(bundle unikornv1.ControlPlaneApplicationBundle) bool {
+	applicationBundles.Items = slices.DeleteFunc(applicationBundles.Items, func(bundle unikornv1.ClusterManagerApplicationBundle) bool {
 		if bundle.Spec.Preview != nil && *bundle.Spec.Preview {
 			return true
 		}
@@ -333,7 +313,7 @@ func (c *Client) defaultApplicationBundle(ctx context.Context) (*unikornv1.Contr
 }
 
 // generate is a common function to create a Kubernetes type from an API one.
-func (c *Client) generate(ctx context.Context, project *project.Meta, parameters *generated.ControlPlane) (*unikornv1.ControlPlane, error) {
+func (c *Client) generate(ctx context.Context, project *project.Meta, parameters *generated.ClusterManager) (*unikornv1.ClusterManager, error) {
 	applicationBundle, err := c.defaultApplicationBundle(ctx)
 	if err != nil {
 		return nil, err
@@ -341,7 +321,7 @@ func (c *Client) generate(ctx context.Context, project *project.Meta, parameters
 
 	fmt.Println(applicationBundle)
 
-	controlPlane := &unikornv1.ControlPlane{
+	controlPlane := &unikornv1.ClusterManager{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      parameters.Name,
 			Namespace: project.Namespace,
@@ -351,7 +331,7 @@ func (c *Client) generate(ctx context.Context, project *project.Meta, parameters
 				constants.ProjectLabel:      project.Name,
 			},
 		},
-		Spec: unikornv1.ControlPlaneSpec{
+		Spec: unikornv1.ClusterManagerSpec{
 			ApplicationBundle:            &applicationBundle.Name,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
 		},
@@ -361,7 +341,7 @@ func (c *Client) generate(ctx context.Context, project *project.Meta, parameters
 }
 
 // Create creates a control plane.
-func (c *Client) Create(ctx context.Context, projectName generated.ProjectNameParameter, request *generated.ControlPlane) error {
+func (c *Client) Create(ctx context.Context, projectName generated.ProjectNameParameter, request *generated.ClusterManager) error {
 	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
 	if err != nil {
 		return err
@@ -389,7 +369,7 @@ func (c *Client) Create(ctx context.Context, projectName generated.ProjectNamePa
 }
 
 // Delete deletes the control plane.
-func (c *Client) Delete(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ControlPlaneNameParameter) error {
+func (c *Client) Delete(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ClusterManagerNameParameter) error {
 	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
 	if err != nil {
 		return err
@@ -399,7 +379,7 @@ func (c *Client) Delete(ctx context.Context, projectName generated.ProjectNamePa
 		return errors.OAuth2InvalidRequest("project is being deleted")
 	}
 
-	controlPlane := &unikornv1.ControlPlane{
+	controlPlane := &unikornv1.ClusterManager{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: project.Namespace,
@@ -418,7 +398,7 @@ func (c *Client) Delete(ctx context.Context, projectName generated.ProjectNamePa
 }
 
 // Update implements read/modify/write for the control plane.
-func (c *Client) Update(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ControlPlaneNameParameter, request *generated.ControlPlane) error {
+func (c *Client) Update(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ClusterManagerNameParameter, request *generated.ClusterManager) error {
 	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
 	if err != nil {
 		return err

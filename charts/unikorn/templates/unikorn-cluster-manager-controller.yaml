@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: unikorn-cluster-manager
+  name: unikorn-cluster-manager-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 {{- with ( include "unikorn.imagePullSecrets" . ) }}
@@ -12,11 +12,39 @@ imagePullSecrets:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: unikorn-cluster-manager
+  name: unikorn-cluster-manager-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 rules:
-# Manage kubernetes clusters (my job).
+# Manage control planes (my job).
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - clustermanagers
+  verbs:
+  - list
+  - get
+  - watch
+  - update
+  - patch
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - clustermanagers/status
+  verbs:
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - delete
+  - update
+# Manage clusters (cascading deletion).
 - apiGroups:
   - unikorn-cloud.org
   resources:
@@ -24,36 +52,14 @@ rules:
   verbs:
   - list
   - get
-  - patch
   - watch
-  - update
-- apiGroups:
-  - unikorn-cloud.org
-  resources:
-  - kubernetesclusters/status
-  verbs:
-  - update
-# Get my owning control plane.
-- apiGroups:
-  - unikorn-cloud.org
-  resources:
-  - controlplanes
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - namespaces
-  verbs:
-  - list
-  - watch
+  - delete
 # Get application bundles
 - apiGroups:
   - unikorn-cloud.org
   resources:
   - helmapplications
-  - kubernetesclusterapplicationbundles
+  - clustermanagerapplicationbundles
   verbs:
   - list
   - watch
@@ -84,7 +90,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: unikorn-cluster-manager
+  name: unikorn-cluster-manager-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 rules:
@@ -108,52 +114,52 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: unikorn-cluster-manager
+  name: unikorn-cluster-manager-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 subjects:
 - kind: ServiceAccount
   namespace: {{ .Release.Namespace }}
-  name: unikorn-cluster-manager
+  name: unikorn-cluster-manager-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: unikorn-cluster-manager
+  name: unikorn-cluster-manager-controller
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: unikorn-cluster-manager
+  name: unikorn-cluster-manager-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 subjects:
 - kind: ServiceAccount
   namespace: {{ .Release.Namespace }}
-  name: unikorn-cluster-manager
+  name: unikorn-cluster-manager-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: unikorn-cluster-manager
+  name: unikorn-cluster-manager-controller
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: unikorn-cluster-manager
+  name: unikorn-cluster-manager-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: unikorn-cluster-manager
+      app: unikorn-cluster-manager-controller
   template:
     metadata:
       labels:
-        app: unikorn-cluster-manager
+        app: unikorn-cluster-manager-controller
     spec:
       containers:
-      - name: unikorn-cluster-manager
-        image: {{ include "unikorn.clusterManagerImage" . }}
+      - name: unikorn-cluster-manager-controller
+        image: {{ include "unikorn.clusterManagerControllerImage" . }}
         ports:
         - name: prometheus
           containerPort: 8080
@@ -166,20 +172,20 @@ spec:
             memory: 100Mi
         securityContext:
           readOnlyRootFilesystem: true
-      serviceAccountName: unikorn-cluster-manager
+      serviceAccountName: unikorn-cluster-manager-controller
       securityContext:
         runAsNonRoot: true
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: unikorn-cluster-manager
+  name: unikorn-cluster-manager-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
-    {{- include "unikorn.prometheusLabels" (dict "job" "unikorn-cluster-manager") | nindent 4 }}
+    {{- include "unikorn.prometheusLabels" (dict "job" "unikorn-cluster-manager-controller") | nindent 4 }}
 spec:
   selector:
-    app: unikorn-cluster-manager
+    app: unikorn-cluster-manager-controller
   ports:
   - name: prometheus
     port: 8080

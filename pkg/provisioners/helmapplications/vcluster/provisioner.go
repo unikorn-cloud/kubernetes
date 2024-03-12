@@ -26,8 +26,7 @@ import (
 )
 
 const (
-	// vclusterName is a static name used for all resources.  Each CP has its own
-	// namespace, so this is safe for now.
+	// vclusterName is the unique application name.
 	vclusterName = "vcluster"
 )
 
@@ -50,6 +49,6 @@ func init() {
 }
 
 // New returns a new initialized provisioner object.
-func New(getApplication application.GetterFunc) *application.Provisioner {
-	return application.New(getApplication)
+func New(getApplication application.GetterFunc, name string) *application.Provisioner {
+	return application.New(getApplication).WithApplicationName(vclusterName + "-" + name)
 }

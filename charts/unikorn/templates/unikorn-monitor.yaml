@@ -20,7 +20,7 @@ rules:
 - apiGroups:
   - unikorn-cloud.org
   resources:
-  - controlplanes
+  - clustermanagers
   - kubernetesclusters
   verbs:
   - list
@@ -30,7 +30,7 @@ rules:
 - apiGroups:
   - unikorn-cloud.org
   resources:
-  - controlplaneapplicationbundles
+  - clustermanagerapplicationbundles
   - kubernetesclusterapplicationbundles
   verbs:
   - list

@@ -90,8 +90,8 @@ type ApplicationVersions = []ApplicationVersion
 // Applications A list of appications.
 type Applications = []Application
 
-// ControlPlane A control plane.
-type ControlPlane struct {
+// ClusterManager A cluster manager.
+type ClusterManager struct {
 	// Metadata A resources's metadata
 	Metadata *ResourceMetadata `json:"metadata,omitempty"`
 
@@ -99,11 +99,71 @@ type ControlPlane struct {
 	Name string `json:"name"`
 }
 
-// ControlPlanes A list of control planes.
-type ControlPlanes = []ControlPlane
+// ClusterManagers A list of cluster managers.
+type ClusterManagers = []ClusterManager
+
+// Flavor A flavor.
+type Flavor struct {
+	// Cpus The number of CPUs.
+	Cpus int `json:"cpus"`
+
+	// Disk The amount of ephemeral disk in GB.
+	Disk int `json:"disk"`
+
+	// Gpus The number of GPUs, if not set there are none.
+	Gpus *int `json:"gpus,omitempty"`
+
+	// Id The unique flavor ID.
+	Id string `json:"id"`
+
+	// Memory The amount of memory in GiB.
+	Memory int `json:"memory"`
+
+	// Name The flavor name.
+	Name string `json:"name"`
+}
+
+// Flavors A list of flavors.
+type Flavors = []Flavor
+
+// Image An image.
+type Image struct {
+	// Created Time when the image was created. Images with a newer creation time should
+	// be favoured over older images as they will contain updates and fewer vulnerabilities.
+	Created time.Time `json:"created"`
+
+	// Id The unique image ID.
+	Id string `json:"id"`
+
+	// Modified Time when the image was last modified.
+	Modified time.Time `json:"modified"`
+
+	// Name The image name.
+	Name string `json:"name"`
+
+	// Versions Image version metadata.
+	Versions ImageVersions `json:"versions"`
+}
+
+// ImageVersions Image version metadata.
+type ImageVersions struct {
+	// Kubernetes The kubernetes semantic version.  This should be used directly when specifying
+	// Kubernetes cluster managers and workload pools in a cluster specification.
+	Kubernetes string `json:"kubernetes"`
+
+	// NvidiaDriver The nvidia driver version.
+	NvidiaDriver string `json:"nvidiaDriver"`
+}
+
+// Images A list of images that are compatible with this platform.
+type Images = []Image
 
 // KubernetesCluster Kubernetes cluster creation parameters.
 type KubernetesCluster struct {
+	// ClusterManager The name of the cluster manager to use, if one is not specified
+	// the system will create one for you.
+	ClusterManager *string `json:"clusterManager,omitempty"`
+
 	// Metadata A resources's metadata
 	Metadata *ResourceMetadata `json:"metadata,omitempty"`
 
@@ -137,7 +197,7 @@ type KubernetesClusterWorkloadPool struct {
 	Labels *map[string]string `json:"labels,omitempty"`
 
 	// Machine A Kubernetes cluster machine.
-	Machine OpenstackMachinePool `json:"machine"`
+	Machine MachinePool `json:"machine"`
 
 	// Name Workload pool name.
 	Name string `json:"name"`
@@ -152,6 +212,18 @@ type KubernetesClusters = []KubernetesCluster
 // KubernetesNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type KubernetesNameParameter = string
 
+// MachinePool A Kubernetes cluster machine.
+type MachinePool struct {
+	// Disk A volume.
+	Disk *Volume `json:"disk,omitempty"`
+
+	// FlavorName Flavor name.
+	FlavorName *string `json:"flavorName,omitempty"`
+
+	// Replicas Number of machines for a statically sized pool or the maximum for an auto-scaled pool.
+	Replicas *int `json:"replicas,omitempty"`
+}
+
 // Oauth2Error Generic error message.
 type Oauth2Error struct {
 	// Error A terse error string expanding on the HTTP error code. Errors are based on the OAuth2 specification, but are expanded with proprietary status codes for APIs other than those specified by OAuth2.
@@ -163,80 +235,6 @@ type Oauth2Error struct {
 
 // Oauth2ErrorError A terse error string expanding on the HTTP error code. Errors are based on the OAuth2 specification, but are expanded with proprietary status codes for APIs other than those specified by OAuth2.
 type Oauth2ErrorError string
-
-// OpenstackFlavor An OpenStack flavor.
-type OpenstackFlavor struct {
-	// Cpus The number of CPUs.
-	Cpus int `json:"cpus"`
-
-	// Disk The amount of ephemeral disk in GB.
-	Disk int `json:"disk"`
-
-	// Gpus The number of GPUs, if not set there are none.
-	Gpus *int `json:"gpus,omitempty"`
-
-	// Id The unique flavor ID.
-	Id string `json:"id"`
-
-	// Memory The amount of memory in GiB.
-	Memory int `json:"memory"`
-
-	// Name The flavor name.
-	Name string `json:"name"`
-}
-
-// OpenstackFlavors A list of OpenStack flavors.
-type OpenstackFlavors = []OpenstackFlavor
-
-// OpenstackImage And OpenStack image.
-type OpenstackImage struct {
-	// Created Time when the image was created. Images with a newer creation time should
-	// be favoured over older images as they will contain updates and fewer vulnerabilities.
-	Created time.Time `json:"created"`
-
-	// Id The unique image ID.
-	Id string `json:"id"`
-
-	// Modified Time when the image was last modified.
-	Modified time.Time `json:"modified"`
-
-	// Name The image name.
-	Name string `json:"name"`
-
-	// Versions Image version metadata.
-	Versions OpenstackImageVersions `json:"versions"`
-}
-
-// OpenstackImageVersions Image version metadata.
-type OpenstackImageVersions struct {
-	// Kubernetes The kubernetes semantic version.  This should be used directly when specifying
-	// Kubernetes control planes and workload pools in a cluster specification.
-	Kubernetes string `json:"kubernetes"`
-
-	// NvidiaDriver The nvidia driver version.
-	NvidiaDriver string `json:"nvidiaDriver"`
-}
-
-// OpenstackImages A list of OpenStack images that are compatible with this platform.
-type OpenstackImages = []OpenstackImage
-
-// OpenstackMachinePool A Kubernetes cluster machine.
-type OpenstackMachinePool struct {
-	// Disk An OpenStack volume.
-	Disk *OpenstackVolume `json:"disk,omitempty"`
-
-	// FlavorName OpenStack flavor name.
-	FlavorName *string `json:"flavorName,omitempty"`
-
-	// Replicas Number of machines for a statically sized pool or the maximum for an auto-scaled pool.
-	Replicas *int `json:"replicas,omitempty"`
-}
-
-// OpenstackVolume An OpenStack volume.
-type OpenstackVolume struct {
-	// Size Disk size in GiB.
-	Size int `json:"size"`
-}
 
 // Project A project.
 type Project struct {
@@ -259,8 +257,8 @@ type Regions = []Region
 
 // ResourceMetadata A resources's metadata
 type ResourceMetadata struct {
-	// Controlplane Where the resource is scoped to a control plane, this is populated.
-	Controlplane *string `json:"controlplane,omitempty"`
+	// Clustermanager Where the resource is scoped to a cluster manager, this is populated.
+	Clustermanager *string `json:"clustermanager,omitempty"`
 
 	// CreationTime The time the resource was created.
 	CreationTime time.Time `json:"creationTime"`
@@ -284,11 +282,17 @@ type ResourceMetadata struct {
 	Status string `json:"status"`
 }
 
+// Volume A volume.
+type Volume struct {
+	// Size Disk size in GiB.
+	Size int `json:"size"`
+}
+
+// ClusterManagerNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
+type ClusterManagerNameParameter = KubernetesNameParameter
+
 // ClusterNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type ClusterNameParameter = KubernetesNameParameter
-
-// ControlPlaneNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
-type ControlPlaneNameParameter = KubernetesNameParameter
 
 // ProjectNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type ProjectNameParameter = KubernetesNameParameter
@@ -302,14 +306,20 @@ type ApplicationResponse = Applications
 // BadRequestResponse Generic error message.
 type BadRequestResponse = Oauth2Error
 
+// ClusterManagersResponse A list of cluster managers.
+type ClusterManagersResponse = ClusterManagers
+
 // ConflictResponse Generic error message.
 type ConflictResponse = Oauth2Error
 
-// ControlPlanesResponse A list of control planes.
-type ControlPlanesResponse = ControlPlanes
+// FlavorsResponse A list of flavors.
+type FlavorsResponse = Flavors
 
 // ForbiddenResponse Generic error message.
 type ForbiddenResponse = Oauth2Error
+
+// ImagesResponse A list of images that are compatible with this platform.
+type ImagesResponse = Images
 
 // InternalServerErrorResponse Generic error message.
 type InternalServerErrorResponse = Oauth2Error
@@ -320,12 +330,6 @@ type KubernetesClustersResponse = KubernetesClusters
 // NotFoundResponse Generic error message.
 type NotFoundResponse = Oauth2Error
 
-// OpenstackFlavorsResponse A list of OpenStack flavors.
-type OpenstackFlavorsResponse = OpenstackFlavors
-
-// OpenstackImagesResponse A list of OpenStack images that are compatible with this platform.
-type OpenstackImagesResponse = OpenstackImages
-
 // ProjectsResponse A list of projects.
 type ProjectsResponse = Projects
 
@@ -335,8 +339,8 @@ type RegionsResponse = Regions
 // UnauthorizedResponse Generic error message.
 type UnauthorizedResponse = Oauth2Error
 
-// CreateControlPlaneRequest A control plane.
-type CreateControlPlaneRequest = ControlPlane
+// CreateControlPlaneRequest A cluster manager.
+type CreateControlPlaneRequest = ClusterManager
 
 // CreateKubernetesClusterRequest Kubernetes cluster creation parameters.
 type CreateKubernetesClusterRequest = KubernetesCluster
@@ -347,14 +351,14 @@ type CreateProjectRequest = Project
 // PostApiV1ProjectsJSONRequestBody defines body for PostApiV1Projects for application/json ContentType.
 type PostApiV1ProjectsJSONRequestBody = Project
 
-// PostApiV1ProjectsProjectNameControlplanesJSONRequestBody defines body for PostApiV1ProjectsProjectNameControlplanes for application/json ContentType.
-type PostApiV1ProjectsProjectNameControlplanesJSONRequestBody = ControlPlane
+// PostApiV1ProjectsProjectNameClustermanagersJSONRequestBody defines body for PostApiV1ProjectsProjectNameClustermanagers for application/json ContentType.
+type PostApiV1ProjectsProjectNameClustermanagersJSONRequestBody = ClusterManager
 
-// PutApiV1ProjectsProjectNameControlplanesControlPlaneNameJSONRequestBody defines body for PutApiV1ProjectsProjectNameControlplanesControlPlaneName for application/json ContentType.
-type PutApiV1ProjectsProjectNameControlplanesControlPlaneNameJSONRequestBody = ControlPlane
+// PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody defines body for PutApiV1ProjectsProjectNameClustermanagersClusterManagerName for application/json ContentType.
+type PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody = ClusterManager
 
-// PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersJSONRequestBody defines body for PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClusters for application/json ContentType.
-type PostApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersJSONRequestBody = KubernetesCluster
+// PostApiV1ProjectsProjectNameClustersJSONRequestBody defines body for PostApiV1ProjectsProjectNameClusters for application/json ContentType.
+type PostApiV1ProjectsProjectNameClustersJSONRequestBody = KubernetesCluster
 
-// PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameJSONRequestBody defines body for PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterName for application/json ContentType.
-type PutApiV1ProjectsProjectNameControlplanesControlPlaneNameClustersClusterNameJSONRequestBody = KubernetesCluster
+// PutApiV1ProjectsProjectNameClustersClusterNameJSONRequestBody defines body for PutApiV1ProjectsProjectNameClustersClusterName for application/json ContentType.
+type PutApiV1ProjectsProjectNameClustersClusterNameJSONRequestBody = KubernetesCluster

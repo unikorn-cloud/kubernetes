@@ -17,21 +17,13 @@ x-documentation-groups:
   description: |-
     The core API allows the management of core resources. Conceptually there are projects
     that are implicitly referenced by a scoped token issued during authentication.  Within
-    a project are a number of control planes. In the context of the Kubernetes Service, a
-    control plane is a management layer that provides multi-tenant isolation, and Kubernetes
+    a project are a number of cluster managers. In the context of the Kubernetes Service, a
+    cluster manager is a management layer that provides multi-tenant isolation, and Kubernetes
     cluster provisioning and scaling services. Kubernetes clusters are provisioned within
-    a control plane. Provisioning of projects and control planes may be done explicitly or
+    a cluster manager. Provisioning of projects and cluster managers may be done explicitly or
     implicitly, however this latter approach is less flexible as the Kubernetes Service will
     have to choose some default values for you, however it provides a faster and better
     user experience.
-- id: provider-openstack
-  name: OpenStack Platform Provider API
-  description: |-
-    The OpenStack platform provider API provides access to services that list various
-    platform specific resources that are required by the core API, for example virtual
-    machine types and images. While you can manually specify resource names with the
-    core API, it is recommended that you first consult the platform provider APIs in
-    order to get an up to date list of resources that are available for consumption.
 paths:
   /api/v1/organization:
     description: |-
@@ -114,7 +106,7 @@ paths:
       description: |-
         Deletes the project associated with the authenticated user's scoped
         authorisation token. This is a cascading operation and will delete all
-        contained control planes and clusters.
+        contained cluster managers and clusters.
       security:
       - oauth2Authentication: []
       responses:
@@ -128,23 +120,23 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/controlplanes:
+  /api/v1/clustermanagers:
     x-documentation-group: main
     description: |-
-      Implements control plane management services. Control planes manage the
+      Implements cluster manager management services. Control planes manage the
       life cycle of Kubernetes clusters, through provisioning, upgrading, to deletion.
       Control planes must reference a versioned application bundle that defines the
-      software versions of control plane components, and forms the basis of automatic
-      upgrade functionality.  Referencing an explicit control plane name will
+      software versions of cluster manager components, and forms the basis of automatic
+      upgrade functionality.  Referencing an explicit cluster manager name will
       implicitly create the associated project.
     get:
       description: |-
-        Lists control planes within the organization.
+        Lists cluster managers within the organization.
       security:
       - oauth2Authentication: []
       responses:
         '200':
-          $ref: '#/components/responses/controlPlanesResponse'
+          $ref: '#/components/responses/clusterManagersResponse'
         '400':
           $ref: '#/components/responses/badRequestResponse'
         '401':
@@ -153,20 +145,20 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/projects/{projectName}/controlplanes:
+  /api/v1/projects/{projectName}/clustermanagers:
     x-documentation-group: main
     description: |-
-      Implements control plane management services. Control planes manage the
+      Implements cluster manager management services. Control planes manage the
       life cycle of Kubernetes clusters, through provisioning, upgrading, to deletion.
       Control planes must reference a versioned application bundle that defines the
-      software versions of control plane components, and forms the basis of automatic
-      upgrade functionality.  Referencing an explicit control plane name will
+      software versions of cluster manager components, and forms the basis of automatic
+      upgrade functionality.  Referencing an explicit cluster manager name will
       implicitly create the associated project.
     parameters:
     - $ref: '#/components/parameters/projectNameParameter'
     post:
       description: |-
-        Creates a new control plane within the project.
+        Creates a new cluster manager within the project.
       security:
       - oauth2Authentication: []
       requestBody:
@@ -182,21 +174,21 @@ paths:
           $ref: '#/components/responses/conflictResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/projects/{projectName}/controlplanes/{controlPlaneName}:
+  /api/v1/projects/{projectName}/clustermanagers/{clusterManagerName}:
     x-documentation-group: main
     description: |-
-      Implements control plane management services. Control planes manage the
+      Implements cluster manager management services. Control planes manage the
       life cycle of Kubernetes clusters, through provisioning, upgrading, to deletion.
       Control planes must reference a versioned application bundle that defines the
-      software versions of control plane components, and forms the basis of automatic
-      upgrade functionality.  Referencing an explicit control plane name will
+      software versions of cluster manager components, and forms the basis of automatic
+      upgrade functionality.  Referencing an explicit cluster manager name will
       implicitly create the associated project.
     parameters:
     - $ref: '#/components/parameters/projectNameParameter'
-    - $ref: '#/components/parameters/controlPlaneNameParameter'
+    - $ref: '#/components/parameters/clusterManagerNameParameter'
     put:
       description: |-
-        Updates a control plane within the scoped project.
+        Updates a cluster manager within the scoped project.
       security:
       - oauth2Authentication: []
       requestBody:
@@ -214,7 +206,7 @@ paths:
           $ref: '#/components/responses/internalServerErrorResponse'
     delete:
       description: |-
-        Deletes a control plane from within the scoped project.
+        Deletes a cluster manager from within the scoped project.
         This is a cascading operation and will delete all contained clusters.
       security:
       - oauth2Authentication: []
@@ -248,15 +240,14 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/projects/{projectName}/controlplanes/{controlPlaneName}/clusters:
+  /api/v1/projects/{projectName}/clusters:
     x-documentation-group: main
     description: Cluster services.
     parameters:
     - $ref: '#/components/parameters/projectNameParameter'
-    - $ref: '#/components/parameters/controlPlaneNameParameter'
     post:
       description: |-
-        Creates a new cluster within the selected control plane.
+        Creates a new cluster within the selected cluster manager.
       security:
       - oauth2Authentication: []
       requestBody:
@@ -274,16 +265,15 @@ paths:
           $ref: '#/components/responses/conflictResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/projects/{projectName}/controlplanes/{controlPlaneName}/clusters/{clusterName}:
+  /api/v1/projects/{projectName}/clusters/{clusterName}:
     x-documentation-group: main
     description: Cluster services.
     parameters:
     - $ref: '#/components/parameters/projectNameParameter'
-    - $ref: '#/components/parameters/controlPlaneNameParameter'
     - $ref: '#/components/parameters/clusterNameParameter'
     put:
       description: |-
-        Update a cluster within the selected control plane.
+        Update a cluster within the selected cluster manager.
       security:
       - oauth2Authentication: []
       requestBody:
@@ -301,7 +291,7 @@ paths:
           $ref: '#/components/responses/internalServerErrorResponse'
     delete:
       description: |-
-        Delete a cluster from within a the selected control plane.
+        Delete a cluster from within a the selected cluster manager.
       security:
       - oauth2Authentication: []
       responses:
@@ -315,12 +305,11 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/projects/{projectName}/controlplanes/{controlPlaneName}/clusters/{clusterName}/kubeconfig:
+  /api/v1/projects/{projectName}/clusters/{clusterName}/kubeconfig:
     x-documentation-group: main
     description: Cluster services.
     parameters:
     - $ref: '#/components/parameters/projectNameParameter'
-    - $ref: '#/components/parameters/controlPlaneNameParameter'
     - $ref: '#/components/parameters/clusterNameParameter'
     get:
       description: |-
@@ -376,7 +365,6 @@ paths:
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
   /api/v1/regions/{regionName}/flavors:
-    x-documentation-group: provider-openstack
     description: Compute flavor services.
     parameters:
     - $ref: '#/components/parameters/regionNameParameter'
@@ -387,7 +375,7 @@ paths:
       - oauth2Authentication: []
       responses:
         '200':
-          $ref: '#/components/responses/openstackFlavorsResponse'
+          $ref: '#/components/responses/flavorsResponse'
         '400':
           $ref: '#/components/responses/badRequestResponse'
         '401':
@@ -395,7 +383,6 @@ paths:
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
   /api/v1/regions/{regionName}/images:
-    x-documentation-group: provider-openstack
     description: Compute image services.
     parameters:
     - $ref: '#/components/parameters/regionNameParameter'
@@ -406,7 +393,7 @@ paths:
       - oauth2Authentication: []
       responses:
         '200':
-          $ref: '#/components/responses/openstackImagesResponse'
+          $ref: '#/components/responses/imagesResponse'
         '400':
           $ref: '#/components/responses/badRequestResponse'
         '401':
@@ -423,12 +410,12 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/kubernetesNameParameter'
-    controlPlaneNameParameter:
-      name: controlPlaneName
+    clusterManagerNameParameter:
+      name: clusterManagerName
       in: path
       description: |-
-        The control plane name, if the control plane does not exist, then it may be
-        implicitly created, for example a cluster is created against a control plane
+        The cluster manager name, if the cluster manager does not exist, then it may be
+        implicitly created, for example a cluster is created against a cluster manager
         that does not exist. Must be a valid DNS containing only lower case characters,
         numbers or hyphens, start and end with a character or number, and be at most
         63 characters in length.
@@ -500,8 +487,8 @@ components:
         project:
           description: Where the resource is related to a project, this is populated.
           type: string
-        controlplane:
-          description: Where the resource is scoped to a control plane, this is populated.
+        clustermanager:
+          description: Where the resource is scoped to a cluster manager, this is populated.
           type: string
         region:
           description: Where the resource is scoped to a region, this is populated,
@@ -553,8 +540,8 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/project'
-    controlPlane:
-      description: A control plane.
+    clusterManager:
+      description: A cluster manager.
       type: object
       required:
       - name
@@ -564,11 +551,11 @@ components:
         name:
           description: The name of the resource.
           type: string
-    controlPlanes:
-      description: A list of control planes.
+    clusterManagers:
+      description: A list of cluster managers.
       type: array
       items:
-        $ref: '#/components/schemas/controlPlane'
+        $ref: '#/components/schemas/clusterManager'
     kubernetesClusterNetwork:
       description: A kubernetes cluster network settings.
       type: object
@@ -606,8 +593,8 @@ components:
           items:
             description: An IPv4 CIDR address prefix.
             type: string
-    openstackVolume:
-      description: An OpenStack volume.
+    volume:
+      description: A volume.
       type: object
       required:
       - size
@@ -615,7 +602,7 @@ components:
         size:
           description: Disk size in GiB.
           type: integer
-    openstackMachinePool:
+    machinePool:
       description: A Kubernetes cluster machine.
       type: object
       properties:
@@ -624,11 +611,11 @@ components:
             for an auto-scaled pool.
           type: integer
         flavorName:
-          description: OpenStack flavor name.
+          description: Flavor name.
           type: string
           minLength: 1
         disk:
-          $ref: '#/components/schemas/openstackVolume'
+          $ref: '#/components/schemas/volume'
     kubernetesClusterAutoscaling:
       description: |-
         A Kubernetes cluster workload pool autoscaling configuration. Cluster autoscaling
@@ -652,7 +639,7 @@ components:
           description: Workload pool name.
           type: string
         machine:
-          $ref: '#/components/schemas/openstackMachinePool'
+          $ref: '#/components/schemas/machinePool'
         labels:
           description: Workload pool key value labels to apply on node creation.
           type: object
@@ -683,6 +670,11 @@ components:
           type: string
         region:
           description: The region to provision the cluster in.
+          type: string
+        clusterManager:
+          description: |-
+            The name of the cluster manager to use, if one is not specified
+            the system will create one for you.
           type: string
         version:
           description: The Kuebernetes version.  This should be derived from
@@ -779,7 +771,7 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/application'
-    openstackImageVersions:
+    imageVersions:
       description: Image version metadata.
       type: object
       required:
@@ -789,13 +781,13 @@ components:
         kubernetes:
           description: |-
             The kubernetes semantic version.  This should be used directly when specifying
-            Kubernetes control planes and workload pools in a cluster specification.
+            Kubernetes cluster managers and workload pools in a cluster specification.
           type: string
         nvidiaDriver:
           description: The nvidia driver version.
           type: string
-    openstackImage:
-      description: And OpenStack image.
+    image:
+      description: An image.
       type: object
       required:
       - id
@@ -821,14 +813,14 @@ components:
           type: string
           format: date-time
         versions:
-          $ref: '#/components/schemas/openstackImageVersions'
-    openstackImages:
-      description: A list of OpenStack images that are compatible with this platform.
+          $ref: '#/components/schemas/imageVersions'
+    images:
+      description: A list of images that are compatible with this platform.
       type: array
       items:
-        $ref: '#/components/schemas/openstackImage'
-    openstackFlavor:
-      description: An OpenStack flavor.
+        $ref: '#/components/schemas/image'
+    flavor:
+      description: A flavor.
       type: object
       required:
       - id
@@ -855,11 +847,11 @@ components:
         gpus:
           description: The number of GPUs, if not set there are none.
           type: integer
-    openstackFlavors:
-      description: A list of OpenStack flavors.
+    flavors:
+      description: A list of flavors.
       type: array
       items:
-        $ref: '#/components/schemas/openstackFlavor'
+        $ref: '#/components/schemas/flavor'
   requestBodies:
     createProjectRequest:
       description: Project request parameters.
@@ -876,7 +868,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/controlPlane'
+            $ref: '#/components/schemas/clusterManager'
           example:
             name: default
     createKubernetesClusterRequest:
@@ -983,24 +975,24 @@ components:
             $ref: '#/components/schemas/projects'
           example:
           - name: my-project
-    controlPlaneResponse:
-      description: A control plane.
+    clusterManagerResponse:
+      description: A cluster manager.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/controlPlane'
+            $ref: '#/components/schemas/clusterManager'
           example:
             name: default
             status:
               creationTime: 2023-07-31T10:45:42Z
               name: default
               status: Provisioned
-    controlPlanesResponse:
-      description: A list of control planes.
+    clusterManagersResponse:
+      description: A list of cluster managers.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/controlPlanes'
+            $ref: '#/components/schemas/clusterManagers'
           example:
           - name: default
             status:
@@ -1050,12 +1042,12 @@ components:
             name: longhorn-1.5.1-1
             versions:
             - version: 1.5.1
-    openstackImagesResponse:
-      description: A list of OpenStack images that are compatible with this platform.
+    imagesResponse:
+      description: A list of images that are compatible with this platform.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/openstackImages'
+            $ref: '#/components/schemas/images'
           example:
           - created: 2023-02-22T12:04:13Z
             id: a64f9269-36e0-4312-b8d1-52d93d569b7b
@@ -1064,12 +1056,12 @@ components:
             versions:
               kubernetes: v1.25.6
               nvidiaDriver: 525.85.05
-    openstackFlavorsResponse:
-      description: A list of OpenStack flavors.
+    flavorsResponse:
+      description: A list of flavors.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/openstackFlavors'
+            $ref: '#/components/schemas/flavors'
           example:
           - cpus: 4
             disk: 20

@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controlplane
+package clustermanager
 
 import (
 	"context"
@@ -42,7 +42,7 @@ func New(client client.Client) *Checker {
 	}
 }
 
-func (c *Checker) upgradeResource(ctx context.Context, resource *unikornv1.ControlPlane, bundles *unikornv1.ControlPlaneApplicationBundleList, target *unikornv1.ControlPlaneApplicationBundle) error {
+func (c *Checker) upgradeResource(ctx context.Context, resource *unikornv1.ClusterManager, bundles *unikornv1.ClusterManagerApplicationBundleList, target *unikornv1.ClusterManagerApplicationBundle) error {
 	logger := log.FromContext(ctx)
 
 	bundle := bundles.Get(*resource.Spec.ApplicationBundle)
@@ -100,7 +100,7 @@ func (c *Checker) Check(ctx context.Context) error {
 
 	logger.Info("checking for control plane upgrades")
 
-	allBundles := &unikornv1.ControlPlaneApplicationBundleList{}
+	allBundles := &unikornv1.ClusterManagerApplicationBundleList{}
 
 	if err := c.client.List(ctx, allBundles, &client.ListOptions{}); err != nil {
 		return err
@@ -113,12 +113,12 @@ func (c *Checker) Check(ctx context.Context) error {
 		return errors.ErrNoBundles
 	}
 
-	slices.SortStableFunc(bundles.Items, unikornv1.CompareControlPlaneApplicationBundle)
+	slices.SortStableFunc(bundles.Items, unikornv1.CompareClusterManagerApplicationBundle)
 
 	// Pick the most recent as our upgrade target.
 	upgradeTarget := &bundles.Items[len(bundles.Items)-1]
 
-	resources := &unikornv1.ControlPlaneList{}
+	resources := &unikornv1.ClusterManagerList{}
 
 	if err := c.client.List(ctx, resources, &client.ListOptions{}); err != nil {
 		return err
@@ -130,7 +130,7 @@ func (c *Checker) Check(ctx context.Context) error {
 		logger := logger.WithValues(
 			"organization", resource.Labels[constants.OrganizationLabel],
 			"project", resource.Labels[constants.ProjectLabel],
-			"controlplane", resource.Name,
+			"clustermanager", resource.Name,
 		)
 
 		if err := c.upgradeResource(log.IntoContext(ctx, logger), resource, allBundles, upgradeTarget); err != nil {

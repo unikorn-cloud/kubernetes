@@ -67,8 +67,8 @@ func parseResourceFile[T any](path string) ([]T, error) {
 
 // parseResources loads all the manifest files, and returns list types of application bundles
 // and helm applications.
-func parseResources() (*unikornv1.ControlPlaneApplicationBundleList, *unikornv1.KubernetesClusterApplicationBundleList, *unikornv1core.HelmApplicationList, error) {
-	controlPlaneApplicationBundles, err := parseResourceFile[unikornv1.ControlPlaneApplicationBundle]("charts/unikorn/templates/controlplaneapplicationbundles.yaml")
+func parseResources() (*unikornv1.ClusterManagerApplicationBundleList, *unikornv1.KubernetesClusterApplicationBundleList, *unikornv1core.HelmApplicationList, error) {
+	controlPlaneApplicationBundles, err := parseResourceFile[unikornv1.ClusterManagerApplicationBundle]("charts/unikorn/templates/clustermanagerapplicationbundles.yaml")
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -83,7 +83,7 @@ func parseResources() (*unikornv1.ControlPlaneApplicationBundleList, *unikornv1.
 		return nil, nil, nil, err
 	}
 
-	return &unikornv1.ControlPlaneApplicationBundleList{Items: controlPlaneApplicationBundles}, &unikornv1.KubernetesClusterApplicationBundleList{Items: kubernetesClusterApplicationBundles}, &unikornv1core.HelmApplicationList{Items: applications}, nil
+	return &unikornv1.ClusterManagerApplicationBundleList{Items: controlPlaneApplicationBundles}, &unikornv1.KubernetesClusterApplicationBundleList{Items: kubernetesClusterApplicationBundles}, &unikornv1core.HelmApplicationList{Items: applications}, nil
 }
 
 // getApplication looks up an application by name.
