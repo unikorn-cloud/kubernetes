@@ -241,7 +241,7 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 			},
 			"serverMetadata": serverMetadata,
 		},
-		"clusterManager": map[string]interface{}{
+		"controlPlane": map[string]interface{}{
 			"replicas": *cluster.Spec.ControlPlane.Replicas,
 			"machine":  p.generateMachineHelmValues(&cluster.Spec.ControlPlane.MachineGeneric, nil),
 		},
