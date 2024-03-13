@@ -12,8 +12,8 @@ In particular we want to allow different instances of Unikorn to cohabit to supp
 Start by selecting a unique name that will be used for the deployment's name, project, and domain:
 
 ```bash
-PROJECT=unikorn-staging
-PASSWORD=$(apg -m 24)
+export PROJECT=unikorn-staging
+export PASSWORD=$(apg -n 1 -m 24)
 ```
 
 Create the project.
@@ -23,22 +23,22 @@ Likewise, we can have project specific images that aren't shared with other user
 By marking the images as `community` we can then use the images for deployment in other per-Kubernetes cluster projects.
 
 ```bash
-PROJECT_ID=$(openstack create project ${PROJECT} -f json | jq -r .id}
+PROJECT_ID=$(openstack project create ${PROJECT} -f json | jq -r .id)
 ```
 
 Crete the user.
 
 ```bash
-USER_ID=$(openstack user create --project ${PROJECT} --password=${PASSWORD} ${PROJECT} -f json | jq -r .id)
+USER_ID=$(openstack user create --project ${PROJECT} --password ${PASSWORD} ${PROJECT} -f json | jq -r .id)
 ```
 
 Grant any roles to the user.
 When a Kubernetes cluster is provisioned, it will be done using application credentials, so ensure any required application credentials as configured for the region are explicitly associated with the user here.
 
 ```bash
-openstack role add --user ${USER_ID} --project ${PROJECT_ID} admin
-openstack role add --user ${USER_ID} --project ${PROJECT_ID} member
-openstack role add --user ${USER_ID} --project ${PROJECT_ID} load-balancer_member
+for role in admin member load-balancer_member; do
+	openstack role add --user ${USER_ID} --project ${PROJECT_ID} ${role}
+done
 ```
 
 Create the domain.
@@ -50,7 +50,7 @@ By limiting the scope of list operations to that of the project domain we limit 
 A domain may also aid in simplifying operations like auditing and capacity planning.
 
 ```bash
-DOMAIN_ID=$(openstack domain create ${PROJECT} -f json | jq -r .id}
+DOMAIN_ID=$(openstack domain create ${PROJECT} -f json | jq -r .id)
 ```
 
 ### Unikorn Configuration
@@ -59,7 +59,7 @@ When we create a `Region` of type `openstack`, it will require a secret that con
 This can be configured as follows.
 
 ```bash
-kubectl create secret -n unikorn uk-north-1-credentials \
+kubectl create secret generic -n unikorn uk-north-1-credentials \
 	--from-literal=domain-id=${DOMAIN_ID} \
 	--from-literal=user-id=${USER_ID} \
 	--from-literal=password=${PASSWORD}
@@ -80,4 +80,14 @@ spec:
     serviceAccountSecret:
       namespace: unikorn
       name: uk-north-1-credentials
+```
+
+Cleanup actions.
+
+```bash
+unset DOMAIN_ID
+unset USER_ID
+unset PROJECT_ID
+unset PASSWORD
+unset PROJECT
 ```
