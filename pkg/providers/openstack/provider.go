@@ -309,11 +309,26 @@ const (
 	ProjectIDAnnotation = "openstack.unikorn-cloud.org/project-id"
 
 	// Projects are randomly named to avoid clashes, so we need to add some tags
-	// in order to be able to reason about who they really belong to.
+	// in order to be able to reason about who they really belong to.  It is also
+	// useful to have these in place so we can spot orphaned resources and garbage
+	// collect them.
 	OrganizationTag = "organization"
 	ProjectTag      = "project"
 	ClusterTag      = "cluster"
+	ClusterUUIDTag  = "clusterUUID"
 )
+
+// projectTags defines how to tag projects.
+func projectTags(cluster *unikornv1.KubernetesCluster) []string {
+	tags := []string{
+		OrganizationTag + "=" + cluster.Labels[constants.OrganizationLabel],
+		ProjectTag + "=" + cluster.Labels[constants.ProjectLabel],
+		ClusterTag + "=" + cluster.Name,
+		ClusterUUIDTag + "=" + string(cluster.UID),
+	}
+
+	return tags
+}
 
 // provisionProject creates a project per-cluster.  Cluster API provider Openstack is
 // somewhat broken in that networks can alias and cause all kinds of disasters, so it's
@@ -321,14 +336,7 @@ const (
 func (p *Provider) provisionProject(ctx context.Context, identityService *IdentityClient, cluster *unikornv1.KubernetesCluster) (*projects.Project, error) {
 	name := "unikorn-" + rand.String(8)
 
-	// Set some tags so we can audit who owns this projects.
-	tags := []string{
-		OrganizationTag + "=" + cluster.Labels[constants.OrganizationLabel],
-		ProjectTag + "=" + cluster.Labels[constants.ProjectLabel],
-		ClusterTag + "=" + cluster.Name,
-	}
-
-	project, err := identityService.CreateProject(ctx, p.domainID, name, tags)
+	project, err := identityService.CreateProject(ctx, p.domainID, name, projectTags(cluster))
 	if err != nil {
 		return nil, err
 	}
