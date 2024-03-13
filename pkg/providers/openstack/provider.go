@@ -98,8 +98,8 @@ func (p *Provider) serviceClientRefresh(ctx context.Context) error {
 	}
 
 	secretkey := client.ObjectKey{
-		Namespace: p.region.Spec.Openstack.ServiceAccountSecret.Namespace,
-		Name:      p.region.Spec.Openstack.ServiceAccountSecret.Name,
+		Namespace: region.Spec.Openstack.ServiceAccountSecret.Namespace,
+		Name:      region.Spec.Openstack.ServiceAccountSecret.Name,
 	}
 
 	secret := &corev1.Secret{}
