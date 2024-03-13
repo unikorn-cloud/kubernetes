@@ -165,7 +165,7 @@ spec:
   source:
     repoURL: https://unikorn-cloud.github.io/unikorn
     chart: unikorn
-    targetRevision: v0.1.1
+    targetRevision: v0.1.8
   destination:
     namespace: unikorn
     server: https://kubernetes.default.svc
