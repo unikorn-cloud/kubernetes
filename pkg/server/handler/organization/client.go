@@ -69,6 +69,9 @@ var (
 	// ErrNamespaceUnset is raised when the namespace hasn't been created
 	// yet.
 	ErrNamespaceUnset = goerrors.New("resource namespace is unset")
+
+	// ErrNoClaims is raised when the claims aren't set.
+	ErrNoClaims = goerrors.New("unikorn claims missing")
 )
 
 // getOrganizationName extracts it from the claims stored in the context.
@@ -78,7 +81,11 @@ func getOrganizationName(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	return claims.Organization, nil
+	if claims.Unikorn == nil {
+		return "", ErrNoClaims
+	}
+
+	return claims.Unikorn.Organization, nil
 }
 
 // active returns true if the project is usable.
