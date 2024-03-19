@@ -294,6 +294,9 @@ type ClusterManagerNameParameter = KubernetesNameParameter
 // ClusterNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type ClusterNameParameter = KubernetesNameParameter
 
+// OrganizationNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
+type OrganizationNameParameter = KubernetesNameParameter
+
 // ProjectNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type ProjectNameParameter = KubernetesNameParameter
 
@@ -348,17 +351,17 @@ type CreateKubernetesClusterRequest = KubernetesCluster
 // CreateProjectRequest A project.
 type CreateProjectRequest = Project
 
-// PostApiV1ProjectsJSONRequestBody defines body for PostApiV1Projects for application/json ContentType.
-type PostApiV1ProjectsJSONRequestBody = Project
+// PostApiV1OrganizationsOrganizationNameProjectsJSONRequestBody defines body for PostApiV1OrganizationsOrganizationNameProjects for application/json ContentType.
+type PostApiV1OrganizationsOrganizationNameProjectsJSONRequestBody = Project
 
-// PostApiV1ProjectsProjectNameClustermanagersJSONRequestBody defines body for PostApiV1ProjectsProjectNameClustermanagers for application/json ContentType.
-type PostApiV1ProjectsProjectNameClustermanagersJSONRequestBody = ClusterManager
+// PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersJSONRequestBody defines body for PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers for application/json ContentType.
+type PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersJSONRequestBody = ClusterManager
 
-// PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody defines body for PutApiV1ProjectsProjectNameClustermanagersClusterManagerName for application/json ContentType.
-type PutApiV1ProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody = ClusterManager
+// PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody defines body for PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName for application/json ContentType.
+type PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody = ClusterManager
 
-// PostApiV1ProjectsProjectNameClustersJSONRequestBody defines body for PostApiV1ProjectsProjectNameClusters for application/json ContentType.
-type PostApiV1ProjectsProjectNameClustersJSONRequestBody = KubernetesCluster
+// PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustersJSONRequestBody defines body for PostApiV1OrganizationsOrganizationNameProjectsProjectNameClusters for application/json ContentType.
+type PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustersJSONRequestBody = KubernetesCluster
 
-// PutApiV1ProjectsProjectNameClustersClusterNameJSONRequestBody defines body for PutApiV1ProjectsProjectNameClustersClusterName for application/json ContentType.
-type PutApiV1ProjectsProjectNameClustersClusterNameJSONRequestBody = KubernetesCluster
+// PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameJSONRequestBody defines body for PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName for application/json ContentType.
+type PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameJSONRequestBody = KubernetesCluster

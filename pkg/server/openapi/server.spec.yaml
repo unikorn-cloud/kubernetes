@@ -25,50 +25,14 @@ x-documentation-groups:
     have to choose some default values for you, however it provides a faster and better
     user experience.
 paths:
-  /api/v1/organization:
-    description: |-
-      An organization defines a business entity that contains a set of projects
-      etc. that belong to that organization.  This is the coarsest grain entity
-      for RBAC.
-    post:
-      x-no-body: true
-      description: |-
-        Creates a new organization based on the access token claims.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '202':
-          $ref: '#/components/responses/acceptedResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '409':
-          $ref: '#/components/responses/conflictResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
-    delete:
-      description: |-
-        Deletes an organization and all its resources based on the access token claims.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '202':
-          $ref: '#/components/responses/acceptedResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '404':
-          $ref: '#/components/responses/notFoundResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/projects:
+  /api/v1/organizations/{organizationName}/projects:
     x-documentation-group: main
     description: |-
       Implements project management services. Projects, as currently defined
       by the Kubernetes service, are implicitly scoped to the access token's
       organization.
+    parameters:
+    - $ref: '#/components/parameters/organizationNameParameter'
     get:
       description: |-
         List all projects for the organization.
@@ -99,8 +63,9 @@ paths:
           $ref: '#/components/responses/conflictResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/projects/{projectName}:
+  /api/v1/organizations/{organizationName}/projects/{projectName}:
     parameters:
+    - $ref: '#/components/parameters/organizationNameParameter'
     - $ref: '#/components/parameters/projectNameParameter'
     delete:
       description: |-
@@ -120,7 +85,7 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/clustermanagers:
+  /api/v1/organizations/{organizationName}/clustermanagers:
     x-documentation-group: main
     description: |-
       Implements cluster manager management services. Control planes manage the
@@ -129,6 +94,8 @@ paths:
       software versions of cluster manager components, and forms the basis of automatic
       upgrade functionality.  Referencing an explicit cluster manager name will
       implicitly create the associated project.
+    parameters:
+    - $ref: '#/components/parameters/organizationNameParameter'
     get:
       description: |-
         Lists cluster managers within the organization.
@@ -145,8 +112,7 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/projects/{projectName}/clustermanagers:
-    x-documentation-group: main
+  /api/v1/organizations/{organizationName}/projects/{projectName}/clustermanagers:
     description: |-
       Implements cluster manager management services. Control planes manage the
       life cycle of Kubernetes clusters, through provisioning, upgrading, to deletion.
@@ -155,6 +121,7 @@ paths:
       upgrade functionality.  Referencing an explicit cluster manager name will
       implicitly create the associated project.
     parameters:
+    - $ref: '#/components/parameters/organizationNameParameter'
     - $ref: '#/components/parameters/projectNameParameter'
     post:
       description: |-
@@ -163,6 +130,7 @@ paths:
       - oauth2Authentication: []
       requestBody:
         $ref: '#/components/requestBodies/createControlPlaneRequest'
+
       responses:
         '202':
           $ref: '#/components/responses/acceptedResponse'
@@ -174,7 +142,7 @@ paths:
           $ref: '#/components/responses/conflictResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/projects/{projectName}/clustermanagers/{clusterManagerName}:
+  /api/v1/organizations/{organizationName}/projects/{projectName}/clustermanagers/{clusterManagerName}:
     x-documentation-group: main
     description: |-
       Implements cluster manager management services. Control planes manage the
@@ -184,6 +152,7 @@ paths:
       upgrade functionality.  Referencing an explicit cluster manager name will
       implicitly create the associated project.
     parameters:
+    - $ref: '#/components/parameters/organizationNameParameter'
     - $ref: '#/components/parameters/projectNameParameter'
     - $ref: '#/components/parameters/clusterManagerNameParameter'
     put:
@@ -221,9 +190,11 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/clusters:
+  /api/v1/organizations/{organizationName}/clusters:
     x-documentation-group: main
     description: Cluster services.
+    parameters:
+    - $ref: '#/components/parameters/organizationNameParameter'
     get:
       description: |-
         List all clusters within the organization.
@@ -240,10 +211,11 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/projects/{projectName}/clusters:
+  /api/v1/organizations/{organizationName}/projects/{projectName}/clusters:
     x-documentation-group: main
     description: Cluster services.
     parameters:
+    - $ref: '#/components/parameters/organizationNameParameter'
     - $ref: '#/components/parameters/projectNameParameter'
     post:
       description: |-
@@ -265,10 +237,11 @@ paths:
           $ref: '#/components/responses/conflictResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/projects/{projectName}/clusters/{clusterName}:
+  /api/v1/organizations/{organizationName}/projects/{projectName}/clusters/{clusterName}:
     x-documentation-group: main
     description: Cluster services.
     parameters:
+    - $ref: '#/components/parameters/organizationNameParameter'
     - $ref: '#/components/parameters/projectNameParameter'
     - $ref: '#/components/parameters/clusterNameParameter'
     put:
@@ -305,10 +278,11 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/projects/{projectName}/clusters/{clusterName}/kubeconfig:
+  /api/v1/organizations/{organizationName}/projects/{projectName}/clusters/{clusterName}/kubeconfig:
     x-documentation-group: main
     description: Cluster services.
     parameters:
+    - $ref: '#/components/parameters/organizationNameParameter'
     - $ref: '#/components/parameters/projectNameParameter'
     - $ref: '#/components/parameters/clusterNameParameter'
     get:
@@ -402,6 +376,14 @@ paths:
           $ref: '#/components/responses/internalServerErrorResponse'
 components:
   parameters:
+    organizationNameParameter:
+      name: organizationName
+      in: path
+      description: |-
+        The organization name.
+      required: true
+      schema:
+        $ref: '#/components/schemas/kubernetesNameParameter'
     projectNameParameter:
       name: projectName
       in: path
