@@ -30,7 +30,6 @@ import (
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/application"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/cluster"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/clustermanager"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/project"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/region"
 	"github.com/unikorn-cloud/unikorn/pkg/server/util"
@@ -64,26 +63,8 @@ func (h *Handler) setUncacheable(w http.ResponseWriter) {
 	w.Header().Add("Cache-Control", "no-cache")
 }
 
-func (h *Handler) PostApiV1Organization(w http.ResponseWriter, r *http.Request) {
-	if err := organization.NewClient(h.client).Create(r.Context()); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	w.WriteHeader(http.StatusAccepted)
-}
-
-func (h *Handler) DeleteApiV1Organization(w http.ResponseWriter, r *http.Request) {
-	if err := organization.NewClient(h.client).Delete(r.Context()); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	w.WriteHeader(http.StatusAccepted)
-}
-
-func (h *Handler) GetApiV1Projects(w http.ResponseWriter, r *http.Request) {
-	result, err := project.NewClient(h.client).List(r.Context())
+func (h *Handler) GetApiV1OrganizationsOrganizationNameProjects(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
+	result, err := project.NewClient(h.client).List(r.Context(), organizationName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -93,7 +74,7 @@ func (h *Handler) GetApiV1Projects(w http.ResponseWriter, r *http.Request) {
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) PostApiV1Projects(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) PostApiV1OrganizationsOrganizationNameProjects(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
 	request := &generated.Project{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -101,7 +82,7 @@ func (h *Handler) PostApiV1Projects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := project.NewClient(h.client).Create(r.Context(), request); err != nil {
+	if err := project.NewClient(h.client).Create(r.Context(), organizationName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -110,8 +91,8 @@ func (h *Handler) PostApiV1Projects(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) DeleteApiV1ProjectsProjectName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter) {
-	if err := project.NewClient(h.client).Delete(r.Context(), projectName); err != nil {
+func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter) {
+	if err := project.NewClient(h.client).Delete(r.Context(), organizationName, projectName); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -120,8 +101,8 @@ func (h *Handler) DeleteApiV1ProjectsProjectName(w http.ResponseWriter, r *http.
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) GetApiV1Clustermanagers(w http.ResponseWriter, r *http.Request) {
-	result, err := clustermanager.NewClient(h.client).List(r.Context())
+func (h *Handler) GetApiV1OrganizationsOrganizationNameClustermanagers(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
+	result, err := clustermanager.NewClient(h.client).List(r.Context(), organizationName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -131,7 +112,7 @@ func (h *Handler) GetApiV1Clustermanagers(w http.ResponseWriter, r *http.Request
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) PostApiV1ProjectsProjectNameClustermanagers(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter) {
+func (h *Handler) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter) {
 	request := &generated.ClusterManager{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -139,7 +120,7 @@ func (h *Handler) PostApiV1ProjectsProjectNameClustermanagers(w http.ResponseWri
 		return
 	}
 
-	if err := clustermanager.NewClient(h.client).Create(r.Context(), projectName, request); err != nil {
+	if err := clustermanager.NewClient(h.client).Create(r.Context(), organizationName, projectName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -148,8 +129,8 @@ func (h *Handler) PostApiV1ProjectsProjectNameClustermanagers(w http.ResponseWri
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, clusterManagerName generated.ClusterManagerNameParameter) {
-	if err := clustermanager.NewClient(h.client).Delete(r.Context(), projectName, clusterManagerName); err != nil {
+func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, clusterManagerName generated.ClusterManagerNameParameter) {
+	if err := clustermanager.NewClient(h.client).Delete(r.Context(), organizationName, projectName, clusterManagerName); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -158,7 +139,7 @@ func (h *Handler) DeleteApiV1ProjectsProjectNameClustermanagersClusterManagerNam
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) PutApiV1ProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, controlPlaneName generated.ClusterManagerNameParameter) {
+func (h *Handler) PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, controlPlaneName generated.ClusterManagerNameParameter) {
 	request := &generated.ClusterManager{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -166,7 +147,7 @@ func (h *Handler) PutApiV1ProjectsProjectNameClustermanagersClusterManagerName(w
 		return
 	}
 
-	if err := clustermanager.NewClient(h.client).Update(r.Context(), projectName, controlPlaneName, request); err != nil {
+	if err := clustermanager.NewClient(h.client).Update(r.Context(), organizationName, projectName, controlPlaneName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -175,8 +156,8 @@ func (h *Handler) PutApiV1ProjectsProjectNameClustermanagersClusterManagerName(w
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) GetApiV1Clusters(w http.ResponseWriter, r *http.Request) {
-	result, err := cluster.NewClient(h.client, &h.options.Cluster).List(r.Context())
+func (h *Handler) GetApiV1OrganizationsOrganizationNameClusters(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
+	result, err := cluster.NewClient(h.client, &h.options.Cluster).List(r.Context(), organizationName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -186,7 +167,7 @@ func (h *Handler) GetApiV1Clusters(w http.ResponseWriter, r *http.Request) {
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) PostApiV1ProjectsProjectNameClusters(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter) {
+func (h *Handler) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClusters(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter) {
 	request := &generated.KubernetesCluster{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -194,7 +175,7 @@ func (h *Handler) PostApiV1ProjectsProjectNameClusters(w http.ResponseWriter, r 
 		return
 	}
 
-	if err := cluster.NewClient(h.client, &h.options.Cluster).Create(r.Context(), projectName, request); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster).Create(r.Context(), organizationName, projectName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -203,8 +184,8 @@ func (h *Handler) PostApiV1ProjectsProjectNameClusters(w http.ResponseWriter, r 
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) DeleteApiV1ProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
-	if err := cluster.NewClient(h.client, &h.options.Cluster).Delete(r.Context(), projectName, clusterName); err != nil {
+func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
+	if err := cluster.NewClient(h.client, &h.options.Cluster).Delete(r.Context(), organizationName, projectName, clusterName); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -213,7 +194,7 @@ func (h *Handler) DeleteApiV1ProjectsProjectNameClustersClusterName(w http.Respo
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) PutApiV1ProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
+func (h *Handler) PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
 	request := &generated.KubernetesCluster{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -221,7 +202,7 @@ func (h *Handler) PutApiV1ProjectsProjectNameClustersClusterName(w http.Response
 		return
 	}
 
-	if err := cluster.NewClient(h.client, &h.options.Cluster).Update(r.Context(), projectName, clusterName, request); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster).Update(r.Context(), organizationName, projectName, clusterName, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -230,8 +211,8 @@ func (h *Handler) PutApiV1ProjectsProjectNameClustersClusterName(w http.Response
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) GetApiV1ProjectsProjectNameClustersClusterNameKubeconfig(w http.ResponseWriter, r *http.Request, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
-	result, err := cluster.NewClient(h.client, &h.options.Cluster).GetKubeconfig(r.Context(), projectName, clusterName)
+func (h *Handler) GetApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameKubeconfig(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
+	result, err := cluster.NewClient(h.client, &h.options.Cluster).GetKubeconfig(r.Context(), organizationName, projectName, clusterName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

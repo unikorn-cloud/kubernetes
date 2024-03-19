@@ -84,7 +84,7 @@ var (
 
 // provisionDefaultClusterManager is called when a cluster creation call is made and the
 // control plane does not exist.
-func (c *Client) provisionDefaultClusterManager(ctx context.Context, projectName, name string) error {
+func (c *Client) provisionDefaultClusterManager(ctx context.Context, organizationName, projectName, name string) error {
 	log := log.FromContext(ctx)
 
 	log.Info("creating implicit control plane", "name", name)
@@ -96,7 +96,7 @@ func (c *Client) provisionDefaultClusterManager(ctx context.Context, projectName
 		Name: name,
 	}
 
-	if err := c.Create(ctx, projectName, defaultClusterManager); err != nil {
+	if err := c.Create(ctx, organizationName, projectName, defaultClusterManager); err != nil {
 		return err
 	}
 
@@ -104,8 +104,8 @@ func (c *Client) provisionDefaultClusterManager(ctx context.Context, projectName
 }
 
 // GetMetadata retrieves the control plane metadata.
-func (c *Client) GetMetadata(ctx context.Context, projectName, name string) (*Meta, error) {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
+func (c *Client) GetMetadata(ctx context.Context, organizationName, projectName, name string) (*Meta, error) {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +124,8 @@ func (c *Client) GetMetadata(ctx context.Context, projectName, name string) (*Me
 	return metadata, nil
 }
 
-func (c *Client) GetOrCreateMetadata(ctx context.Context, projectName, name string) (*Meta, error) {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
+func (c *Client) GetOrCreateMetadata(ctx context.Context, organizationName, projectName, name string) (*Meta, error) {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func (c *Client) GetOrCreateMetadata(ctx context.Context, projectName, name stri
 			return nil, err
 		}
 
-		if err := c.provisionDefaultClusterManager(ctx, projectName, name); err != nil {
+		if err := c.provisionDefaultClusterManager(ctx, organizationName, projectName, name); err != nil {
 			return nil, err
 		}
 	}
@@ -234,12 +234,12 @@ func (c *Client) convertList(in *unikornv1.ClusterManagerList) ([]*generated.Clu
 }
 
 // List returns all control planes.
-func (c *Client) List(ctx context.Context) ([]*generated.ClusterManager, error) {
+func (c *Client) List(ctx context.Context, organizationName string) ([]*generated.ClusterManager, error) {
 	selector := labels.NewSelector()
 
 	// TODO: a super-admin isn't scoped to a single organization!
 	// TODO: RBAC - filter projects based on user membership here.
-	organization, err := organization.NewClient(c.client).GetMetadata(ctx)
+	organization, err := organization.NewClient(c.client).GetMetadata(ctx, organizationName)
 	if err != nil {
 		return nil, err
 	}
@@ -341,8 +341,8 @@ func (c *Client) generate(ctx context.Context, project *project.Meta, parameters
 }
 
 // Create creates a control plane.
-func (c *Client) Create(ctx context.Context, projectName generated.ProjectNameParameter, request *generated.ClusterManager) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
+func (c *Client) Create(ctx context.Context, organizationName, projectName string, request *generated.ClusterManager) error {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
 	if err != nil {
 		return err
 	}
@@ -369,8 +369,8 @@ func (c *Client) Create(ctx context.Context, projectName generated.ProjectNamePa
 }
 
 // Delete deletes the control plane.
-func (c *Client) Delete(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ClusterManagerNameParameter) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
+func (c *Client) Delete(ctx context.Context, organizationName, projectName, name string) error {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
 	if err != nil {
 		return err
 	}
@@ -398,8 +398,8 @@ func (c *Client) Delete(ctx context.Context, projectName generated.ProjectNamePa
 }
 
 // Update implements read/modify/write for the control plane.
-func (c *Client) Update(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ClusterManagerNameParameter, request *generated.ClusterManager) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
+func (c *Client) Update(ctx context.Context, organizationName, projectName, name string, request *generated.ClusterManager) error {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
 	if err != nil {
 		return err
 	}

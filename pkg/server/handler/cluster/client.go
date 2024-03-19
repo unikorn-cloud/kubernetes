@@ -83,12 +83,12 @@ func NewClient(client client.Client, options *Options) *Client {
 }
 
 // List returns all clusters owned by the implicit control plane.
-func (c *Client) List(ctx context.Context) ([]*generated.KubernetesCluster, error) {
+func (c *Client) List(ctx context.Context, organizationName string) ([]*generated.KubernetesCluster, error) {
 	selector := labels.NewSelector()
 
 	// TODO: a super-admin isn't scoped to a single organization!
 	// TODO: RBAC - filter projects based on user membership here.
-	organization, err := organization.NewClient(c.client).GetMetadata(ctx)
+	organization, err := organization.NewClient(c.client).GetMetadata(ctx, organizationName)
 	if err != nil {
 		return nil, err
 	}
@@ -136,8 +136,8 @@ func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.Ku
 }
 
 // GetKubeconfig returns the kubernetes configuation associated with a cluster.
-func (c *Client) GetKubeconfig(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ClusterNameParameter) ([]byte, error) {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
+func (c *Client) GetKubeconfig(ctx context.Context, organizationName, projectName, name string) ([]byte, error) {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -213,8 +213,8 @@ func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Open
 */
 
 // Create creates the implicit cluster indentified by the JTW claims.
-func (c *Client) Create(ctx context.Context, projectName generated.ProjectNameParameter, options *generated.KubernetesCluster) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
+func (c *Client) Create(ctx context.Context, organizationName, projectName string, options *generated.KubernetesCluster) error {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
 	if err != nil {
 		return err
 	}
@@ -226,7 +226,7 @@ func (c *Client) Create(ctx context.Context, projectName generated.ProjectNamePa
 		clusterManagerName = *options.ClusterManager
 	}
 
-	if _, err := clustermanager.NewClient(c.client).GetOrCreateMetadata(ctx, project.Name, clusterManagerName); err != nil {
+	if _, err := clustermanager.NewClient(c.client).GetOrCreateMetadata(ctx, organizationName, project.Name, clusterManagerName); err != nil {
 		return err
 	}
 
@@ -261,8 +261,8 @@ func (c *Client) Create(ctx context.Context, projectName generated.ProjectNamePa
 }
 
 // Delete deletes the implicit cluster indentified by the JTW claims.
-func (c *Client) Delete(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ClusterNameParameter) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
+func (c *Client) Delete(ctx context.Context, organizationName, projectName, name string) error {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
 	if err != nil {
 		return err
 	}
@@ -290,8 +290,8 @@ func (c *Client) Delete(ctx context.Context, projectName generated.ProjectNamePa
 }
 
 // Update implements read/modify/write for the cluster.
-func (c *Client) Update(ctx context.Context, projectName generated.ProjectNameParameter, name generated.ClusterNameParameter, request *generated.KubernetesCluster) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, projectName)
+func (c *Client) Update(ctx context.Context, organizationName, projectName, name string, request *generated.KubernetesCluster) error {
+	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
 	if err != nil {
 		return err
 	}

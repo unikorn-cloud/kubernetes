@@ -21,7 +21,6 @@ import (
 	"context"
 	goerrors "errors"
 
-	"github.com/unikorn-cloud/core/pkg/authorization/oauth2/claims"
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util/retry"
@@ -69,24 +68,7 @@ var (
 	// ErrNamespaceUnset is raised when the namespace hasn't been created
 	// yet.
 	ErrNamespaceUnset = goerrors.New("resource namespace is unset")
-
-	// ErrNoClaims is raised when the claims aren't set.
-	ErrNoClaims = goerrors.New("unikorn claims missing")
 )
-
-// getOrganizationName extracts it from the claims stored in the context.
-func getOrganizationName(ctx context.Context) (string, error) {
-	claims, err := claims.FromContext(ctx)
-	if err != nil {
-		return "", err
-	}
-
-	if claims.Unikorn == nil {
-		return "", ErrNoClaims
-	}
-
-	return claims.Unikorn.Organization, nil
-}
 
 // active returns true if the project is usable.
 func active(p *unikornv1.Organization) error {
@@ -101,12 +83,7 @@ func active(p *unikornv1.Organization) error {
 // GetMetadata retrieves the organization metadata.
 // Clients should consult at least the Active status before doing anything
 // with the organization.
-func (c *Client) GetMetadata(ctx context.Context) (*Meta, error) {
-	name, err := getOrganizationName(ctx)
-	if err != nil {
-		return nil, err
-	}
-
+func (c *Client) GetMetadata(ctx context.Context, name string) (*Meta, error) {
 	result, err := c.get(ctx, name)
 	if err != nil {
 		return nil, err
@@ -121,13 +98,8 @@ func (c *Client) GetMetadata(ctx context.Context) (*Meta, error) {
 	return metadata, nil
 }
 
-func (c *Client) GetOrCreateMetadata(ctx context.Context) (*Meta, error) {
+func (c *Client) GetOrCreateMetadata(ctx context.Context, name string) (*Meta, error) {
 	log := log.FromContext(ctx)
-
-	name, err := getOrganizationName(ctx)
-	if err != nil {
-		return nil, err
-	}
 
 	result, err := c.get(ctx, name)
 	if err != nil {
@@ -137,7 +109,7 @@ func (c *Client) GetOrCreateMetadata(ctx context.Context) (*Meta, error) {
 
 		log.Info("creating implicit organization", "organization", name)
 
-		if err := c.Create(ctx); err != nil {
+		if err := c.Create(ctx, name); err != nil {
 			return nil, err
 		}
 	}
@@ -197,13 +169,7 @@ func (c *Client) get(ctx context.Context, name string) (*unikornv1.Organization,
 }
 
 // Create creates the implicit organization indentified by the JTW claims.
-func (c *Client) Create(ctx context.Context) error {
-	name, err := getOrganizationName(ctx)
-	if err != nil {
-		return err
-	}
-
-	// TODO: common with CLI tools.
+func (c *Client) Create(ctx context.Context, name string) error {
 	organization := &unikornv1.Organization{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -226,12 +192,7 @@ func (c *Client) Create(ctx context.Context) error {
 }
 
 // Delete deletes the implicit organization indentified by the JTW claims.
-func (c *Client) Delete(ctx context.Context) error {
-	name, err := getOrganizationName(ctx)
-	if err != nil {
-		return err
-	}
-
+func (c *Client) Delete(ctx context.Context, name string) error {
 	organization := &unikornv1.Organization{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,

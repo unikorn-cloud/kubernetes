@@ -78,8 +78,8 @@ var (
 // GetMetadata retrieves the project metadata.
 // Clients should consult at least the Active status before doing anything
 // with the project.
-func (c *Client) GetMetadata(ctx context.Context, name string) (*Meta, error) {
-	organization, err := organization.NewClient(c.client).GetMetadata(ctx)
+func (c *Client) GetMetadata(ctx context.Context, organizationName, name string) (*Meta, error) {
+	organization, err := organization.NewClient(c.client).GetMetadata(ctx, organizationName)
 	if err != nil {
 		return nil, err
 	}
@@ -135,8 +135,8 @@ func convertList(in *unikornv1.ProjectList) generated.Projects {
 	return out
 }
 
-func (c *Client) List(ctx context.Context) (generated.Projects, error) {
-	organization, err := organization.NewClient(c.client).GetMetadata(ctx)
+func (c *Client) List(ctx context.Context, organizationName string) (generated.Projects, error) {
+	organization, err := organization.NewClient(c.client).GetMetadata(ctx, organizationName)
 	if err != nil {
 		// If the organization hasn't been created, then this will 404, which is
 		// kinda confusing.
@@ -189,8 +189,8 @@ func generate(organization *organization.Meta, request *generated.Project) *unik
 }
 
 // Create creates the implicit project indentified by the JTW claims.
-func (c *Client) Create(ctx context.Context, request *generated.Project) error {
-	organization, err := organization.NewClient(c.client).GetOrCreateMetadata(ctx)
+func (c *Client) Create(ctx context.Context, organizationName string, request *generated.Project) error {
+	organization, err := organization.NewClient(c.client).GetOrCreateMetadata(ctx, organizationName)
 	if err != nil {
 		return err
 	}
@@ -214,8 +214,8 @@ func (c *Client) Create(ctx context.Context, request *generated.Project) error {
 }
 
 // Delete deletes the implicit project indentified by the JTW claims.
-func (c *Client) Delete(ctx context.Context, name string) error {
-	organization, err := organization.NewClient(c.client).GetMetadata(ctx)
+func (c *Client) Delete(ctx context.Context, organizationName, name string) error {
+	organization, err := organization.NewClient(c.client).GetMetadata(ctx, organizationName)
 	if err != nil {
 		return err
 	}

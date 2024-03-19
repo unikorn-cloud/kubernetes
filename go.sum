@@ -305,14 +305,8 @@ github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go/codec v1.2.12 h1:9LC83zGrHhuUA9l16C9AHXAqEV/2wBQ4nkvumAE65EE=
 github.com/ugorji/go/codec v1.2.12/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
-github.com/unikorn-cloud/core v0.1.7 h1:I2Xu9gYlRnkG0TjY+qbTIWY+kHCv76mCOVFkLL1dsaY=
-github.com/unikorn-cloud/core v0.1.7/go.mod h1:G45rJ0e5LOdoFcD9C00wSuhe/AMeBC+tczmQSsS+0/Q=
-github.com/unikorn-cloud/core v0.1.8 h1:JJAfUgCP2hAAAMcfWjE0hmyDOmlg9fxNlWSyJs7gT3k=
-github.com/unikorn-cloud/core v0.1.8/go.mod h1:G45rJ0e5LOdoFcD9C00wSuhe/AMeBC+tczmQSsS+0/Q=
-github.com/unikorn-cloud/core v0.1.9 h1:XGgq0WXbfjXVc7WKG8rVhotNtNaIV1uEZ5hDxQXq7D8=
-github.com/unikorn-cloud/core v0.1.9/go.mod h1:G45rJ0e5LOdoFcD9C00wSuhe/AMeBC+tczmQSsS+0/Q=
-github.com/unikorn-cloud/core v0.1.10 h1:8D5+CSbBi0ziutAoaWnQq/t1mtfV0IQ1uD6Dg7HfAqY=
-github.com/unikorn-cloud/core v0.1.10/go.mod h1:G45rJ0e5LOdoFcD9C00wSuhe/AMeBC+tczmQSsS+0/Q=
+github.com/unikorn-cloud/core v0.1.12 h1:I78A9dNMCMtth1WGrEEPhktyNOtQ33W52TIRuw2R4XA=
+github.com/unikorn-cloud/core v0.1.12/go.mod h1:G45rJ0e5LOdoFcD9C00wSuhe/AMeBC+tczmQSsS+0/Q=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasttemplate v1.2.2 h1:lxLXG0uE3Qnshl9QyaK6XJxMXlQZELvChBOCmQD0Loo=
