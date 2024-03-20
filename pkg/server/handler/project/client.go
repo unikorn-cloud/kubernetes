@@ -22,7 +22,11 @@ import (
 	goerrors "errors"
 	"slices"
 
+	"github.com/go-jose/go-jose/v3/jwt"
+
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/core/pkg/authorization/roles"
+	"github.com/unikorn-cloud/core/pkg/authorization/userinfo"
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
@@ -33,6 +37,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // Client wraps up project related management handling.
@@ -137,6 +142,37 @@ func convertList(in *unikornv1.ProjectList) generated.Projects {
 	return out
 }
 
+// GroupPermissions are privilege grants for a project.
+type GroupPermissions struct {
+	// ID is the unique, immutable project identifier.
+	ID string `json:"id"`
+	// Roles are the privileges a user has for the group.
+	Roles []roles.Role `json:"roles"`
+}
+
+// OrganizationPermissions are privilege grants for an organization.
+type OrganizationPermissions struct {
+	// IsAdmin allows the user to play with all resources in an organization.
+	IsAdmin bool `json:"isAdmin,omitempty"`
+	// Name is the name of the organization.
+	Name string `json:"name"`
+	// Groups are any groups the user belongs to in an organization.
+	Groups []GroupPermissions `json:"groups,omitempty"`
+}
+
+// Permissions are privilege grants for the entire system.
+type Permissions struct {
+	// IsSuperAdmin HAS SUPER COW POWERS!!!
+	IsSuperAdmin bool `json:"isSuperAdmin,omitempty"`
+	// Organizations are any organizations the user has access to.
+	Organizations []OrganizationPermissions `json:"organizations,omitempty"`
+}
+
+type UserInfoType struct {
+	jwt.Claims
+	Permissions *Permissions `json:"permissions,omitempty"`
+}
+
 func (c *Client) List(ctx context.Context, organizationName string) (generated.Projects, error) {
 	organization, err := organization.NewClient(c.client).GetMetadata(ctx, organizationName)
 	if err != nil {
@@ -148,6 +184,18 @@ func (c *Client) List(ctx context.Context, organizationName string) (generated.P
 
 		return nil, err
 	}
+
+	ui := userinfo.FromContext(ctx)
+
+	userinfo := &UserInfoType{}
+
+	if err := ui.Claims(userinfo); err != nil {
+		return nil, errors.OAuth2ServerError("failed to extract claims").WithError(err)
+	}
+
+	log := log.FromContext(ctx)
+
+	log.Info("rbac", "userinfo", userinfo)
 
 	result := &unikornv1.ProjectList{}
 

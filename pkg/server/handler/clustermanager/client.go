@@ -220,8 +220,8 @@ func (c *Client) convert(in *unikornv1.ClusterManager) (*generated.ClusterManage
 }
 
 // convertList converts from Kubernetes into OpenAPI types.
-func (c *Client) convertList(in *unikornv1.ClusterManagerList) ([]*generated.ClusterManager, error) {
-	out := make([]*generated.ClusterManager, len(in.Items))
+func (c *Client) convertList(in *unikornv1.ClusterManagerList) (generated.ClusterManagers, error) {
+	out := make(generated.ClusterManagers, len(in.Items))
 
 	for i := range in.Items {
 		item, err := c.convert(&in.Items[i])
@@ -229,20 +229,24 @@ func (c *Client) convertList(in *unikornv1.ClusterManagerList) ([]*generated.Clu
 			return nil, err
 		}
 
-		out[i] = item
+		out[i] = *item
 	}
 
 	return out, nil
 }
 
 // List returns all control planes.
-func (c *Client) List(ctx context.Context, organizationName string) ([]*generated.ClusterManager, error) {
+func (c *Client) List(ctx context.Context, organizationName string) (generated.ClusterManagers, error) {
 	selector := labels.NewSelector()
 
 	// TODO: a super-admin isn't scoped to a single organization!
 	// TODO: RBAC - filter projects based on user membership here.
 	organization, err := organization.NewClient(c.client).GetMetadata(ctx, organizationName)
 	if err != nil {
+		if errors.IsHTTPNotFound(err) {
+			return generated.ClusterManagers{}, nil
+		}
+
 		return nil, err
 	}
 

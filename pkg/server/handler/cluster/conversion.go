@@ -137,8 +137,8 @@ func (c *Client) convert(in *unikornv1.KubernetesCluster) (*generated.Kubernetes
 }
 
 // uconvertList converts from a custom resource list into the API definition.
-func (c *Client) convertList(in *unikornv1.KubernetesClusterList) ([]*generated.KubernetesCluster, error) {
-	out := make([]*generated.KubernetesCluster, len(in.Items))
+func (c *Client) convertList(in *unikornv1.KubernetesClusterList) (generated.KubernetesClusters, error) {
+	out := make(generated.KubernetesClusters, len(in.Items))
 
 	for i := range in.Items {
 		item, err := c.convert(&in.Items[i])
@@ -146,7 +146,7 @@ func (c *Client) convertList(in *unikornv1.KubernetesClusterList) ([]*generated.
 			return nil, err
 		}
 
-		out[i] = item
+		out[i] = *item
 	}
 
 	return out, nil

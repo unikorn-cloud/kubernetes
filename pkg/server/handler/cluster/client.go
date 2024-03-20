@@ -83,13 +83,17 @@ func NewClient(client client.Client, options *Options) *Client {
 }
 
 // List returns all clusters owned by the implicit control plane.
-func (c *Client) List(ctx context.Context, organizationName string) ([]*generated.KubernetesCluster, error) {
+func (c *Client) List(ctx context.Context, organizationName string) (generated.KubernetesClusters, error) {
 	selector := labels.NewSelector()
 
 	// TODO: a super-admin isn't scoped to a single organization!
 	// TODO: RBAC - filter projects based on user membership here.
 	organization, err := organization.NewClient(c.client).GetMetadata(ctx, organizationName)
 	if err != nil {
+		if errors.IsHTTPNotFound(err) {
+			return generated.KubernetesClusters{}, nil
+		}
+
 		return nil, err
 	}
 
