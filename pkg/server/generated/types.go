@@ -92,9 +92,36 @@ type Applications = []Application
 
 // ClusterManager A cluster manager.
 type ClusterManager struct {
-	// Metadata A resources's metadata
-	Metadata *ResourceMetadata `json:"metadata,omitempty"`
+	// Metadata Required metadata for cluster managers.
+	Metadata ClusterManagerMetadata `json:"metadata"`
 
+	// Spec A cluster manager.
+	Spec ClusterManagerSpec `json:"spec"`
+}
+
+// ClusterManagerMetadata Required metadata for cluster managers.
+type ClusterManagerMetadata struct {
+	// CreationTime The time the resource was created.
+	CreationTime time.Time `json:"creationTime"`
+
+	// DeletionTime The time the resource was deleted.
+	DeletionTime *time.Time `json:"deletionTime,omitempty"`
+
+	// Project Where the resource is related to a project, this is populated.
+	Project string `json:"project"`
+
+	// Status The current status of the resource. Intially the status will be "Unknown" until
+	// the resource is reconciled by the relevant controller. It then will transition to
+	// "Provisioning" and will be ready for use when it changes to "Provisioned". The status
+	// will also transition to the "Provisioning" status during an update. The
+	// status will change to "Deprovisioning" when a delete request is being processed.
+	// It may also change to "Error" if an unexpected error occurred during any operation.
+	// Errors may be transient.
+	Status string `json:"status"`
+}
+
+// ClusterManagerSpec A cluster manager.
+type ClusterManagerSpec struct {
 	// Name The name of the resource.
 	Name string `json:"name"`
 }
@@ -158,14 +185,54 @@ type ImageVersions struct {
 // Images A list of images that are compatible with this platform.
 type Images = []Image
 
-// KubernetesCluster Kubernetes cluster creation parameters.
+// KubernetesCluster Kubernetes cluster read.
 type KubernetesCluster struct {
+	// Metadata Required metadata for clusters.
+	Metadata KubernetesClusterMetadata `json:"metadata"`
+
+	// Spec Kubernetes cluster creation parameters.
+	Spec KubernetesClusterSpec `json:"spec"`
+}
+
+// KubernetesClusterAutoscaling A Kubernetes cluster workload pool autoscaling configuration. Cluster autoscaling
+// must also be enabled in the cluster features.
+type KubernetesClusterAutoscaling struct {
+	// MinimumReplicas The minimum number of replicas to allow. Must be less than the maximum.
+	MinimumReplicas int `json:"minimumReplicas"`
+}
+
+// KubernetesClusterMetadata Required metadata for clusters.
+type KubernetesClusterMetadata struct {
+	// Clustermanager Where the resource is scoped to a cluster manager, this is populated.
+	Clustermanager string `json:"clustermanager"`
+
+	// CreationTime The time the resource was created.
+	CreationTime time.Time `json:"creationTime"`
+
+	// DeletionTime The time the resource was deleted.
+	DeletionTime *time.Time `json:"deletionTime,omitempty"`
+
+	// Project Where the resource is related to a project, this is populated.
+	Project string `json:"project"`
+
+	// Region Where the resource is scoped to a region, this is populated,
+	Region string `json:"region"`
+
+	// Status The current status of the resource. Intially the status will be "Unknown" until
+	// the resource is reconciled by the relevant controller. It then will transition to
+	// "Provisioning" and will be ready for use when it changes to "Provisioned". The status
+	// will also transition to the "Provisioning" status during an update. The
+	// status will change to "Deprovisioning" when a delete request is being processed.
+	// It may also change to "Error" if an unexpected error occurred during any operation.
+	// Errors may be transient.
+	Status string `json:"status"`
+}
+
+// KubernetesClusterSpec Kubernetes cluster creation parameters.
+type KubernetesClusterSpec struct {
 	// ClusterManager The name of the cluster manager to use, if one is not specified
 	// the system will create one for you.
 	ClusterManager *string `json:"clusterManager,omitempty"`
-
-	// Metadata A resources's metadata
-	Metadata *ResourceMetadata `json:"metadata,omitempty"`
 
 	// Name Cluster name.
 	Name string `json:"name"`
@@ -178,13 +245,6 @@ type KubernetesCluster struct {
 
 	// WorkloadPools A list of Kubernetes cluster workload pools.
 	WorkloadPools KubernetesClusterWorkloadPools `json:"workloadPools"`
-}
-
-// KubernetesClusterAutoscaling A Kubernetes cluster workload pool autoscaling configuration. Cluster autoscaling
-// must also be enabled in the cluster features.
-type KubernetesClusterAutoscaling struct {
-	// MinimumReplicas The minimum number of replicas to allow. Must be less than the maximum.
-	MinimumReplicas int `json:"minimumReplicas"`
 }
 
 // KubernetesClusterWorkloadPool A Kuberntes cluster workload pool.
@@ -238,9 +298,34 @@ type Oauth2ErrorError string
 
 // Project A project.
 type Project struct {
-	// Metadata A resources's metadata
-	Metadata *ResourceMetadata `json:"metadata,omitempty"`
-	Name     string            `json:"name"`
+	// Metadata Required metadata for projects.
+	Metadata ProjectMetadata `json:"metadata"`
+
+	// Spec A project.
+	Spec ProjectSpec `json:"spec"`
+}
+
+// ProjectMetadata Required metadata for projects.
+type ProjectMetadata struct {
+	// CreationTime The time the resource was created.
+	CreationTime time.Time `json:"creationTime"`
+
+	// DeletionTime The time the resource was deleted.
+	DeletionTime *time.Time `json:"deletionTime,omitempty"`
+
+	// Status The current status of the resource. Intially the status will be "Unknown" until
+	// the resource is reconciled by the relevant controller. It then will transition to
+	// "Provisioning" and will be ready for use when it changes to "Provisioned". The status
+	// will also transition to the "Provisioning" status during an update. The
+	// status will change to "Deprovisioning" when a delete request is being processed.
+	// It may also change to "Error" if an unexpected error occurred during any operation.
+	// Errors may be transient.
+	Status string `json:"status"`
+}
+
+// ProjectSpec A project.
+type ProjectSpec struct {
+	Name string `json:"name"`
 }
 
 // Projects A list of projects.
@@ -254,33 +339,6 @@ type Region struct {
 
 // Regions A list of regions.
 type Regions = []Region
-
-// ResourceMetadata A resources's metadata
-type ResourceMetadata struct {
-	// Clustermanager Where the resource is scoped to a cluster manager, this is populated.
-	Clustermanager *string `json:"clustermanager,omitempty"`
-
-	// CreationTime The time the resource was created.
-	CreationTime time.Time `json:"creationTime"`
-
-	// DeletionTime The time the resource was deleted.
-	DeletionTime *time.Time `json:"deletionTime,omitempty"`
-
-	// Project Where the resource is related to a project, this is populated.
-	Project *string `json:"project,omitempty"`
-
-	// Region Where the resource is scoped to a region, this is populated,
-	Region *string `json:"region,omitempty"`
-
-	// Status The current status of the resource. Intially the status will be "Unknown" until
-	// the resource is reconciled by the relevant controller. It then will transition to
-	// "Provisioning" and will be ready for use when it changes to "Provisioned". The status
-	// will also transition to the "Provisioning" status during an update. The
-	// status will change to "Deprovisioning" when a delete request is being processed.
-	// It may also change to "Error" if an unexpected error occurred during any operation.
-	// Errors may be transient.
-	Status string `json:"status"`
-}
 
 // Volume A volume.
 type Volume struct {
@@ -343,25 +401,25 @@ type RegionsResponse = Regions
 type UnauthorizedResponse = Oauth2Error
 
 // CreateControlPlaneRequest A cluster manager.
-type CreateControlPlaneRequest = ClusterManager
+type CreateControlPlaneRequest = ClusterManagerSpec
 
 // CreateKubernetesClusterRequest Kubernetes cluster creation parameters.
-type CreateKubernetesClusterRequest = KubernetesCluster
+type CreateKubernetesClusterRequest = KubernetesClusterSpec
 
 // CreateProjectRequest A project.
-type CreateProjectRequest = Project
+type CreateProjectRequest = ProjectSpec
 
 // PostApiV1OrganizationsOrganizationNameProjectsJSONRequestBody defines body for PostApiV1OrganizationsOrganizationNameProjects for application/json ContentType.
-type PostApiV1OrganizationsOrganizationNameProjectsJSONRequestBody = Project
+type PostApiV1OrganizationsOrganizationNameProjectsJSONRequestBody = ProjectSpec
 
 // PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersJSONRequestBody defines body for PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers for application/json ContentType.
-type PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersJSONRequestBody = ClusterManager
+type PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersJSONRequestBody = ClusterManagerSpec
 
 // PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody defines body for PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName for application/json ContentType.
-type PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody = ClusterManager
+type PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody = ClusterManagerSpec
 
 // PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustersJSONRequestBody defines body for PostApiV1OrganizationsOrganizationNameProjectsProjectNameClusters for application/json ContentType.
-type PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustersJSONRequestBody = KubernetesCluster
+type PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustersJSONRequestBody = KubernetesClusterSpec
 
 // PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameJSONRequestBody defines body for PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName for application/json ContentType.
-type PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameJSONRequestBody = KubernetesCluster
+type PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameJSONRequestBody = KubernetesClusterSpec

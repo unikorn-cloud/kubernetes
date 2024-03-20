@@ -99,8 +99,8 @@ func (c *Client) GetMetadata(ctx context.Context, organizationName, name string)
 	return metadata, nil
 }
 
-func convertMetadata(in *unikornv1.Project) *generated.ResourceMetadata {
-	out := &generated.ResourceMetadata{
+func convertMetadata(in *unikornv1.Project) generated.ProjectMetadata {
+	out := generated.ProjectMetadata{
 		CreationTime: in.CreationTimestamp.Time,
 		Status:       "Unknown",
 	}
@@ -119,7 +119,9 @@ func convertMetadata(in *unikornv1.Project) *generated.ResourceMetadata {
 func convert(in *unikornv1.Project) *generated.Project {
 	out := &generated.Project{
 		Metadata: convertMetadata(in),
-		Name:     in.Name,
+		Spec: generated.ProjectSpec{
+			Name: in.Name,
+		},
 	}
 
 	return out
@@ -173,7 +175,7 @@ func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.Pr
 	return result, nil
 }
 
-func generate(organization *organization.Meta, request *generated.Project) *unikornv1.Project {
+func generate(organization *organization.Meta, request *generated.ProjectSpec) *unikornv1.Project {
 	resource := &unikornv1.Project{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      request.Name,
@@ -189,7 +191,7 @@ func generate(organization *organization.Meta, request *generated.Project) *unik
 }
 
 // Create creates the implicit project indentified by the JTW claims.
-func (c *Client) Create(ctx context.Context, organizationName string, request *generated.Project) error {
+func (c *Client) Create(ctx context.Context, organizationName string, request *generated.ProjectSpec) error {
 	organization, err := organization.NewClient(c.client).GetOrCreateMetadata(ctx, organizationName)
 	if err != nil {
 		return err

@@ -75,7 +75,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationNameProjects(w http.ResponseW
 }
 
 func (h *Handler) PostApiV1OrganizationsOrganizationNameProjects(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
-	request := &generated.Project{}
+	request := &generated.ProjectSpec{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
 		errors.HandleError(w, r, err)
@@ -113,7 +113,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationNameClustermanagers(w http.Re
 }
 
 func (h *Handler) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter) {
-	request := &generated.ClusterManager{}
+	request := &generated.ClusterManagerSpec{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
 		errors.HandleError(w, r, err)
@@ -140,7 +140,7 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClu
 }
 
 func (h *Handler) PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, controlPlaneName generated.ClusterManagerNameParameter) {
-	request := &generated.ClusterManager{}
+	request := &generated.ClusterManagerSpec{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
 		errors.HandleError(w, r, err)
@@ -168,7 +168,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationNameClusters(w http.ResponseW
 }
 
 func (h *Handler) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClusters(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter) {
-	request := &generated.KubernetesCluster{}
+	request := &generated.KubernetesClusterSpec{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
 		errors.HandleError(w, r, err)
@@ -195,7 +195,7 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClu
 }
 
 func (h *Handler) PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
-	request := &generated.KubernetesCluster{}
+	request := &generated.KubernetesClusterSpec{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
 		errors.HandleError(w, r, err)

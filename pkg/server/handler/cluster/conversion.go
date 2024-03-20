@@ -89,7 +89,7 @@ func convertWorkloadPools(in *unikornv1.KubernetesCluster) []generated.Kubernete
 }
 
 // convertMetadata converts from a custom resource into the API definition.
-func convertMetadata(in *unikornv1.KubernetesCluster) (*generated.ResourceMetadata, error) {
+func convertMetadata(in *unikornv1.KubernetesCluster) (*generated.KubernetesClusterMetadata, error) {
 	labels, err := in.ResourceLabels()
 	if err != nil {
 		return nil, err
@@ -98,9 +98,9 @@ func convertMetadata(in *unikornv1.KubernetesCluster) (*generated.ResourceMetada
 	// Validated to exist by ResourceLabels()
 	project := labels[constants.ProjectLabel]
 
-	out := &generated.ResourceMetadata{
-		Project:      &project,
-		Region:       &in.Spec.Region,
+	out := &generated.KubernetesClusterMetadata{
+		Project:      project,
+		Region:       in.Spec.Region,
 		CreationTime: in.CreationTimestamp.Time,
 		Status:       "Unknown",
 	}
@@ -125,10 +125,12 @@ func (c *Client) convert(in *unikornv1.KubernetesCluster) (*generated.Kubernetes
 	}
 
 	out := &generated.KubernetesCluster{
-		Metadata:      metadata,
-		Name:          in.Name,
-		Version:       string(*in.Spec.Version),
-		WorkloadPools: convertWorkloadPools(in),
+		Metadata: *metadata,
+		Spec: generated.KubernetesClusterSpec{
+			Name:          in.Name,
+			Version:       string(*in.Spec.Version),
+			WorkloadPools: convertWorkloadPools(in),
+		},
 	}
 
 	return out, nil
@@ -233,7 +235,7 @@ func (c *Client) generateNetwork() *unikornv1.KubernetesClusterNetworkSpec {
 }
 
 // generateMachineGeneric generates a generic machine part of the cluster.
-func (c *Client) generateMachineGeneric(ctx context.Context, provider providers.Provider, options *generated.KubernetesCluster, m *generated.MachinePool) (*unikornv1.MachineGeneric, error) {
+func (c *Client) generateMachineGeneric(ctx context.Context, provider providers.Provider, options *generated.KubernetesClusterSpec, m *generated.MachinePool) (*unikornv1.MachineGeneric, error) {
 	if m.Replicas == nil {
 		m.Replicas = util.ToPointer(3)
 	}
@@ -262,7 +264,7 @@ func (c *Client) generateMachineGeneric(ctx context.Context, provider providers.
 }
 
 // generateControlPlane generates the control plane part of a cluster.
-func (c *Client) generateControlPlane(ctx context.Context, provider providers.Provider, options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterControlPlaneSpec, error) {
+func (c *Client) generateControlPlane(ctx context.Context, provider providers.Provider, options *generated.KubernetesClusterSpec) (*unikornv1.KubernetesClusterControlPlaneSpec, error) {
 	// Add in any missing defaults.
 	resource, err := c.defaultControlPlaneFlavor(ctx, provider)
 	if err != nil {
@@ -286,7 +288,7 @@ func (c *Client) generateControlPlane(ctx context.Context, provider providers.Pr
 }
 
 // generateWorkloadPools generates the workload pools part of a cluster.
-func (c *Client) generateWorkloadPools(ctx context.Context, provider providers.Provider, options *generated.KubernetesCluster) (*unikornv1.KubernetesClusterWorkloadPoolsSpec, error) {
+func (c *Client) generateWorkloadPools(ctx context.Context, provider providers.Provider, options *generated.KubernetesClusterSpec) (*unikornv1.KubernetesClusterWorkloadPoolsSpec, error) {
 	workloadPools := &unikornv1.KubernetesClusterWorkloadPoolsSpec{}
 
 	for i := range options.WorkloadPools {
@@ -396,7 +398,7 @@ func installClusterAutoscaler(cluster *unikornv1.KubernetesCluster) {
 }
 
 // generate generates the full cluster custom resource.
-func (c *Client) generate(ctx context.Context, provider providers.Provider, project *project.Meta, options *generated.KubernetesCluster) (*unikornv1.KubernetesCluster, error) {
+func (c *Client) generate(ctx context.Context, provider providers.Provider, project *project.Meta, options *generated.KubernetesClusterSpec) (*unikornv1.KubernetesCluster, error) {
 	kubernetesControlPlane, err := c.generateControlPlane(ctx, provider, options)
 	if err != nil {
 		return nil, err

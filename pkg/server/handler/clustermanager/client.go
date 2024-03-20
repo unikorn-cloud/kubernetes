@@ -92,7 +92,7 @@ func (c *Client) provisionDefaultClusterManager(ctx context.Context, organizatio
 	// GetMetadata should be called by descendents of the control
 	// plane e.g. clusters. Rather than delegate creation to each
 	// and every client implicitly create it.
-	defaultClusterManager := &generated.ClusterManager{
+	defaultClusterManager := &generated.ClusterManagerSpec{
 		Name: name,
 	}
 
@@ -176,7 +176,7 @@ func (c *Client) GetOrCreateMetadata(ctx context.Context, organizationName, proj
 	return metadata, nil
 }
 
-func convertMetadata(in *unikornv1.ClusterManager) (*generated.ResourceMetadata, error) {
+func convertMetadata(in *unikornv1.ClusterManager) (*generated.ClusterManagerMetadata, error) {
 	labels, err := in.ResourceLabels()
 	if err != nil {
 		return nil, err
@@ -185,8 +185,8 @@ func convertMetadata(in *unikornv1.ClusterManager) (*generated.ResourceMetadata,
 	// Validated to exist by ResourceLabels()
 	project := labels[constants.ProjectLabel]
 
-	out := &generated.ResourceMetadata{
-		Project:      &project,
+	out := &generated.ClusterManagerMetadata{
+		Project:      project,
 		CreationTime: in.CreationTimestamp.Time,
 		Status:       "Unknown",
 	}
@@ -210,8 +210,10 @@ func (c *Client) convert(in *unikornv1.ClusterManager) (*generated.ClusterManage
 	}
 
 	out := &generated.ClusterManager{
-		Metadata: metadata,
-		Name:     in.Name,
+		Metadata: *metadata,
+		Spec: generated.ClusterManagerSpec{
+			Name: in.Name,
+		},
 	}
 
 	return out, nil
@@ -313,7 +315,7 @@ func (c *Client) defaultApplicationBundle(ctx context.Context) (*unikornv1.Clust
 }
 
 // generate is a common function to create a Kubernetes type from an API one.
-func (c *Client) generate(ctx context.Context, project *project.Meta, parameters *generated.ClusterManager) (*unikornv1.ClusterManager, error) {
+func (c *Client) generate(ctx context.Context, project *project.Meta, parameters *generated.ClusterManagerSpec) (*unikornv1.ClusterManager, error) {
 	applicationBundle, err := c.defaultApplicationBundle(ctx)
 	if err != nil {
 		return nil, err
@@ -341,7 +343,7 @@ func (c *Client) generate(ctx context.Context, project *project.Meta, parameters
 }
 
 // Create creates a control plane.
-func (c *Client) Create(ctx context.Context, organizationName, projectName string, request *generated.ClusterManager) error {
+func (c *Client) Create(ctx context.Context, organizationName, projectName string, request *generated.ClusterManagerSpec) error {
 	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
 	if err != nil {
 		return err
@@ -398,7 +400,7 @@ func (c *Client) Delete(ctx context.Context, organizationName, projectName, name
 }
 
 // Update implements read/modify/write for the control plane.
-func (c *Client) Update(ctx context.Context, organizationName, projectName, name string, request *generated.ClusterManager) error {
+func (c *Client) Update(ctx context.Context, organizationName, projectName, name string, request *generated.ClusterManagerSpec) error {
 	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
 	if err != nil {
 		return err
