@@ -130,7 +130,6 @@ paths:
       - oauth2Authentication: []
       requestBody:
         $ref: '#/components/requestBodies/createControlPlaneRequest'
-
       responses:
         '202':
           $ref: '#/components/responses/acceptedResponse'
@@ -507,32 +506,104 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/region'
-    project:
+    projectSpec:
       description: A project.
       type: object
       required:
       - name
       properties:
-        metadata:
-          $ref: '#/components/schemas/resourceMetadata'
         name:
           type: string
+    projectMetadata:
+      description: Required metadata for projects.
+      type: object
+      required:
+      - creationTime
+      - status
+      properties:
+        creationTime:
+          description: The time the resource was created.
+          type: string
+          format: date-time
+        deletionTime:
+          description: The time the resource was deleted.
+          type: string
+          format: date-time
+        status:
+          description: |-
+            The current status of the resource. Intially the status will be "Unknown" until
+            the resource is reconciled by the relevant controller. It then will transition to
+            "Provisioning" and will be ready for use when it changes to "Provisioned". The status
+            will also transition to the "Provisioning" status during an update. The
+            status will change to "Deprovisioning" when a delete request is being processed.
+            It may also change to "Error" if an unexpected error occurred during any operation.
+            Errors may be transient.
+          type: string
+    project:
+      description: A project.
+      type: object
+      required:
+      - metadata
+      - spec
+      properties:
+        metadata:
+          $ref: '#/components/schemas/projectMetadata'
+        spec:
+          $ref: '#/components/schemas/projectSpec'
     projects:
       description: A list of projects.
       type: array
       items:
         $ref: '#/components/schemas/project'
-    clusterManager:
+    clusterManagerSpec:
       description: A cluster manager.
       type: object
       required:
       - name
       properties:
-        metadata:
-          $ref: '#/components/schemas/resourceMetadata'
         name:
           description: The name of the resource.
           type: string
+    clusterManagerMetadata:
+      description: Required metadata for cluster managers.
+      type: object
+      required:
+      - project
+      - creationTime
+      - status
+      properties:
+        project:
+          description: Where the resource is related to a project, this is populated.
+          type: string
+        creationTime:
+          description: The time the resource was created.
+          type: string
+          format: date-time
+        deletionTime:
+          description: The time the resource was deleted.
+          type: string
+          format: date-time
+        status:
+          description: |-
+            The current status of the resource. Intially the status will be "Unknown" until
+            the resource is reconciled by the relevant controller. It then will transition to
+            "Provisioning" and will be ready for use when it changes to "Provisioned". The status
+            will also transition to the "Provisioning" status during an update. The
+            status will change to "Deprovisioning" when a delete request is being processed.
+            It may also change to "Error" if an unexpected error occurred during any operation.
+            Errors may be transient.
+          type: string
+    clusterManager:
+      description: A cluster manager.
+      type: object
+      required:
+      - metadata
+      - spec
+      properties:
+        metadata:
+          $ref: '#/components/schemas/clusterManagerMetadata'
+        spec:
+          $ref: '#/components/schemas/clusterManagerSpec'
     clusterManagers:
       description: A list of cluster managers.
       type: array
@@ -636,7 +707,7 @@ components:
       minItems: 1
       items:
         $ref: '#/components/schemas/kubernetesClusterWorkloadPool'
-    kubernetesCluster:
+    kubernetesClusterSpec:
       description: Kubernetes cluster creation parameters.
       type: object
       required:
@@ -645,8 +716,6 @@ components:
       - version
       - workloadPools
       properties:
-        metadata:
-          $ref: '#/components/schemas/resourceMetadata'
         name:
           description: Cluster name.
           type: string
@@ -664,6 +733,54 @@ components:
           type: string
         workloadPools:
           $ref: '#/components/schemas/kubernetesClusterWorkloadPools'
+    kubernetesClusterMetadata:
+      description: Required metadata for clusters.
+      type: object
+      required:
+      - project
+      - clustermanager
+      - region
+      - creationTime
+      - status
+      properties:
+        project:
+          description: Where the resource is related to a project, this is populated.
+          type: string
+        clustermanager:
+          description: Where the resource is scoped to a cluster manager, this is populated.
+          type: string
+        region:
+          description: Where the resource is scoped to a region, this is populated,
+          type: string
+        creationTime:
+          description: The time the resource was created.
+          type: string
+          format: date-time
+        deletionTime:
+          description: The time the resource was deleted.
+          type: string
+          format: date-time
+        status:
+          description: |-
+            The current status of the resource. Intially the status will be "Unknown" until
+            the resource is reconciled by the relevant controller. It then will transition to
+            "Provisioning" and will be ready for use when it changes to "Provisioned". The status
+            will also transition to the "Provisioning" status during an update. The
+            status will change to "Deprovisioning" when a delete request is being processed.
+            It may also change to "Error" if an unexpected error occurred during any operation.
+            Errors may be transient.
+          type: string
+    kubernetesCluster:
+      description: Kubernetes cluster read.
+      type: object
+      required:
+      - metadata
+      - spec
+      properties:
+        metadata:
+          $ref: '#/components/schemas/kubernetesClusterMetadata'
+        spec:
+          $ref: '#/components/schemas/kubernetesClusterSpec'
     kubernetesClusters:
       description: A list of Kubernetes clusters.
       type: array
@@ -841,7 +958,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/project'
+            $ref: '#/components/schemas/projectSpec'
           example:
             name: my-project
     createControlPlaneRequest:
@@ -850,7 +967,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/clusterManager'
+            $ref: '#/components/schemas/clusterManagerSpec'
           example:
             name: default
     createKubernetesClusterRequest:
@@ -859,7 +976,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/kubernetesCluster'
+            $ref: '#/components/schemas/kubernetesClusterSpec'
           example:
             region: uk-east-1
             version: v1.27.2
@@ -956,7 +1073,11 @@ components:
           schema:
             $ref: '#/components/schemas/projects'
           example:
-          - name: my-project
+          - metadata:
+              creationTime: 2023-07-31T10:45:42Z
+              status: Provisioned
+            spec:
+              name: my-project
     clusterManagerResponse:
       description: A cluster manager.
       content:
@@ -964,11 +1085,12 @@ components:
           schema:
             $ref: '#/components/schemas/clusterManager'
           example:
-            name: default
-            status:
+            metadata:
+              project: foo
               creationTime: 2023-07-31T10:45:42Z
-              name: default
               status: Provisioned
+            spec:
+              name: default
     clusterManagersResponse:
       description: A list of cluster managers.
       content:
@@ -976,11 +1098,12 @@ components:
           schema:
             $ref: '#/components/schemas/clusterManagers'
           example:
-          - name: default
-            status:
+          - metadata:
+              project: foo
               creationTime: 2023-07-31T10:45:42Z
-              name: default
               status: Provisioned
+            spec:
+              name: default
     kubernetesClusterKubeconfigResponse:
       description: A Kubernetes cluster configuration.
       content:
@@ -992,20 +1115,23 @@ components:
           schema:
             $ref: '#/components/schemas/kubernetesClusters'
           example:
-          - name: cluster
-            region: uk-east-1
-            version: v1.27.2
-            status:
+          - metadata:
+              project: foo
+              clustermanager: bar
+              region: africa
               creationTime: 2023-07-31T10:45:45Z
-              name: cluster
               status: Provisioned
-            workloadPools:
-            - name: default
-              machine:
-                disk:
-                  size: 50
-                flavorName: g.4.highmem.a100.1g.10gb
-                replicas: 3
+            spec:
+              name: cluster
+              region: uk-east-1
+              version: v1.27.2
+              workloadPools:
+              - name: default
+                machine:
+                  disk:
+                    size: 50
+                  flavorName: g.4.highmem.a100.1g.10gb
+                  replicas: 3
     applicationResponse:
       description: A list of available applications.
       content:

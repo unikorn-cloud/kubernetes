@@ -213,7 +213,7 @@ func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Open
 */
 
 // Create creates the implicit cluster indentified by the JTW claims.
-func (c *Client) Create(ctx context.Context, organizationName, projectName string, options *generated.KubernetesCluster) error {
+func (c *Client) Create(ctx context.Context, organizationName, projectName string, options *generated.KubernetesClusterSpec) error {
 	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
 	if err != nil {
 		return err
@@ -290,7 +290,7 @@ func (c *Client) Delete(ctx context.Context, organizationName, projectName, name
 }
 
 // Update implements read/modify/write for the cluster.
-func (c *Client) Update(ctx context.Context, organizationName, projectName, name string, request *generated.KubernetesCluster) error {
+func (c *Client) Update(ctx context.Context, organizationName, projectName, name string, request *generated.KubernetesClusterSpec) error {
 	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
 	if err != nil {
 		return err
