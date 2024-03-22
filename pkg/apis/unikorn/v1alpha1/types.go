@@ -325,6 +325,9 @@ type Project struct {
 type ProjectSpec struct {
 	// Pause, if true, will inhibit reconciliation.
 	Pause bool `json:"pause,omitempty"`
+
+	// GroupIDs is a list of groups that are allowed access to the project.
+	GroupIDs []string `json:"groupIDs,omitempty"`
 }
 
 // ProjectStatus defines the status of the project.

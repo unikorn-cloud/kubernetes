@@ -47,6 +47,12 @@ spec:
           spec:
             description: ProjectSpec defines project specific metadata.
             properties:
+              groupIDs:
+                description: GroupIDs is a list of groups that are allowed access
+                  to the project.
+                items:
+                  type: string
+                type: array
               pause:
                 description: Pause, if true, will inhibit reconciliation.
                 type: boolean

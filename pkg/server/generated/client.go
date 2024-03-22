@@ -1219,6 +1219,7 @@ type GetApiV1OrganizationsOrganizationNameClustermanagersResponse struct {
 	JSON200      *ClusterManagers
 	JSON400      *Oauth2Error
 	JSON401      *Oauth2Error
+	JSON403      *Oauth2Error
 	JSON404      *Oauth2Error
 	JSON500      *Oauth2Error
 }
@@ -1245,6 +1246,7 @@ type GetApiV1OrganizationsOrganizationNameClustersResponse struct {
 	JSON200      *KubernetesClusters
 	JSON400      *Oauth2Error
 	JSON401      *Oauth2Error
+	JSON403      *Oauth2Error
 	JSON404      *Oauth2Error
 	JSON500      *Oauth2Error
 }
@@ -1270,6 +1272,7 @@ type GetApiV1OrganizationsOrganizationNameProjectsResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Projects
 	JSON401      *Oauth2Error
+	JSON403      *Oauth2Error
 	JSON500      *Oauth2Error
 }
 
@@ -1294,6 +1297,7 @@ type PostApiV1OrganizationsOrganizationNameProjectsResponse struct {
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
 	JSON401      *Oauth2Error
+	JSON403      *Oauth2Error
 	JSON409      *Oauth2Error
 	JSON500      *Oauth2Error
 }
@@ -1319,6 +1323,7 @@ type DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameResponse struct 
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
 	JSON401      *Oauth2Error
+	JSON403      *Oauth2Error
 	JSON404      *Oauth2Error
 	JSON500      *Oauth2Error
 }
@@ -1344,6 +1349,7 @@ type PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersRes
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
 	JSON401      *Oauth2Error
+	JSON403      *Oauth2Error
 	JSON409      *Oauth2Error
 	JSON500      *Oauth2Error
 }
@@ -1369,6 +1375,7 @@ type DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersC
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
 	JSON401      *Oauth2Error
+	JSON403      *Oauth2Error
 	JSON404      *Oauth2Error
 	JSON500      *Oauth2Error
 }
@@ -1394,6 +1401,7 @@ type PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClus
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
 	JSON401      *Oauth2Error
+	JSON403      *Oauth2Error
 	JSON404      *Oauth2Error
 	JSON500      *Oauth2Error
 }
@@ -1445,6 +1453,7 @@ type DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterN
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
 	JSON401      *Oauth2Error
+	JSON403      *Oauth2Error
 	JSON404      *Oauth2Error
 	JSON500      *Oauth2Error
 }
@@ -1470,6 +1479,7 @@ type PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
 	JSON401      *Oauth2Error
+	JSON403      *Oauth2Error
 	JSON404      *Oauth2Error
 	JSON500      *Oauth2Error
 }
@@ -1495,6 +1505,7 @@ type GetApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName
 	HTTPResponse *http.Response
 	JSON400      *Oauth2Error
 	JSON401      *Oauth2Error
+	JSON403      *Oauth2Error
 	JSON404      *Oauth2Error
 	JSON500      *Oauth2Error
 }
@@ -1855,6 +1866,13 @@ func ParseGetApiV1OrganizationsOrganizationNameClustermanagersResponse(rsp *http
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Oauth2Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -1909,6 +1927,13 @@ func ParseGetApiV1OrganizationsOrganizationNameClustersResponse(rsp *http.Respon
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Oauth2Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -1956,6 +1981,13 @@ func ParseGetApiV1OrganizationsOrganizationNameProjectsResponse(rsp *http.Respon
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest Oauth2Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -1995,6 +2027,13 @@ func ParsePostApiV1OrganizationsOrganizationNameProjectsResponse(rsp *http.Respo
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
 		var dest Oauth2Error
@@ -2043,6 +2082,13 @@ func ParseDeleteApiV1OrganizationsOrganizationNameProjectsProjectNameResponse(rs
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Oauth2Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -2089,6 +2135,13 @@ func ParsePostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanage
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
 		var dest Oauth2Error
@@ -2137,6 +2190,13 @@ func ParseDeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustermana
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Oauth2Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -2183,6 +2243,13 @@ func ParsePutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanager
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Oauth2Error
@@ -2285,6 +2352,13 @@ func ParseDeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClu
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Oauth2Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -2332,6 +2406,13 @@ func ParsePutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersCluste
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Oauth2Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -2378,6 +2459,13 @@ func ParseGetApiV1OrganizationsOrganizationNameProjectsProjectNameClustersCluste
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Oauth2Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Oauth2Error
