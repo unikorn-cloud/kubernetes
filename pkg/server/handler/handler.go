@@ -19,11 +19,14 @@ limitations under the License.
 package handler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"sort"
 	"time"
 
+	"github.com/unikorn-cloud/core/pkg/authorization/roles"
+	"github.com/unikorn-cloud/core/pkg/authorization/userinfo"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	coreutil "github.com/unikorn-cloud/core/pkg/util"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
@@ -63,7 +66,26 @@ func (h *Handler) setUncacheable(w http.ResponseWriter) {
 	w.Header().Add("Cache-Control", "no-cache")
 }
 
+//nolint:unparam
+func checkRBAC(ctx context.Context, organization, scope string, permission roles.Permission) error {
+	authorizer, err := userinfo.NewAuthorizer(ctx, organization)
+	if err != nil {
+		return errors.HTTPForbidden("operation is not allowed by rbac").WithError(err)
+	}
+
+	if err := authorizer.Allow(scope, permission); err != nil {
+		return errors.HTTPForbidden("operation is not allowed by rbac").WithError(err)
+	}
+
+	return nil
+}
+
 func (h *Handler) GetApiV1OrganizationsOrganizationNameProjects(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
+	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Read); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	result, err := project.NewClient(h.client).List(r.Context(), organizationName)
 	if err != nil {
 		errors.HandleError(w, r, err)
@@ -75,6 +97,11 @@ func (h *Handler) GetApiV1OrganizationsOrganizationNameProjects(w http.ResponseW
 }
 
 func (h *Handler) PostApiV1OrganizationsOrganizationNameProjects(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
+	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Create); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	request := &generated.ProjectSpec{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -92,6 +119,11 @@ func (h *Handler) PostApiV1OrganizationsOrganizationNameProjects(w http.Response
 }
 
 func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter) {
+	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Delete); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	if err := project.NewClient(h.client).Delete(r.Context(), organizationName, projectName); err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -102,6 +134,11 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectName(w 
 }
 
 func (h *Handler) GetApiV1OrganizationsOrganizationNameClustermanagers(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
+	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Read); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	result, err := clustermanager.NewClient(h.client).List(r.Context(), organizationName)
 	if err != nil {
 		errors.HandleError(w, r, err)
@@ -113,6 +150,11 @@ func (h *Handler) GetApiV1OrganizationsOrganizationNameClustermanagers(w http.Re
 }
 
 func (h *Handler) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter) {
+	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Create); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	request := &generated.ClusterManagerSpec{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -130,6 +172,11 @@ func (h *Handler) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClust
 }
 
 func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, clusterManagerName generated.ClusterManagerNameParameter) {
+	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Delete); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	if err := clustermanager.NewClient(h.client).Delete(r.Context(), organizationName, projectName, clusterManagerName); err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -140,6 +187,11 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClu
 }
 
 func (h *Handler) PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, controlPlaneName generated.ClusterManagerNameParameter) {
+	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Update); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	request := &generated.ClusterManagerSpec{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -157,6 +209,11 @@ func (h *Handler) PutApiV1OrganizationsOrganizationNameProjectsProjectNameCluste
 }
 
 func (h *Handler) GetApiV1OrganizationsOrganizationNameClusters(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
+	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Read); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	result, err := cluster.NewClient(h.client, &h.options.Cluster).List(r.Context(), organizationName)
 	if err != nil {
 		errors.HandleError(w, r, err)
@@ -168,6 +225,11 @@ func (h *Handler) GetApiV1OrganizationsOrganizationNameClusters(w http.ResponseW
 }
 
 func (h *Handler) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClusters(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter) {
+	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Create); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	request := &generated.KubernetesClusterSpec{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -185,6 +247,11 @@ func (h *Handler) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClust
 }
 
 func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
+	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Delete); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	if err := cluster.NewClient(h.client, &h.options.Cluster).Delete(r.Context(), organizationName, projectName, clusterName); err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -195,6 +262,11 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClu
 }
 
 func (h *Handler) PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
+	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Update); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	request := &generated.KubernetesClusterSpec{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
@@ -212,6 +284,11 @@ func (h *Handler) PutApiV1OrganizationsOrganizationNameProjectsProjectNameCluste
 }
 
 func (h *Handler) GetApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameKubeconfig(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
+	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Read); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	result, err := cluster.NewClient(h.client, &h.options.Cluster).GetKubeconfig(r.Context(), organizationName, projectName, clusterName)
 	if err != nil {
 		errors.HandleError(w, r, err)
