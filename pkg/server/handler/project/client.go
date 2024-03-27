@@ -23,7 +23,6 @@ import (
 	"slices"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/core/pkg/authorization/userinfo"
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
@@ -139,11 +138,6 @@ func convertList(in *unikornv1.ProjectList) generated.Projects {
 }
 
 func (c *Client) List(ctx context.Context, organizationName string) (generated.Projects, error) {
-	authorizer, err := userinfo.NewAuthorizer(ctx, organizationName)
-	if err != nil {
-		return nil, errors.HTTPForbidden("operation is not allowed by rbac").WithError(err)
-	}
-
 	organization, err := organization.NewClient(c.client).GetMetadata(ctx, organizationName)
 	if err != nil {
 		// If the organization hasn't been created, then this will 404, which is
@@ -160,10 +154,6 @@ func (c *Client) List(ctx context.Context, organizationName string) (generated.P
 	if err := c.client.List(ctx, result, &client.ListOptions{Namespace: organization.Namespace}); err != nil {
 		return nil, errors.OAuth2ServerError("failed to list projects").WithError(err)
 	}
-
-	result.Items = slices.DeleteFunc(result.Items, func(project unikornv1.Project) bool {
-		return authorizer.AllowedByGroup(project.Spec.GroupIDs) != nil
-	})
 
 	slices.SortStableFunc(result.Items, unikornv1.CompareProject)
 

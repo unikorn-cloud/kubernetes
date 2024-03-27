@@ -46,7 +46,7 @@ func (o *Options) AddFlags(flags *pflag.FlagSet) {
 // Checker is an interface that monitors must implement.
 type Checker interface {
 	// Check does whatever the checker is checking for.
-	Check(context.Context) error
+	Check(ctx context.Context) error
 }
 
 // Run sits in an infinite loop, polling every so often.

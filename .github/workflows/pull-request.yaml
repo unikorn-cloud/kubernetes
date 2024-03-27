@@ -6,7 +6,7 @@ on:
     tags-ignore:
     - '*'
 env:
-  GO_VERSION: 1.21.1
+  GO_VERSION: 1.22.1
 jobs:
   Static:
     runs-on: ubuntu-latest

@@ -29,6 +29,8 @@ linters:
   - funlen
   - predeclared
   - depguard
+  - goconst
+  - perfsprint
 linters-settings:
   gci:
     sections:

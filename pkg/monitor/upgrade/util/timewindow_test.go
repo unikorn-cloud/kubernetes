@@ -171,7 +171,7 @@ func validToday(t *testing.T, window *util.TimeWindow) bool {
 
 	curr := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 1, 0, time.UTC)
 
-	for i := 0; i < 24; i++ {
+	for range 24 {
 		if curr.After(window.Start) && curr.Before(window.End) {
 			return true
 		}
@@ -189,7 +189,7 @@ func validYesterday(t *testing.T, window *util.TimeWindow) bool {
 
 	curr := time.Date(now.Year(), now.Month(), now.Day()-1, 0, 0, 1, 0, time.UTC)
 
-	for i := 0; i < 24; i++ {
+	for range 24 {
 		if curr.After(window.Start) && curr.Before(window.End) {
 			return true
 		}
@@ -211,7 +211,7 @@ func TestGenerateTimeWindow(t *testing.T) {
 
 	// This is driven by RANDOM, so use enough iterations to be statistically
 	// significant.
-	for i := 0; i < samples; i++ {
+	for range samples {
 		window := util.TimeWindowFromResource(context.TODO(), &autoGeneratingUpgrader{})
 
 		// We shouldn't be triggering fails unless we're in the office to
@@ -244,7 +244,7 @@ func TestGenerateTimeWindow(t *testing.T) {
 	t.Log("day of week statistics")
 	logStats(t, daysOfWeek)
 
-	for i := 0; i < 7; i++ {
+	for i := range 7 {
 		if _, ok := hoursOfDay[i]; !ok {
 			t.Fatal("Nothing scheduled at hour", i)
 		}
