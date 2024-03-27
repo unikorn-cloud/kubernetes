@@ -19,28 +19,26 @@ package cluster
 
 import (
 	"context"
+	goerrors "errors"
 	"net"
 	"slices"
 
 	"github.com/spf13/pflag"
 
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
-	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/vcluster"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/clustermanager"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/project"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/region"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/scoping"
 
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/selection"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -84,25 +82,16 @@ func NewClient(client client.Client, options *Options) *Client {
 
 // List returns all clusters owned by the implicit control plane.
 func (c *Client) List(ctx context.Context, organizationName string) (generated.KubernetesClusters, error) {
-	selector := labels.NewSelector()
+	scoper := scoping.New(ctx, c.client, organizationName)
 
-	// TODO: a super-admin isn't scoped to a single organization!
-	// TODO: RBAC - filter projects based on user membership here.
-	organization, err := organization.NewClient(c.client).GetMetadata(ctx, organizationName)
+	selector, err := scoper.GetSelector(ctx)
 	if err != nil {
-		if errors.IsHTTPNotFound(err) {
+		if goerrors.Is(err, scoping.ErrNoScope) {
 			return generated.KubernetesClusters{}, nil
 		}
 
-		return nil, err
+		return nil, errors.OAuth2ServerError("failed to apply scoping rules").WithError(err)
 	}
-
-	organizationReq, err := labels.NewRequirement(constants.OrganizationLabel, selection.Equals, []string{organization.Name})
-	if err != nil {
-		return nil, err
-	}
-
-	selector = selector.Add(*organizationReq)
 
 	options := &client.ListOptions{
 		LabelSelector: selector,

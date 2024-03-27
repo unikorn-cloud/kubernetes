@@ -28,6 +28,7 @@ import (
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/scoping"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -138,20 +139,10 @@ func convertList(in *unikornv1.ProjectList) generated.Projects {
 }
 
 func (c *Client) List(ctx context.Context, organizationName string) (generated.Projects, error) {
-	organization, err := organization.NewClient(c.client).GetMetadata(ctx, organizationName)
+	scoper := scoping.New(ctx, c.client, organizationName)
+
+	result, err := scoper.ListProjects(ctx)
 	if err != nil {
-		// If the organization hasn't been created, then this will 404, which is
-		// kinda confusing.
-		if errors.IsHTTPNotFound(err) {
-			return generated.Projects{}, nil
-		}
-
-		return nil, err
-	}
-
-	result := &unikornv1.ProjectList{}
-
-	if err := c.client.List(ctx, result, &client.ListOptions{Namespace: organization.Namespace}); err != nil {
 		return nil, errors.OAuth2ServerError("failed to list projects").WithError(err)
 	}
 
