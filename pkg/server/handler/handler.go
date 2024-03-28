@@ -68,7 +68,7 @@ func (h *Handler) setUncacheable(w http.ResponseWriter) {
 
 //nolint:unparam
 func checkRBAC(ctx context.Context, organization, scope string, permission roles.Permission) error {
-	authorizer, err := userinfo.NewAuthorizer(ctx, organization)
+	authorizer, err := userinfo.NewScopedAuthorizer(ctx, organization)
 	if err != nil {
 		return errors.HTTPForbidden("operation is not allowed by rbac").WithError(err)
 	}
