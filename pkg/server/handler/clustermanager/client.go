@@ -30,13 +30,11 @@ import (
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/organization"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/project"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/scoping"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/selection"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -237,25 +235,16 @@ func (c *Client) convertList(in *unikornv1.ClusterManagerList) (generated.Cluste
 
 // List returns all control planes.
 func (c *Client) List(ctx context.Context, organizationName string) (generated.ClusterManagers, error) {
-	selector := labels.NewSelector()
+	scoper := scoping.New(ctx, c.client, organizationName)
 
-	// TODO: a super-admin isn't scoped to a single organization!
-	// TODO: RBAC - filter projects based on user membership here.
-	organization, err := organization.NewClient(c.client).GetMetadata(ctx, organizationName)
+	selector, err := scoper.GetSelector(ctx)
 	if err != nil {
-		if errors.IsHTTPNotFound(err) {
+		if goerrors.Is(err, scoping.ErrNoScope) {
 			return generated.ClusterManagers{}, nil
 		}
 
-		return nil, err
+		return nil, errors.OAuth2ServerError("failed to apply scoping rules").WithError(err)
 	}
-
-	organizationReq, err := labels.NewRequirement(constants.OrganizationLabel, selection.Equals, []string{organization.Name})
-	if err != nil {
-		return nil, err
-	}
-
-	selector = selector.Add(*organizationReq)
 
 	options := &client.ListOptions{
 		LabelSelector: selector,
