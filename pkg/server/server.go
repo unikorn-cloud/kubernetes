@@ -130,7 +130,7 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 		},
 	}
 
-	handlerInterface, err := handler.New(client, &s.HandlerOptions)
+	handlerInterface, err := handler.New(client, &s.HandlerOptions, &s.AuthorizerOptions)
 	if err != nil {
 		return nil, err
 	}

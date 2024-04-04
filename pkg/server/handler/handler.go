@@ -25,9 +25,11 @@ import (
 	"sort"
 	"time"
 
-	"github.com/unikorn-cloud/core/pkg/authorization/roles"
+	"github.com/unikorn-cloud/core/pkg/authorization/constants"
+	"github.com/unikorn-cloud/core/pkg/authorization/rbac"
 	"github.com/unikorn-cloud/core/pkg/authorization/userinfo"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
+	"github.com/unikorn-cloud/core/pkg/server/middleware/openapi/oidc"
 	coreutil "github.com/unikorn-cloud/core/pkg/util"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/application"
@@ -46,12 +48,16 @@ type Handler struct {
 
 	// options allows behaviour to be defined on the CLI.
 	options *Options
+
+	// authorizerOptions allows access to the identity service for RBAC callbacks.
+	authorizerOptions *oidc.Options
 }
 
-func New(client client.Client, options *Options) (*Handler, error) {
+func New(client client.Client, options *Options, authorizerOptions *oidc.Options) (*Handler, error) {
 	h := &Handler{
-		client:  client,
-		options: options,
+		client:            client,
+		options:           options,
+		authorizerOptions: authorizerOptions,
 	}
 
 	return h, nil
@@ -67,13 +73,15 @@ func (h *Handler) setUncacheable(w http.ResponseWriter) {
 }
 
 //nolint:unparam
-func checkRBAC(ctx context.Context, organization, scope string, permission roles.Permission) error {
-	authorizer, err := userinfo.NewScopedAuthorizer(ctx, organization)
+func (h *Handler) checkRBAC(ctx context.Context, organization, scope string, permission constants.Permission) error {
+	aclGetter := rbac.NewIdentityACLGetter(h.authorizerOptions.Issuer, organization).WithCA(h.authorizerOptions.IssuerCA)
+
+	authorizer, err := userinfo.NewAuthorizer(ctx, aclGetter)
 	if err != nil {
 		return errors.HTTPForbidden("operation is not allowed by rbac").WithError(err)
 	}
 
-	if err := authorizer.Allow(scope, permission); err != nil {
+	if err := authorizer.Allow(ctx, scope, permission); err != nil {
 		return errors.HTTPForbidden("operation is not allowed by rbac").WithError(err)
 	}
 
@@ -81,7 +89,7 @@ func checkRBAC(ctx context.Context, organization, scope string, permission roles
 }
 
 func (h *Handler) GetApiV1OrganizationsOrganizationNameProjects(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
-	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Read); err != nil {
+	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Read); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -97,7 +105,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationNameProjects(w http.ResponseW
 }
 
 func (h *Handler) PostApiV1OrganizationsOrganizationNameProjects(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
-	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Create); err != nil {
+	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Create); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -119,7 +127,7 @@ func (h *Handler) PostApiV1OrganizationsOrganizationNameProjects(w http.Response
 }
 
 func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter) {
-	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Delete); err != nil {
+	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Delete); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -134,7 +142,7 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectName(w 
 }
 
 func (h *Handler) GetApiV1OrganizationsOrganizationNameClustermanagers(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
-	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Read); err != nil {
+	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Read); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -150,7 +158,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationNameClustermanagers(w http.Re
 }
 
 func (h *Handler) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter) {
-	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Create); err != nil {
+	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Create); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -172,7 +180,7 @@ func (h *Handler) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClust
 }
 
 func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, clusterManagerName generated.ClusterManagerNameParameter) {
-	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Delete); err != nil {
+	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Delete); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -187,7 +195,7 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClu
 }
 
 func (h *Handler) PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, controlPlaneName generated.ClusterManagerNameParameter) {
-	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Update); err != nil {
+	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Update); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -209,7 +217,7 @@ func (h *Handler) PutApiV1OrganizationsOrganizationNameProjectsProjectNameCluste
 }
 
 func (h *Handler) GetApiV1OrganizationsOrganizationNameClusters(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
-	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Read); err != nil {
+	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Read); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -225,7 +233,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationNameClusters(w http.ResponseW
 }
 
 func (h *Handler) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClusters(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter) {
-	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Create); err != nil {
+	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Create); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -247,7 +255,7 @@ func (h *Handler) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClust
 }
 
 func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
-	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Delete); err != nil {
+	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Delete); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -262,7 +270,7 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClu
 }
 
 func (h *Handler) PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
-	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Update); err != nil {
+	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Update); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -284,7 +292,7 @@ func (h *Handler) PutApiV1OrganizationsOrganizationNameProjectsProjectNameCluste
 }
 
 func (h *Handler) GetApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameKubeconfig(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter, clusterName generated.ClusterNameParameter) {
-	if err := checkRBAC(r.Context(), organizationName, "infrastructure", roles.Read); err != nil {
+	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Read); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
