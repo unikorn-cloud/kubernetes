@@ -22,7 +22,6 @@ import (
 	"slices"
 
 	"github.com/unikorn-cloud/core/pkg/authorization/rbac"
-	"github.com/unikorn-cloud/core/pkg/authorization/roles"
 	"github.com/unikorn-cloud/core/pkg/authorization/userinfo"
 	"github.com/unikorn-cloud/core/pkg/constants"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
@@ -65,7 +64,7 @@ func (s *Scoper) MustApplyScope() bool {
 
 	// Organization admin sees all.
 	for _, group := range organization.Groups {
-		if slices.Contains(group.Roles, roles.Admin) {
+		if slices.Contains(group.Roles, "admin") {
 			return false
 		}
 	}
