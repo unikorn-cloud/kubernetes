@@ -125,6 +125,10 @@ func convert(in *unikornv1.Project) *generated.Project {
 		},
 	}
 
+	if in.Spec.GroupIDs != nil {
+		out.Spec.GroupIDs = &in.Spec.GroupIDs
+	}
+
 	return out
 }
 
@@ -176,6 +180,10 @@ func generate(organization *organization.Meta, request *generated.ProjectSpec) *
 				constants.OrganizationLabel: organization.Name,
 			},
 		},
+	}
+
+	if request.GroupIDs != nil {
+		resource.Spec.GroupIDs = *request.GroupIDs
 	}
 
 	return resource

@@ -49,6 +49,7 @@ rules:
   - unikorn-cloud.org
   resources:
   - clustermanagers
+  - kubernetesclusters
   verbs:
   - list
   - get
