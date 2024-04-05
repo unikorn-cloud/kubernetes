@@ -153,6 +153,9 @@ type Flavor struct {
 // Flavors A list of flavors.
 type Flavors = []Flavor
 
+// GroupIDs A list of group IDs.
+type GroupIDs = []string
+
 // Image An image.
 type Image struct {
 	// Created Time when the image was created. Images with a newer creation time should
@@ -325,7 +328,9 @@ type ProjectMetadata struct {
 
 // ProjectSpec A project.
 type ProjectSpec struct {
-	Name string `json:"name"`
+	// GroupIDs A list of group IDs.
+	GroupIDs *GroupIDs `json:"groupIDs,omitempty"`
+	Name     string    `json:"name"`
 }
 
 // Projects A list of projects.
