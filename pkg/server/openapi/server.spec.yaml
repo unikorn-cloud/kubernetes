@@ -528,6 +528,12 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/region'
+    groupIDs:
+      description: A list of group IDs.
+      type: array
+      items:
+        description: A group ID.
+        type: string
     projectSpec:
       description: A project.
       type: object
@@ -536,6 +542,8 @@ components:
       properties:
         name:
           type: string
+        groupIDs:
+          $ref: '#/components/schemas/groupIDs'
     projectMetadata:
       description: Required metadata for projects.
       type: object
