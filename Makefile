@@ -11,8 +11,6 @@ REVISION := $(shell git rev-parse HEAD)
 # for your host's architecture.  The latter are going to run in Kubernetes, so
 # want to be amd64.
 CONTROLLERS = \
-  unikorn-organization-controller \
-  unikorn-project-controller \
   unikorn-cluster-manager-controller \
   unikorn-cluster-controller\
   unikorn-server \

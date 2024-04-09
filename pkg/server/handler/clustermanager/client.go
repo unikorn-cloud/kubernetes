@@ -30,9 +30,10 @@ import (
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/project"
+	"github.com/unikorn-cloud/unikorn/pkg/server/handler/common"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/scoping"
 
+	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -51,20 +52,6 @@ func NewClient(client client.Client) *Client {
 	return &Client{
 		client: client,
 	}
-}
-
-// Meta describes the control plane.
-type Meta struct {
-	// Project is the owning project's metadata.
-	Project *project.Meta
-
-	// Name is the project's Kubernetes name, so a higher level resource
-	// can reference it.
-	Name string
-
-	// Deleting tells us if we should allow new child objects to be created
-	// in this resource's namespace.
-	Deleting bool
 }
 
 var (
@@ -101,41 +88,19 @@ func (c *Client) provisionDefaultClusterManager(ctx context.Context, organizatio
 	return nil
 }
 
-// GetMetadata retrieves the control plane metadata.
-func (c *Client) GetMetadata(ctx context.Context, organizationName, projectName, name string) (*Meta, error) {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
+func (c *Client) CreateImplicit(ctx context.Context, organizationName, projectName, name string) error {
+	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationName, projectName)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	result, err := c.get(ctx, project.Namespace, name)
-	if err != nil {
-		return nil, err
-	}
-
-	metadata := &Meta{
-		Project:  project,
-		Name:     name,
-		Deleting: result.DeletionTimestamp != nil,
-	}
-
-	return metadata, nil
-}
-
-func (c *Client) GetOrCreateMetadata(ctx context.Context, organizationName, projectName, name string) (*Meta, error) {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
-	if err != nil {
-		return nil, err
-	}
-
-	result, err := c.get(ctx, project.Namespace, name)
-	if err != nil {
+	if _, err := c.get(ctx, namespace.Name, name); err != nil {
 		if !errors.IsHTTPNotFound(err) {
-			return nil, err
+			return err
 		}
 
 		if err := c.provisionDefaultClusterManager(ctx, organizationName, projectName, name); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
@@ -146,8 +111,7 @@ func (c *Client) GetOrCreateMetadata(ctx context.Context, organizationName, proj
 	// errors and retries.  The namespace creation should be ostensibly instant
 	// and likewise show up due to non-blocking yields.
 	callback := func() error {
-		result, err = c.get(waitCtx, project.Namespace, name)
-		if err != nil {
+		if _, err := c.get(waitCtx, namespace.Name, name); err != nil {
 			// Short cut deleting errors.
 			if goerrors.Is(err, ErrResourceDeleting) {
 				cancel()
@@ -162,16 +126,10 @@ func (c *Client) GetOrCreateMetadata(ctx context.Context, organizationName, proj
 	}
 
 	if err := retry.Forever().DoWithContext(waitCtx, callback); err != nil {
-		return nil, err
+		return err
 	}
 
-	metadata := &Meta{
-		Project:  project,
-		Name:     name,
-		Deleting: result.DeletionTimestamp != nil,
-	}
-
-	return metadata, nil
+	return nil
 }
 
 func convertMetadata(in *unikornv1.ClusterManager) (*generated.ClusterManagerMetadata, error) {
@@ -308,7 +266,7 @@ func (c *Client) defaultApplicationBundle(ctx context.Context) (*unikornv1.Clust
 }
 
 // generate is a common function to create a Kubernetes type from an API one.
-func (c *Client) generate(ctx context.Context, project *project.Meta, parameters *generated.ClusterManagerSpec) (*unikornv1.ClusterManager, error) {
+func (c *Client) generate(ctx context.Context, namespace *corev1.Namespace, organizationName, projectName string, parameters *generated.ClusterManagerSpec) (*unikornv1.ClusterManager, error) {
 	applicationBundle, err := c.defaultApplicationBundle(ctx)
 	if err != nil {
 		return nil, err
@@ -319,11 +277,11 @@ func (c *Client) generate(ctx context.Context, project *project.Meta, parameters
 	controlPlane := &unikornv1.ClusterManager{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      parameters.Name,
-			Namespace: project.Namespace,
+			Namespace: namespace.Name,
 			Labels: map[string]string{
 				constants.VersionLabel:      constants.Version,
-				constants.OrganizationLabel: project.Organization.Name,
-				constants.ProjectLabel:      project.Name,
+				constants.OrganizationLabel: organizationName,
+				constants.ProjectLabel:      projectName,
 			},
 		},
 		Spec: unikornv1.ClusterManagerSpec{
@@ -337,16 +295,16 @@ func (c *Client) generate(ctx context.Context, project *project.Meta, parameters
 
 // Create creates a control plane.
 func (c *Client) Create(ctx context.Context, organizationName, projectName string, request *generated.ClusterManagerSpec) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
+	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationName, projectName)
 	if err != nil {
 		return err
 	}
 
-	if project.Deleting {
+	if namespace.DeletionTimestamp != nil {
 		return errors.OAuth2InvalidRequest("project is being deleted")
 	}
 
-	resource, err := c.generate(ctx, project, request)
+	resource, err := c.generate(ctx, namespace, organizationName, projectName, request)
 	if err != nil {
 		return err
 	}
@@ -365,19 +323,19 @@ func (c *Client) Create(ctx context.Context, organizationName, projectName strin
 
 // Delete deletes the control plane.
 func (c *Client) Delete(ctx context.Context, organizationName, projectName, name string) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
+	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationName, projectName)
 	if err != nil {
 		return err
 	}
 
-	if project.Deleting {
+	if namespace.DeletionTimestamp != nil {
 		return errors.OAuth2InvalidRequest("project is being deleted")
 	}
 
 	controlPlane := &unikornv1.ClusterManager{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
-			Namespace: project.Namespace,
+			Namespace: namespace.Name,
 		},
 	}
 
@@ -394,21 +352,21 @@ func (c *Client) Delete(ctx context.Context, organizationName, projectName, name
 
 // Update implements read/modify/write for the control plane.
 func (c *Client) Update(ctx context.Context, organizationName, projectName, name string, request *generated.ClusterManagerSpec) error {
-	project, err := project.NewClient(c.client).GetMetadata(ctx, organizationName, projectName)
+	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationName, projectName)
 	if err != nil {
 		return err
 	}
 
-	if project.Deleting {
+	if namespace.DeletionTimestamp != nil {
 		return errors.OAuth2InvalidRequest("project is being deleted")
 	}
 
-	resource, err := c.get(ctx, project.Namespace, name)
+	resource, err := c.get(ctx, namespace.Name, name)
 	if err != nil {
 		return err
 	}
 
-	required, err := c.generate(ctx, project, request)
+	required, err := c.generate(ctx, namespace, organizationName, projectName, request)
 	if err != nil {
 		return err
 	}

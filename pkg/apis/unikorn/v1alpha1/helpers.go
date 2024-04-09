@@ -58,16 +58,6 @@ func IPv4AddressSliceFromIPSlice(in []net.IP) []IPv4Address {
 }
 
 // Paused implements the ReconcilePauser interface.
-func (c *Organization) Paused() bool {
-	return c.Spec.Pause
-}
-
-// Paused implements the ReconcilePauser interface.
-func (c *Project) Paused() bool {
-	return c.Spec.Pause
-}
-
-// Paused implements the ReconcilePauser interface.
 func (c *ClusterManager) Paused() bool {
 	return c.Spec.Pause
 }
@@ -75,60 +65,6 @@ func (c *ClusterManager) Paused() bool {
 // Paused implements the ReconcilePauser interface.
 func (c *KubernetesCluster) Paused() bool {
 	return c.Spec.Pause
-}
-
-// StatusConditionRead scans the status conditions for an existing condition whose type
-// matches.
-func (c *Organization) StatusConditionRead(t unikornv1core.ConditionType) (*unikornv1core.Condition, error) {
-	return unikornv1core.GetCondition(c.Status.Conditions, t)
-}
-
-// StatusConditionWrite either adds or updates a condition in the cluster manager status.
-// If the condition, status and message match an existing condition the update is
-// ignored.
-func (c *Organization) StatusConditionWrite(t unikornv1core.ConditionType, status corev1.ConditionStatus, reason unikornv1core.ConditionReason, message string) {
-	unikornv1core.UpdateCondition(&c.Status.Conditions, t, status, reason, message)
-}
-
-// ResourceLabels generates a set of labels to uniquely identify the resource
-// if it were to be placed in a single global namespace.
-func (c *Organization) ResourceLabels() (labels.Set, error) {
-	labels := labels.Set{
-		constants.KindLabel:         constants.KindLabelValueOrganization,
-		constants.OrganizationLabel: c.Name,
-	}
-
-	return labels, nil
-}
-
-// StatusConditionRead scans the status conditions for an existing condition whose type
-// matches.
-func (c *Project) StatusConditionRead(t unikornv1core.ConditionType) (*unikornv1core.Condition, error) {
-	return unikornv1core.GetCondition(c.Status.Conditions, t)
-}
-
-// StatusConditionWrite either adds or updates a condition in the cluster manager status.
-// If the condition, status and message match an existing condition the update is
-// ignored.
-func (c *Project) StatusConditionWrite(t unikornv1core.ConditionType, status corev1.ConditionStatus, reason unikornv1core.ConditionReason, message string) {
-	unikornv1core.UpdateCondition(&c.Status.Conditions, t, status, reason, message)
-}
-
-// ResourceLabels generates a set of labels to uniquely identify the resource
-// if it were to be placed in a single global namespace.
-func (c *Project) ResourceLabels() (labels.Set, error) {
-	organization, ok := c.Labels[constants.OrganizationLabel]
-	if !ok {
-		return nil, ErrMissingLabel
-	}
-
-	labels := labels.Set{
-		constants.KindLabel:         constants.KindLabelValueProject,
-		constants.OrganizationLabel: organization,
-		constants.ProjectLabel:      c.Name,
-	}
-
-	return labels, nil
 }
 
 // StatusConditionRead scans the status conditions for an existing condition whose type
@@ -227,10 +163,6 @@ func (c *KubernetesCluster) AutoscalingEnabled() bool {
 // NvidiaOperatorEnabled indicates whether to install the Nvidia GPU operator.
 func (c *KubernetesCluster) NvidiaOperatorEnabled() bool {
 	return c.Spec.Features != nil && c.Spec.Features.NvidiaOperator != nil && *c.Spec.Features.NvidiaOperator
-}
-
-func CompareProject(a, b Project) int {
-	return strings.Compare(a.Name, b.Name)
 }
 
 func CompareClusterManager(a, b ClusterManager) int {

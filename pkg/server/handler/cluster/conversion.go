@@ -31,8 +31,8 @@ import (
 	"github.com/unikorn-cloud/unikorn/pkg/providers"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/project"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -280,11 +280,11 @@ func (c *Client) generateControlPlane(ctx context.Context, provider providers.Pr
 		return nil, err
 	}
 
-	project := &unikornv1.KubernetesClusterControlPlaneSpec{
+	spec := &unikornv1.KubernetesClusterControlPlaneSpec{
 		MachineGeneric: *machine,
 	}
 
-	return project, nil
+	return spec, nil
 }
 
 // generateWorkloadPools generates the workload pools part of a cluster.
@@ -398,7 +398,7 @@ func installClusterAutoscaler(cluster *unikornv1.KubernetesCluster) {
 }
 
 // generate generates the full cluster custom resource.
-func (c *Client) generate(ctx context.Context, provider providers.Provider, project *project.Meta, options *generated.KubernetesClusterSpec) (*unikornv1.KubernetesCluster, error) {
+func (c *Client) generate(ctx context.Context, provider providers.Provider, namespace *corev1.Namespace, organization, project string, options *generated.KubernetesClusterSpec) (*unikornv1.KubernetesCluster, error) {
 	kubernetesControlPlane, err := c.generateControlPlane(ctx, provider, options)
 	if err != nil {
 		return nil, err
@@ -422,11 +422,11 @@ func (c *Client) generate(ctx context.Context, provider providers.Provider, proj
 	cluster := &unikornv1.KubernetesCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
-			Namespace: project.Namespace,
+			Namespace: namespace.Name,
 			Labels: map[string]string{
 				constants.VersionLabel:      constants.Version,
-				constants.OrganizationLabel: project.Organization.Name,
-				constants.ProjectLabel:      project.Name,
+				constants.OrganizationLabel: organization,
+				constants.ProjectLabel:      project,
 			},
 		},
 		Spec: unikornv1.KubernetesClusterSpec{
