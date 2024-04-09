@@ -153,9 +153,6 @@ type Flavor struct {
 // Flavors A list of flavors.
 type Flavors = []Flavor
 
-// GroupIDs A list of group IDs.
-type GroupIDs = []string
-
 // Image An image.
 type Image struct {
 	// Created Time when the image was created. Images with a newer creation time should
@@ -299,43 +296,6 @@ type Oauth2Error struct {
 // Oauth2ErrorError A terse error string expanding on the HTTP error code. Errors are based on the OAuth2 specification, but are expanded with proprietary status codes for APIs other than those specified by OAuth2.
 type Oauth2ErrorError string
 
-// Project A project.
-type Project struct {
-	// Metadata Required metadata for projects.
-	Metadata ProjectMetadata `json:"metadata"`
-
-	// Spec A project.
-	Spec ProjectSpec `json:"spec"`
-}
-
-// ProjectMetadata Required metadata for projects.
-type ProjectMetadata struct {
-	// CreationTime The time the resource was created.
-	CreationTime time.Time `json:"creationTime"`
-
-	// DeletionTime The time the resource was deleted.
-	DeletionTime *time.Time `json:"deletionTime,omitempty"`
-
-	// Status The current status of the resource. Intially the status will be "Unknown" until
-	// the resource is reconciled by the relevant controller. It then will transition to
-	// "Provisioning" and will be ready for use when it changes to "Provisioned". The status
-	// will also transition to the "Provisioning" status during an update. The
-	// status will change to "Deprovisioning" when a delete request is being processed.
-	// It may also change to "Error" if an unexpected error occurred during any operation.
-	// Errors may be transient.
-	Status string `json:"status"`
-}
-
-// ProjectSpec A project.
-type ProjectSpec struct {
-	// GroupIDs A list of group IDs.
-	GroupIDs *GroupIDs `json:"groupIDs,omitempty"`
-	Name     string    `json:"name"`
-}
-
-// Projects A list of projects.
-type Projects = []Project
-
 // Region A region.
 type Region struct {
 	// Name The region name.
@@ -396,9 +356,6 @@ type KubernetesClustersResponse = KubernetesClusters
 // NotFoundResponse Generic error message.
 type NotFoundResponse = Oauth2Error
 
-// ProjectsResponse A list of projects.
-type ProjectsResponse = Projects
-
 // RegionsResponse A list of regions.
 type RegionsResponse = Regions
 
@@ -410,12 +367,6 @@ type CreateControlPlaneRequest = ClusterManagerSpec
 
 // CreateKubernetesClusterRequest Kubernetes cluster creation parameters.
 type CreateKubernetesClusterRequest = KubernetesClusterSpec
-
-// CreateProjectRequest A project.
-type CreateProjectRequest = ProjectSpec
-
-// PostApiV1OrganizationsOrganizationNameProjectsJSONRequestBody defines body for PostApiV1OrganizationsOrganizationNameProjects for application/json ContentType.
-type PostApiV1OrganizationsOrganizationNameProjectsJSONRequestBody = ProjectSpec
 
 // PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersJSONRequestBody defines body for PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers for application/json ContentType.
 type PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersJSONRequestBody = ClusterManagerSpec

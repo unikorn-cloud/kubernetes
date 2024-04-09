@@ -29,7 +29,7 @@ import (
 
 	"github.com/spf13/pflag"
 
-	coreclient "github.com/unikorn-cloud/core/pkg/client"
+	"github.com/unikorn-cloud/core/pkg/client"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/constants"
 	"github.com/unikorn-cloud/unikorn/pkg/server"
@@ -63,7 +63,7 @@ func start() {
 		return
 	}
 
-	client, err := coreclient.New(ctx, unikornv1.AddToScheme)
+	client, err := client.New(ctx, unikornv1.AddToScheme)
 	if err != nil {
 		logger.Error(err, "failed to create client")
 

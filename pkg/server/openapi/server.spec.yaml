@@ -25,72 +25,6 @@ x-documentation-groups:
     have to choose some default values for you, however it provides a faster and better
     user experience.
 paths:
-  /api/v1/organizations/{organizationName}/projects:
-    x-documentation-group: main
-    description: |-
-      Implements project management services. Projects, as currently defined
-      by the Kubernetes service, are implicitly scoped to the access token's
-      organization.
-    parameters:
-    - $ref: '#/components/parameters/organizationNameParameter'
-    get:
-      description: |-
-        List all projects for the organization.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '200':
-          $ref: '#/components/responses/projectsResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '403':
-          $ref: '#/components/responses/forbiddenResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
-    post:
-      description: |-
-        Creates a new project resource for the user's organization.
-      security:
-      - oauth2Authentication: []
-      requestBody:
-        $ref: '#/components/requestBodies/createProjectRequest'
-      responses:
-        '202':
-          $ref: '#/components/responses/acceptedResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '403':
-          $ref: '#/components/responses/forbiddenResponse'
-        '409':
-          $ref: '#/components/responses/conflictResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organizationName}/projects/{projectName}:
-    parameters:
-    - $ref: '#/components/parameters/organizationNameParameter'
-    - $ref: '#/components/parameters/projectNameParameter'
-    delete:
-      description: |-
-        Deletes the project associated with the authenticated user's scoped
-        authorisation token. This is a cascading operation and will delete all
-        contained cluster managers and clusters.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '202':
-          $ref: '#/components/responses/acceptedResponse'
-        '400':
-          $ref: '#/components/responses/badRequestResponse'
-        '401':
-          $ref: '#/components/responses/unauthorizedResponse'
-        '403':
-          $ref: '#/components/responses/forbiddenResponse'
-        '404':
-          $ref: '#/components/responses/notFoundResponse'
-        '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
   /api/v1/organizations/{organizationName}/clustermanagers:
     x-documentation-group: main
     description: |-
@@ -528,63 +462,6 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/region'
-    groupIDs:
-      description: A list of group IDs.
-      type: array
-      items:
-        description: A group ID.
-        type: string
-    projectSpec:
-      description: A project.
-      type: object
-      required:
-      - name
-      properties:
-        name:
-          type: string
-        groupIDs:
-          $ref: '#/components/schemas/groupIDs'
-    projectMetadata:
-      description: Required metadata for projects.
-      type: object
-      required:
-      - creationTime
-      - status
-      properties:
-        creationTime:
-          description: The time the resource was created.
-          type: string
-          format: date-time
-        deletionTime:
-          description: The time the resource was deleted.
-          type: string
-          format: date-time
-        status:
-          description: |-
-            The current status of the resource. Intially the status will be "Unknown" until
-            the resource is reconciled by the relevant controller. It then will transition to
-            "Provisioning" and will be ready for use when it changes to "Provisioned". The status
-            will also transition to the "Provisioning" status during an update. The
-            status will change to "Deprovisioning" when a delete request is being processed.
-            It may also change to "Error" if an unexpected error occurred during any operation.
-            Errors may be transient.
-          type: string
-    project:
-      description: A project.
-      type: object
-      required:
-      - metadata
-      - spec
-      properties:
-        metadata:
-          $ref: '#/components/schemas/projectMetadata'
-        spec:
-          $ref: '#/components/schemas/projectSpec'
-    projects:
-      description: A list of projects.
-      type: array
-      items:
-        $ref: '#/components/schemas/project'
     clusterManagerSpec:
       description: A cluster manager.
       type: object
@@ -982,15 +859,6 @@ components:
       items:
         $ref: '#/components/schemas/flavor'
   requestBodies:
-    createProjectRequest:
-      description: Project request parameters.
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/projectSpec'
-          example:
-            name: my-project
     createControlPlaneRequest:
       description: Control plane request parameters.
       required: true
@@ -1096,18 +964,6 @@ components:
           example:
           - name: uk-west
           - name: uk-east
-    projectsResponse:
-      description: A list of projects.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/projects'
-          example:
-          - metadata:
-              creationTime: 2023-07-31T10:45:42Z
-              status: Provisioned
-            spec:
-              name: my-project
     clusterManagerResponse:
       description: A cluster manager.
       content:

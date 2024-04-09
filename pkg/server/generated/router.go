@@ -24,15 +24,6 @@ type ServerInterface interface {
 	// (GET /api/v1/organizations/{organizationName}/clusters)
 	GetApiV1OrganizationsOrganizationNameClusters(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter)
 
-	// (GET /api/v1/organizations/{organizationName}/projects)
-	GetApiV1OrganizationsOrganizationNameProjects(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter)
-
-	// (POST /api/v1/organizations/{organizationName}/projects)
-	PostApiV1OrganizationsOrganizationNameProjects(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter)
-
-	// (DELETE /api/v1/organizations/{organizationName}/projects/{projectName})
-	DeleteApiV1OrganizationsOrganizationNameProjectsProjectName(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter, projectName ProjectNameParameter)
-
 	// (POST /api/v1/organizations/{organizationName}/projects/{projectName}/clustermanagers)
 	PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter, projectName ProjectNameParameter)
 
@@ -137,99 +128,6 @@ func (siw *ServerInterfaceWrapper) GetApiV1OrganizationsOrganizationNameClusters
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiV1OrganizationsOrganizationNameClusters(w, r, organizationName)
-	})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// GetApiV1OrganizationsOrganizationNameProjects operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1OrganizationsOrganizationNameProjects(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// ------------- Path parameter "organizationName" -------------
-	var organizationName OrganizationNameParameter
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "organizationName", runtime.ParamLocationPath, chi.URLParam(r, "organizationName"), &organizationName)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organizationName", Err: err})
-		return
-	}
-
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
-
-	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1OrganizationsOrganizationNameProjects(w, r, organizationName)
-	})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// PostApiV1OrganizationsOrganizationNameProjects operation middleware
-func (siw *ServerInterfaceWrapper) PostApiV1OrganizationsOrganizationNameProjects(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// ------------- Path parameter "organizationName" -------------
-	var organizationName OrganizationNameParameter
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "organizationName", runtime.ParamLocationPath, chi.URLParam(r, "organizationName"), &organizationName)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organizationName", Err: err})
-		return
-	}
-
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
-
-	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostApiV1OrganizationsOrganizationNameProjects(w, r, organizationName)
-	})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// DeleteApiV1OrganizationsOrganizationNameProjectsProjectName operation middleware
-func (siw *ServerInterfaceWrapper) DeleteApiV1OrganizationsOrganizationNameProjectsProjectName(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// ------------- Path parameter "organizationName" -------------
-	var organizationName OrganizationNameParameter
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "organizationName", runtime.ParamLocationPath, chi.URLParam(r, "organizationName"), &organizationName)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organizationName", Err: err})
-		return
-	}
-
-	// ------------- Path parameter "projectName" -------------
-	var projectName ProjectNameParameter
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "projectName", runtime.ParamLocationPath, chi.URLParam(r, "projectName"), &projectName)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectName", Err: err})
-		return
-	}
-
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
-
-	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteApiV1OrganizationsOrganizationNameProjectsProjectName(w, r, organizationName, projectName)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -737,15 +635,6 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/v1/organizations/{organizationName}/clusters", wrapper.GetApiV1OrganizationsOrganizationNameClusters)
-	})
-	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/organizations/{organizationName}/projects", wrapper.GetApiV1OrganizationsOrganizationNameProjects)
-	})
-	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/api/v1/organizations/{organizationName}/projects", wrapper.PostApiV1OrganizationsOrganizationNameProjects)
-	})
-	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/api/v1/organizations/{organizationName}/projects/{projectName}", wrapper.DeleteApiV1OrganizationsOrganizationNameProjectsProjectName)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/v1/organizations/{organizationName}/projects/{projectName}/clustermanagers", wrapper.PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers)

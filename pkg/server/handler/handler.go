@@ -35,7 +35,6 @@ import (
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/application"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/cluster"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/clustermanager"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/project"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/region"
 	"github.com/unikorn-cloud/unikorn/pkg/server/util"
 
@@ -86,59 +85,6 @@ func (h *Handler) checkRBAC(ctx context.Context, organization, scope string, per
 	}
 
 	return nil
-}
-
-func (h *Handler) GetApiV1OrganizationsOrganizationNameProjects(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
-	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Read); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := project.NewClient(h.client).List(r.Context(), organizationName)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setUncacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
-}
-
-func (h *Handler) PostApiV1OrganizationsOrganizationNameProjects(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
-	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Create); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	request := &generated.ProjectSpec{}
-
-	if err := util.ReadJSONBody(r, request); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	if err := project.NewClient(h.client).Create(r.Context(), organizationName, request); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setUncacheable(w)
-	w.WriteHeader(http.StatusAccepted)
-}
-
-func (h *Handler) DeleteApiV1OrganizationsOrganizationNameProjectsProjectName(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter, projectName generated.ProjectNameParameter) {
-	if err := h.checkRBAC(r.Context(), organizationName, "infrastructure", constants.Delete); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	if err := project.NewClient(h.client).Delete(r.Context(), organizationName, projectName); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setUncacheable(w)
-	w.WriteHeader(http.StatusAccepted)
 }
 
 func (h *Handler) GetApiV1OrganizationsOrganizationNameClustermanagers(w http.ResponseWriter, r *http.Request, organizationName generated.OrganizationNameParameter) {
