@@ -21,8 +21,6 @@ rules:
 - apiGroups:
   - unikorn-cloud.org
   resources:
-  - organizations
-  - projects
   - clustermanagers
   - kubernetesclusters
   verbs:
@@ -39,6 +37,14 @@ rules:
   - clustermanagerapplicationbundles
   - kubernetesclusterapplicationbundles
   - helmapplications
+  verbs:
+  - list
+  - watch
+# Find project namespaces
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
   verbs:
   - list
   - watch
