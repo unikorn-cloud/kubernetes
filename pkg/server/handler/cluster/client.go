@@ -215,7 +215,7 @@ func (c *Client) Create(ctx context.Context, organizationName, projectName strin
 	// Implicitly create the controller manager.
 	clusterManagerName := "default"
 
-	if options.ClusterManager == nil {
+	if options.ClusterManager != nil {
 		clusterManagerName = *options.ClusterManager
 	}
 
