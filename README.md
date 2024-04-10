@@ -57,6 +57,12 @@ helm repo update
 helm install argocd argo/argo-cd -n argocd --create-namespace
 ```
 
+Check the on-screen instructions. To get the admin password you can use:
+
+```
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+
 #### Installing Prerequisites
 
 The Unikorn server component has a couple prerequisites that are required for correct functionality.
@@ -74,13 +80,15 @@ You'll need to install:
 helm repo add jetstack https://charts.jetstack.io
 helm repo add nginx https://helm.nginx.com/stable
 helm repo update
-helm install cert-manager jetstack/cert-manager -v v1.10.1 -n cert-manager --create-namespace
-helm install nginx-ingress nginx/nginx-ingress -v 0.16.1 -n nginx-ingress --create-namespace
+helm install cert-manager jetstack/cert-manager --version v1.14.4 -n cert-manager --create-namespace --set installCRDs=true
+helm install nginx-ingress nginx/nginx-ingress --version 0.16.1 -n nginx-ingress --create-namespace
 ```
 </details>
 
 <details>
 <summary>ArgoCD</summary>
+
+Tip: You can apply these from the web-ui by adding an application then pressing edit as yaml in the top right.
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
