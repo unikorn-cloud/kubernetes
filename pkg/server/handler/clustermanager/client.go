@@ -20,7 +20,6 @@ package clustermanager
 import (
 	"context"
 	goerrors "errors"
-	"fmt"
 	"slices"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
@@ -271,8 +270,6 @@ func (c *Client) generate(ctx context.Context, namespace *corev1.Namespace, orga
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(applicationBundle)
 
 	controlPlane := &unikornv1.ClusterManager{
 		ObjectMeta: metav1.ObjectMeta{
