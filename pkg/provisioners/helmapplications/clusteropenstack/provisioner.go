@@ -224,7 +224,6 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 
 	// TODO: generate types from the Helm values schema.
 	values := map[string]interface{}{
-		"version":   string(*cluster.Spec.Version),
 		"openstack": openstackValues,
 		"cluster": map[string]interface{}{
 			"taints": []interface{}{
@@ -242,6 +241,7 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 			"serverMetadata": serverMetadata,
 		},
 		"controlPlane": map[string]interface{}{
+			"version":  string(*cluster.Spec.Version),
 			"replicas": *cluster.Spec.ControlPlane.Replicas,
 			"machine":  p.generateMachineHelmValues(&cluster.Spec.ControlPlane.MachineGeneric, nil),
 		},

@@ -324,7 +324,6 @@ func projectTags(cluster *unikornv1.KubernetesCluster) []string {
 		OrganizationTag + "=" + cluster.Labels[constants.OrganizationLabel],
 		ProjectTag + "=" + cluster.Labels[constants.ProjectLabel],
 		ClusterTag + "=" + cluster.Name,
-		ClusterUUIDTag + "=" + string(cluster.UID),
 	}
 
 	return tags
@@ -367,6 +366,7 @@ func roleNameToID(roles []roles.Role, name string) (string, error) {
 // TODO: make this configurable, this is just a default.
 func (p *Provider) getRequiredRoles() []string {
 	defaultRoles := []string{
+		"_member_",
 		"member",
 		"load-balancer_member",
 	}
