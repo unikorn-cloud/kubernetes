@@ -27,6 +27,7 @@ import (
 
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
+	"github.com/unikorn-cloud/core/pkg/util"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/vcluster"
@@ -213,13 +214,11 @@ func (c *Client) Create(ctx context.Context, organizationName, projectName strin
 	}
 
 	// Implicitly create the controller manager.
-	clusterManagerName := "default"
-
-	if options.ClusterManager != nil {
-		clusterManagerName = *options.ClusterManager
+	if options.ClusterManager == nil {
+		options.ClusterManager = util.ToPointer("default")
 	}
 
-	if err := clustermanager.NewClient(c.client).CreateImplicit(ctx, organizationName, projectName, clusterManagerName); err != nil {
+	if err := clustermanager.NewClient(c.client).CreateImplicit(ctx, organizationName, projectName, *options.ClusterManager); err != nil {
 		return err
 	}
 
