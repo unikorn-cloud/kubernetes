@@ -19,6 +19,7 @@ package clustermanager
 
 import (
 	"context"
+	"slices"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -157,6 +158,45 @@ func (p *Provisioner) Provision(ctx context.Context) error {
 
 // Deprovision implements the Provision interface.
 func (p *Provisioner) Deprovision(ctx context.Context) error {
+	log := log.FromContext(ctx)
+
+	// When deleting a manager, you need to also delete any managed clusters
+	// first to free up compute resources from the provider, so block until
+	// this is done.
+	cli := coreclient.StaticClientFromContext(ctx)
+
+	var clusters unikornv1.KubernetesClusterList
+
+	if err := cli.List(ctx, &clusters, &client.ListOptions{Namespace: p.clusterManager.Namespace}); err != nil {
+		return err
+	}
+
+	clusters.Items = slices.DeleteFunc(clusters.Items, func(cluster unikornv1.KubernetesCluster) bool {
+		return cluster.Spec.ClusterManager != p.clusterManager.Name
+	})
+
+	if len(clusters.Items) != 0 {
+		log.Info("cluster manager has managed clusters, yielding")
+
+		for i := range clusters.Items {
+			cluster := &clusters.Items[i]
+
+			if cluster.DeletionTimestamp != nil {
+				log.Info("awaiting cluster deletion", "cluster", cluster.Name)
+
+				continue
+			}
+
+			log.Info("triggering cluster deletion", "cluster", cluster.Name)
+
+			if err := cli.Delete(ctx, cluster); err != nil {
+				return err
+			}
+		}
+
+		return provisioners.ErrYield
+	}
+
 	// Remove the control plane.
 	if err := p.getClusterManagerProvisioner().Deprovision(ctx); err != nil {
 		return err

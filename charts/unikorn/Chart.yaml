@@ -4,7 +4,7 @@ description: A Helm chart for deploying Unikorn
 
 type: application
 
-version: v0.2.2
-appVersion: v0.2.2
+version: v0.2.3
+appVersion: v0.2.3
 
 icon: https://raw.githubusercontent.com/unikorn-cloud/unikorn/main/icons/default.png
