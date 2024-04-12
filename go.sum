@@ -307,8 +307,8 @@ github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go/codec v1.2.12 h1:9LC83zGrHhuUA9l16C9AHXAqEV/2wBQ4nkvumAE65EE=
 github.com/ugorji/go/codec v1.2.12/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
-github.com/unikorn-cloud/core v0.1.22 h1:7HUP/qZDN7m3Ti9inbjy8ca9IDYYmKZlWWu4plW/MzM=
-github.com/unikorn-cloud/core v0.1.22/go.mod h1:cP39UQN7aSmsfjQuSMsworI4oBIwx4oA4u20CbPpfZw=
+github.com/unikorn-cloud/core v0.1.23 h1:8Wf8IjG3RSrY+TwDov0zJb8qo7AsW00cLjpmnNUnjFY=
+github.com/unikorn-cloud/core v0.1.23/go.mod h1:cP39UQN7aSmsfjQuSMsworI4oBIwx4oA4u20CbPpfZw=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasttemplate v1.2.2 h1:lxLXG0uE3Qnshl9QyaK6XJxMXlQZELvChBOCmQD0Loo=
