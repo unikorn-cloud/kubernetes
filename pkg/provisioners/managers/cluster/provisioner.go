@@ -25,6 +25,7 @@ import (
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	"github.com/unikorn-cloud/core/pkg/constants"
+	"github.com/unikorn-cloud/core/pkg/manager"
 	"github.com/unikorn-cloud/core/pkg/provisioners"
 	"github.com/unikorn-cloud/core/pkg/provisioners/concurrent"
 	"github.com/unikorn-cloud/core/pkg/provisioners/conditional"
@@ -33,6 +34,7 @@ import (
 	provisionersutil "github.com/unikorn-cloud/core/pkg/provisioners/util"
 	"github.com/unikorn-cloud/core/pkg/util"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/providers"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/cilium"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusterautoscaler"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusterautoscaleropenstack"
@@ -245,6 +247,10 @@ func (p *Provisioner) Deprovision(ctx context.Context) error {
 	if err := provisioner.Deprovision(ctx); err != nil {
 		return err
 	}
+
+	// This event is used to trigger cleanup operations in the provider.
+	recorder := manager.FromContext(ctx).GetEventRecorderFor("cluster")
+	recorder.AnnotatedEventf(&p.cluster, providers.GetAnnotations(&p.cluster), "Normal", "ClusterDeleted", "cluster has been deleted successfully")
 
 	return nil
 }

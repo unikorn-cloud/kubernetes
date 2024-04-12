@@ -46,7 +46,7 @@ func (*Factory) Metadata() (string, string, string) {
 
 // Reconciler returns a new reconciler instance.
 func (*Factory) Reconciler(options *options.Options, manager manager.Manager) reconcile.Reconciler {
-	return coremanager.NewReconciler(options, manager.GetClient(), cluster.New)
+	return coremanager.NewReconciler(options, manager, cluster.New)
 }
 
 // RegisterWatches adds any watches that would trigger a reconcile.
