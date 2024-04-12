@@ -306,7 +306,7 @@ func (p *Provider) Images(ctx context.Context) (providers.ImageList, error) {
 
 const (
 	// ProjectIDAnnotation records the project ID created for a cluster.
-	ProjectIDAnnotation = "openstack.unikorn-cloud.org/project-id"
+	ProjectIDAnnotation = "openstack." + providers.MetdataDomain + "/project-id"
 
 	// Projects are randomly named to avoid clashes, so we need to add some tags
 	// in order to be able to reason about who they really belong to.  It is also
@@ -315,7 +315,6 @@ const (
 	OrganizationTag = "organization"
 	ProjectTag      = "project"
 	ClusterTag      = "cluster"
-	ClusterUUIDTag  = "clusterUUID"
 )
 
 // projectTags defines how to tag projects.
