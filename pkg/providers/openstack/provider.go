@@ -486,3 +486,8 @@ func (p *Provider) ConfigureCluster(ctx context.Context, cluster *unikornv1.Kube
 
 	return nil
 }
+
+// DeconfigureCluster does any provider specific cluster cleanup.
+func (p *Provider) DeconfigureCluster(ctx context.Context, annotations map[string]string) error {
+	return nil
+}

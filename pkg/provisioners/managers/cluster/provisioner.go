@@ -250,7 +250,11 @@ func (p *Provisioner) Deprovision(ctx context.Context) error {
 
 	// This event is used to trigger cleanup operations in the provider.
 	recorder := manager.FromContext(ctx).GetEventRecorderFor("cluster")
-	recorder.AnnotatedEventf(&p.cluster, providers.GetAnnotations(&p.cluster), "Normal", "ClusterDeleted", "cluster has been deleted successfully")
+
+	annotations := providers.GetAnnotations(&p.cluster)
+	annotations[constants.RegionAnnotation] = p.cluster.Spec.Region
+
+	recorder.AnnotatedEventf(&p.cluster, annotations, "Normal", "ClusterDeleted", "cluster has been deleted successfully")
 
 	return nil
 }

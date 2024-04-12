@@ -32,4 +32,6 @@ type Provider interface {
 	Images(ctx context.Context) (ImageList, error)
 	// ConfigureCluster does any provider specific configuration for a cluster.
 	ConfigureCluster(ctx context.Context, cluster *unikornv1.KubernetesCluster) error
+	// DeconfigureCluster does any provider specific cluster cleanup.
+	DeconfigureCluster(ctx context.Context, annotations map[string]string) error
 }
