@@ -206,7 +206,9 @@ func (c *Client) defaultImage(ctx context.Context, provider providers.Provider, 
 		return nil, err
 	}
 
-	images = slices.DeleteFunc(images, func(x providers.Image) bool { return x.KubernetesVersion == version })
+	images = slices.DeleteFunc(images, func(x providers.Image) bool {
+		return x.KubernetesVersion != version
+	})
 
 	if len(images) == 0 {
 		return nil, errors.OAuth2ServerError("unable to select an image")
