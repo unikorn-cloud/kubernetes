@@ -2,6 +2,17 @@ apiVersion: v1
 entries:
   unikorn:
   - apiVersion: v2
+    appVersion: v0.2.5
+    created: "2024-04-15T09:07:30.483627256Z"
+    description: A Helm chart for deploying Unikorn
+    digest: 9c699b09508ae66457fcf587b282f31b7f75018fbf5d3019b223681b1212a49e
+    icon: https://raw.githubusercontent.com/unikorn-cloud/unikorn/main/icons/default.png
+    name: unikorn
+    type: application
+    urls:
+    - https://github.com/unikorn-cloud/unikorn/releases/download/v0.2.5/unikorn-v0.2.5.tgz
+    version: v0.2.5
+  - apiVersion: v2
     appVersion: v0.2.4
     created: "2024-04-11T12:23:46.958798748Z"
     description: A Helm chart for deploying Unikorn
@@ -210,4 +221,4 @@ entries:
     urls:
     - https://github.com/unikorn-cloud/unikorn/releases/download/v0.1.1/unikorn-v0.1.1.tgz
     version: v0.1.1
-generated: "2024-04-11T12:23:46.958945698Z"
+generated: "2024-04-15T09:07:30.483765027Z"
