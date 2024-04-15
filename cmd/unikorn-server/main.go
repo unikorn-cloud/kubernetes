@@ -33,6 +33,7 @@ import (
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/constants"
 	"github.com/unikorn-cloud/unikorn/pkg/server"
+	"github.com/unikorn-cloud/unikorn/pkg/server/reaper"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
@@ -73,6 +74,12 @@ func start() {
 	server, err := s.GetServer(client)
 	if err != nil {
 		logger.Error(err, "failed to setup Handler")
+
+		return
+	}
+
+	if err := reaper.New(client).Run(ctx); err != nil {
+		logger.Error(err, "failed to setup 'The Reaper'")
 
 		return
 	}
