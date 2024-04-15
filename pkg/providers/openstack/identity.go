@@ -178,6 +178,15 @@ func (c *IdentityClient) CreateProject(ctx context.Context, domainID, name strin
 	return projects.Create(c.client, opts).Extract()
 }
 
+func (c *IdentityClient) DeleteProject(ctx context.Context, projectID string) error {
+	tracer := otel.GetTracerProvider().Tracer(constants.Application)
+
+	_, span := tracer.Start(ctx, "/identity/v3/auth/projects/"+projectID, trace.WithSpanKind(trace.SpanKindClient))
+	defer span.End()
+
+	return projects.Delete(c.client, projectID).Err
+}
+
 // ListAvailableProjects lists projects that an authenticated (but unscoped) user can
 // scope to.
 func (c *IdentityClient) ListAvailableProjects(ctx context.Context) ([]projects.Project, error) {

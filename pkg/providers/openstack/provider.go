@@ -489,5 +489,15 @@ func (p *Provider) ConfigureCluster(ctx context.Context, cluster *unikornv1.Kube
 
 // DeconfigureCluster does any provider specific cluster cleanup.
 func (p *Provider) DeconfigureCluster(ctx context.Context, annotations map[string]string) error {
-	return nil
+	projectID, ok := annotations[ProjectIDAnnotation]
+	if !ok {
+		return fmt.Errorf("%w: missing project ID annotation", ErrKeyUndefined)
+	}
+
+	identityService, err := p.identity(ctx)
+	if err != nil {
+		return err
+	}
+
+	return identityService.DeleteProject(ctx, projectID)
 }
