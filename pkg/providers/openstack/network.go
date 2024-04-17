@@ -22,10 +22,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/external"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
@@ -42,7 +42,7 @@ type NetworkClient struct {
 
 // NewNetworkClient provides a simple one-liner to start networking.
 func NewNetworkClient(ctx context.Context, provider CredentialProvider) (*NetworkClient, error) {
-	providerClient, err := provider.Client()
+	providerClient, err := provider.Client(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (c *NetworkClient) ExternalNetworks(ctx context.Context) ([]networks.Networ
 
 	affirmative := true
 
-	page, err := networks.List(c.client, &external.ListOptsExt{ListOptsBuilder: &networks.ListOpts{}, External: &affirmative}).AllPages()
+	page, err := networks.List(c.client, &external.ListOptsExt{ListOptsBuilder: &networks.ListOpts{}, External: &affirmative}).AllPages(ctx)
 	if err != nil {
 		return nil, err
 	}

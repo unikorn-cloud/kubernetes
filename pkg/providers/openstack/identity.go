@@ -21,13 +21,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/applicationcredentials"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/applicationcredentials"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/roles"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/tokens"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/users"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
@@ -44,7 +44,7 @@ type IdentityClient struct {
 
 // NewIdentityClient returns a new identity client.
 func NewIdentityClient(ctx context.Context, provider CredentialProvider) (*IdentityClient, error) {
-	providerClient, err := provider.Client()
+	providerClient, err := provider.Client(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (c *IdentityClient) CreateToken(ctx context.Context, options CreateTokenOpt
 	_, span := tracer.Start(ctx, "/identity/v3/auth/tokens", trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
-	result := tokens.Create(c.client, options.Options())
+	result := tokens.Create(ctx, c.client, options.Options())
 
 	token, err := result.ExtractToken()
 	if err != nil {
@@ -175,7 +175,7 @@ func (c *IdentityClient) CreateProject(ctx context.Context, domainID, name strin
 		Tags:     tags,
 	}
 
-	return projects.Create(c.client, opts).Extract()
+	return projects.Create(ctx, c.client, opts).Extract()
 }
 
 func (c *IdentityClient) DeleteProject(ctx context.Context, projectID string) error {
@@ -184,7 +184,7 @@ func (c *IdentityClient) DeleteProject(ctx context.Context, projectID string) er
 	_, span := tracer.Start(ctx, "/identity/v3/auth/projects/"+projectID, trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
-	return projects.Delete(c.client, projectID).Err
+	return projects.Delete(ctx, c.client, projectID).Err
 }
 
 // ListAvailableProjects lists projects that an authenticated (but unscoped) user can
@@ -195,7 +195,7 @@ func (c *IdentityClient) ListAvailableProjects(ctx context.Context) ([]projects.
 	_, span := tracer.Start(ctx, "/identity/v3/auth/projects", trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
-	page, err := projects.ListAvailable(c.client).AllPages()
+	page, err := projects.ListAvailable(c.client).AllPages(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +219,7 @@ func (c *IdentityClient) ListRoles(ctx context.Context) ([]roles.Role, error) {
 	_, span := tracer.Start(ctx, "/identity/v3/auth/roles", trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
-	page, err := roles.List(c.client, &roles.ListOpts{}).AllPages()
+	page, err := roles.List(c.client, &roles.ListOpts{}).AllPages(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func (c *IdentityClient) CreateRoleAssignment(ctx context.Context, userID, proje
 		ProjectID: projectID,
 	}
 
-	err := roles.Assign(c.client, roleID, opts).ExtractErr()
+	err := roles.Assign(ctx, c.client, roleID, opts).ExtractErr()
 	if err != nil {
 		return err
 	}
@@ -261,7 +261,7 @@ func (c *IdentityClient) ListApplicationCredentials(ctx context.Context, userID 
 	_, span := tracer.Start(ctx, "/identity/v3/users/"+userID+"/application_credentials", trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
-	page, err := applicationcredentials.List(c.client, userID, nil).AllPages()
+	page, err := applicationcredentials.List(c.client, userID, nil).AllPages(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -293,7 +293,7 @@ func (c *IdentityClient) CreateApplicationCredential(ctx context.Context, userID
 		Roles:       applicationRoles,
 	}
 
-	result, err := applicationcredentials.Create(c.client, userID, opts).Extract()
+	result, err := applicationcredentials.Create(ctx, c.client, userID, opts).Extract()
 	if err != nil {
 		return nil, err
 	}
@@ -308,7 +308,7 @@ func (c *IdentityClient) DeleteApplicationCredential(ctx context.Context, userID
 	_, span := tracer.Start(ctx, "/identity/v3/users/"+userID+"/application_credentials/"+id, trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
-	return applicationcredentials.Delete(c.client, userID, id).ExtractErr()
+	return applicationcredentials.Delete(ctx, c.client, userID, id).ExtractErr()
 }
 
 // CreateUser creates a new user.
@@ -324,7 +324,7 @@ func (c *IdentityClient) CreateUser(ctx context.Context, domainID, name, passwor
 		Password: password,
 	}
 
-	return users.Create(c.client, opts).Extract()
+	return users.Create(ctx, c.client, opts).Extract()
 }
 
 // GetUser returns user details.
@@ -334,7 +334,7 @@ func (c *IdentityClient) GetUser(ctx context.Context, userID string) (*users.Use
 	_, span := tracer.Start(ctx, "/identity/v3/users/"+userID, trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
-	return users.Get(c.client, userID).Extract()
+	return users.Get(ctx, c.client, userID).Extract()
 }
 
 // DeleteUser removes an existing user.
@@ -344,5 +344,5 @@ func (c *IdentityClient) DeleteUser(ctx context.Context, userID string) error {
 	_, span := tracer.Start(ctx, "/identity/v3/users/"+userID, trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
-	return users.Delete(c.client, userID).Err
+	return users.Delete(ctx, c.client, userID).Err
 }

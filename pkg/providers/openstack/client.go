@@ -18,17 +18,18 @@ limitations under the License.
 package openstack
 
 import (
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	"github.com/gophercloud/utils/openstack/clientconfig"
+	"context"
+
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
 )
 
 // authenticatedClient returns a provider client used to initialize service clients.
-func authenticatedClient(options gophercloud.AuthOptions) (*gophercloud.ProviderClient, error) {
+func authenticatedClient(ctx context.Context, options gophercloud.AuthOptions) (*gophercloud.ProviderClient, error) {
 	// TODO: the JWT token issuer will cap the expiry at that of the
 	// keystone token, so we shouldn't get an unauthorized error.  Just
 	// as well as we cannot disambiguate from what gophercloud returns.
-	client, err := openstack.AuthenticatedClient(options)
+	client, err := openstack.AuthenticatedClient(ctx, options)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +40,7 @@ func authenticatedClient(options gophercloud.AuthOptions) (*gophercloud.Provider
 // CredentialProvider abstracts authentication methods.
 type CredentialProvider interface {
 	// Client returns a new provider client.
-	Client() (*gophercloud.ProviderClient, error)
+	Client(ctx context.Context) (*gophercloud.ProviderClient, error)
 }
 
 // ApplicationCredentialProvider allows use of an application credential.
@@ -63,7 +64,7 @@ func NewApplicationCredentialProvider(endpoint, id, secret string) *ApplicationC
 }
 
 // Client implements the Provider interface.
-func (p *ApplicationCredentialProvider) Client() (*gophercloud.ProviderClient, error) {
+func (p *ApplicationCredentialProvider) Client(ctx context.Context) (*gophercloud.ProviderClient, error) {
 	options := gophercloud.AuthOptions{
 		IdentityEndpoint:            p.endpoint,
 		ApplicationCredentialID:     p.id,
@@ -71,7 +72,7 @@ func (p *ApplicationCredentialProvider) Client() (*gophercloud.ProviderClient, e
 		AllowReauth:                 true,
 	}
 
-	return authenticatedClient(options)
+	return authenticatedClient(ctx, options)
 }
 
 // PasswordProvider allows use of an application credential.
@@ -97,7 +98,7 @@ func NewPasswordProvider(endpoint, userID, password, projectID string) *Password
 }
 
 // Client implements the Provider interface.
-func (p *PasswordProvider) Client() (*gophercloud.ProviderClient, error) {
+func (p *PasswordProvider) Client(ctx context.Context) (*gophercloud.ProviderClient, error) {
 	options := gophercloud.AuthOptions{
 		IdentityEndpoint: p.endpoint,
 		UserID:           p.userID,
@@ -106,7 +107,7 @@ func (p *PasswordProvider) Client() (*gophercloud.ProviderClient, error) {
 		AllowReauth:      true,
 	}
 
-	return authenticatedClient(options)
+	return authenticatedClient(ctx, options)
 }
 
 // DomainScopedPasswordProvider allows use of an application credential.
@@ -132,7 +133,7 @@ func NewDomainScopedPasswordProvider(endpoint, userID, password, domainID string
 }
 
 // Client implements the Provider interface.
-func (p *DomainScopedPasswordProvider) Client() (*gophercloud.ProviderClient, error) {
+func (p *DomainScopedPasswordProvider) Client(ctx context.Context) (*gophercloud.ProviderClient, error) {
 	options := gophercloud.AuthOptions{
 		IdentityEndpoint: p.endpoint,
 		UserID:           p.userID,
@@ -143,7 +144,7 @@ func (p *DomainScopedPasswordProvider) Client() (*gophercloud.ProviderClient, er
 		AllowReauth: true,
 	}
 
-	return authenticatedClient(options)
+	return authenticatedClient(ctx, options)
 }
 
 // TokenProvider creates a client from an endpoint and token.
@@ -168,44 +169,14 @@ func NewTokenProvider(endpoint, token string) *TokenProvider {
 }
 
 // Client implements the Provider interface.
-func (p *TokenProvider) Client() (*gophercloud.ProviderClient, error) {
+func (p *TokenProvider) Client(ctx context.Context) (*gophercloud.ProviderClient, error) {
 	options := gophercloud.AuthOptions{
 		IdentityEndpoint: p.endpoint,
 		TokenID:          p.token,
 		AllowReauth:      true,
 	}
 
-	return authenticatedClient(options)
-}
-
-// CloudsProvider cretes a client from clouds.yaml.
-type CloudsProvider struct {
-	// cloud is the key to lookup in clouds.yaml.
-	cloud string
-}
-
-// Ensure the interface is implemented.
-var _ CredentialProvider = &CloudsProvider{}
-
-// NewTokenProvider returns a new initialized provider.
-func NewCloudsProvider(cloud string) *CloudsProvider {
-	return &CloudsProvider{
-		cloud: cloud,
-	}
-}
-
-// Client implements the Provider interface.
-func (p *CloudsProvider) Client() (*gophercloud.ProviderClient, error) {
-	clientOpts := &clientconfig.ClientOpts{
-		Cloud: p.cloud,
-	}
-
-	options, err := clientconfig.AuthOptions(clientOpts)
-	if err != nil {
-		return nil, err
-	}
-
-	return authenticatedClient(*options)
+	return authenticatedClient(ctx, options)
 }
 
 // UnauthenticatedProvider is used for token issue.
@@ -226,7 +197,7 @@ func NewUnauthenticatedProvider(endpoint string) *UnauthenticatedProvider {
 }
 
 // Client implements the Provider interface.
-func (p *UnauthenticatedProvider) Client() (*gophercloud.ProviderClient, error) {
+func (p *UnauthenticatedProvider) Client(ctx context.Context) (*gophercloud.ProviderClient, error) {
 	client, err := openstack.NewClient(p.endpoint)
 	if err != nil {
 		return nil, err

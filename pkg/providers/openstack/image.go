@@ -29,9 +29,9 @@ import (
 	"slices"
 	"time"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
+	"github.com/gophercloud/gophercloud/v2/openstack/image/v2/images"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
@@ -61,12 +61,12 @@ type ImageClient struct {
 
 // NewImageClient provides a simple one-liner to start computing.
 func NewImageClient(ctx context.Context, provider CredentialProvider, options *unikornv1.RegionOpenstackImageSpec) (*ImageClient, error) {
-	providerClient, err := provider.Client()
+	providerClient, err := provider.Client(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := openstack.NewImageServiceV2(providerClient, gophercloud.EndpointOpts{})
+	client, err := openstack.NewImageV2(providerClient, gophercloud.EndpointOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +181,7 @@ func (c *ImageClient) Images(ctx context.Context) ([]images.Image, error) {
 	_, span := tracer.Start(ctx, "/imageservice/v2/images", trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
-	page, err := images.List(c.client, &images.ListOpts{}).AllPages()
+	page, err := images.List(c.client, &images.ListOpts{}).AllPages(ctx)
 	if err != nil {
 		return nil, err
 	}
