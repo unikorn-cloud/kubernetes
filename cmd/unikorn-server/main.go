@@ -58,6 +58,7 @@ func start() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// I thought I had had an epiphany, but it was just trapped wind!
 	if err := s.SetupOpenTelemetry(ctx); err != nil {
 		logger.Error(err, "failed to setup OpenTelemetry")
 
