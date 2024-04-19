@@ -7,38 +7,17 @@ Provides a driver for OpenStack based regions.
 It is envisoned that an OpenStack cluster may be used for things other than the exclusive use of Unikorn, and as such it tries to respect this as much as possible.
 In particular we want to allow different instances of Unikorn to cohabit to support, for example, staging environments.
 
+You will need to install the [domain manager](https://docs.scs.community/standards/scs-0302-v1-domain-manager-role/) policy defined by SCS.
+You will also need to edit this to allow the `_member_` role to be granted.
+
 ### OpenStack Platform Configuration
 
 Start by selecting a unique name that will be used for the deployment's name, project, and domain:
 
 ```bash
-export PROJECT=unikorn-staging
+export USER=unikorn-staging
+export DOMAIN=unikorn-staging
 export PASSWORD=$(apg -n 1 -m 24)
-```
-
-Create the project.
-While Unikorn, by necessity, runs as an `admin` account, we use the project to limit scope.
-For example while we can see all images and flavors on the system, we can filter out those not shared explicitly with the project.
-Likewise, we can have project specific images that aren't shared with other users on the system, this allows then to be discovered by the provider.
-By marking the images as `community` we can then use the images for deployment in other per-Kubernetes cluster projects.
-
-```bash
-PROJECT_ID=$(openstack project create ${PROJECT} -f json | jq -r .id)
-```
-
-Crete the user.
-
-```bash
-USER_ID=$(openstack user create --project ${PROJECT} --password ${PASSWORD} ${PROJECT} -f json | jq -r .id)
-```
-
-Grant any roles to the user.
-When a Kubernetes cluster is provisioned, it will be done using application credentials, so ensure any required application credentials as configured for the region are explicitly associated with the user here.
-
-```bash
-for role in admin member load-balancer_member; do
-	openstack role add --user ${USER_ID} --project ${PROJECT_ID} ${role}
-done
 ```
 
 Create the domain.
@@ -51,6 +30,20 @@ A domain may also aid in simplifying operations like auditing and capacity plann
 
 ```bash
 DOMAIN_ID=$(openstack domain create ${PROJECT} -f json | jq -r .id)
+
+Crete the user.
+
+```bash
+USER_ID=$(openstack user create --domain ${DOMAIN} --password ${PASSWORD} ${USER} -f json | jq -r .id)
+```
+
+Grant any roles to the user.
+When a Kubernetes cluster is provisioned, it will be done using application credentials, so ensure any required application credentials as configured for the region are explicitly associated with the user here.
+
+```bash
+for role in _member_ member load-balancer_member manager; do
+	openstack role add --user ${USER_ID} --domain ${DOMAIN} ${role}
+done
 ```
 
 ### Unikorn Configuration
@@ -89,5 +82,6 @@ unset DOMAIN_ID
 unset USER_ID
 unset PROJECT_ID
 unset PASSWORD
-unset PROJECT
+unset DOMAIN
+unset USER
 ```

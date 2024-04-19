@@ -107,6 +107,42 @@ func (p *PasswordProvider) Client() (*gophercloud.ProviderClient, error) {
 	return authenticatedClient(options)
 }
 
+// DomainScopedPasswordProvider allows use of an application credential.
+type DomainScopedPasswordProvider struct {
+	endpoint string
+	userID   string
+	password string
+	domainID string
+}
+
+// Ensure the interface is implemented.
+var _ CredentialProvider = &DomainScopedPasswordProvider{}
+
+// NewDomainScopedPasswordProvider creates a client that comsumes passwords
+// for authentication.
+func NewDomainScopedPasswordProvider(endpoint, userID, password, domainID string) *DomainScopedPasswordProvider {
+	return &DomainScopedPasswordProvider{
+		endpoint: endpoint,
+		userID:   userID,
+		password: password,
+		domainID: domainID,
+	}
+}
+
+// Client implements the Provider interface.
+func (p *DomainScopedPasswordProvider) Client() (*gophercloud.ProviderClient, error) {
+	options := gophercloud.AuthOptions{
+		IdentityEndpoint: p.endpoint,
+		UserID:           p.userID,
+		Password:         p.password,
+		Scope: &gophercloud.AuthScope{
+			DomainID: p.domainID,
+		},
+	}
+
+	return authenticatedClient(options)
+}
+
 // TokenProvider creates a client from an endpoint and token.
 type TokenProvider struct {
 	// endpoint is the Keystone endpoint to hit to get access to tokens
