@@ -23,9 +23,11 @@ import (
 	"reflect"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/applicationcredentials"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
 	"github.com/gophercloud/utils/openstack/clientconfig"
 
 	"github.com/unikorn-cloud/core/pkg/constants"
@@ -307,6 +309,8 @@ func (p *Provider) Images(ctx context.Context) (providers.ImageList, error) {
 const (
 	// ProjectIDAnnotation records the project ID created for a cluster.
 	ProjectIDAnnotation = "openstack." + providers.MetdataDomain + "/project-id"
+	// UserIDAnnotation records the user ID create for a cluster.
+	UserIDAnnotation = "openstack." + providers.MetdataDomain + "/user-id"
 
 	// Projects are randomly named to avoid clashes, so we need to add some tags
 	// in order to be able to reason about who they really belong to.  It is also
@@ -328,6 +332,20 @@ func projectTags(cluster *unikornv1.KubernetesCluster) []string {
 	return tags
 }
 
+// provisionUser creates a new user in the managed domain with a random password.
+// There is a 1:1 mapping of user to project, and the project name is unique in the
+// domain, so just reuse this, we can clean them up at the same time.
+func (p *Provider) provisionUser(ctx context.Context, identityService *IdentityClient, project *projects.Project) (*users.User, string, error) {
+	password := uuid.New().String()
+
+	user, err := identityService.CreateUser(ctx, p.domainID, project.Name, password)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return user, password, nil
+}
+
 // provisionProject creates a project per-cluster.  Cluster API provider Openstack is
 // somewhat broken in that networks can alias and cause all kinds of disasters, so it's
 // safest to have one cluster in one project so it has its own namespace.
@@ -338,14 +356,6 @@ func (p *Provider) provisionProject(ctx context.Context, identityService *Identi
 	if err != nil {
 		return nil, err
 	}
-
-	if cluster.Annotations == nil {
-		cluster.Annotations = map[string]string{}
-	}
-
-	// Annotate the cluster with the project ID so we know a) we have created it
-	// and b) we can find it to make modifications e.g. add tags for garbage collection.
-	cluster.Annotations[ProjectIDAnnotation] = project.ID
 
 	return project, nil
 }
@@ -376,7 +386,7 @@ func (p *Provider) getRequiredRoles() []string {
 // provisionProjectRoles creates a binding between our service account and the project
 // with the required roles to provision an application credential that will allow cluster
 // creation, deletion and life-cycle management.
-func (p *Provider) provisionProjectRoles(ctx context.Context, identityService *IdentityClient, project *projects.Project) error {
+func (p *Provider) provisionProjectRoles(ctx context.Context, identityService *IdentityClient, userID string, project *projects.Project) error {
 	allRoles, err := identityService.ListRoles(ctx)
 	if err != nil {
 		return err
@@ -388,7 +398,7 @@ func (p *Provider) provisionProjectRoles(ctx context.Context, identityService *I
 			return err
 		}
 
-		if err := identityService.CreateRoleAssignment(ctx, p.userID, project.ID, roleID); err != nil {
+		if err := identityService.CreateRoleAssignment(ctx, userID, project.ID, roleID); err != nil {
 			return err
 		}
 	}
@@ -396,9 +406,9 @@ func (p *Provider) provisionProjectRoles(ctx context.Context, identityService *I
 	return nil
 }
 
-func (p *Provider) provisionApplicationCredential(ctx context.Context, project *projects.Project) (*applicationcredentials.ApplicationCredential, error) {
+func (p *Provider) provisionApplicationCredential(ctx context.Context, userID, password string, project *projects.Project) (*applicationcredentials.ApplicationCredential, error) {
 	// Rescope to the project...
-	providerClient := NewPasswordProvider(p.region.Spec.Openstack.Endpoint, p.userID, p.password, project.ID)
+	providerClient := NewPasswordProvider(p.region.Spec.Openstack.Endpoint, userID, password, project.ID)
 
 	projectScopedIdentity, err := NewIdentityClient(ctx, providerClient)
 	if err != nil {
@@ -407,7 +417,7 @@ func (p *Provider) provisionApplicationCredential(ctx context.Context, project *
 
 	// Application crdentials are scoped to the user, not the project, so the name needs
 	// to be unique, so just use the project name.
-	return projectScopedIdentity.CreateApplicationCredential(ctx, p.userID, project.Name, "IaaS lifecycle management", p.getRequiredRoles())
+	return projectScopedIdentity.CreateApplicationCredential(ctx, userID, project.Name, "IaaS lifecycle management", p.getRequiredRoles())
 }
 
 func (p *Provider) createClientConfig(cluster *unikornv1.KubernetesCluster, applicationCredential *applicationcredentials.ApplicationCredential) error {
@@ -442,22 +452,38 @@ func (p *Provider) createClientConfig(cluster *unikornv1.KubernetesCluster, appl
 }
 
 // ConfigureCluster does any provider specific configuration for a cluster.
+//
+//nolint:cyclop
 func (p *Provider) ConfigureCluster(ctx context.Context, cluster *unikornv1.KubernetesCluster) error {
 	identityService, err := p.identity(ctx)
 	if err != nil {
 		return err
 	}
 
+	// Every cluster has its own project to mitigate "nuances" in CAPO i.e. it's
+	// totally broken when it comes to network aliasing.
 	project, err := p.provisionProject(ctx, identityService, cluster)
 	if err != nil {
 		return err
 	}
 
-	if err := p.provisionProjectRoles(ctx, identityService, project); err != nil {
+	// You MUST provision a new user, if we rotate a password, any application credentials
+	// hanging off it will stop working, i.e. doing that to the unikorn management user
+	// will be pretty catastrophic for all clusters in the region.
+	user, password, err := p.provisionUser(ctx, identityService, project)
+	if err != nil {
 		return err
 	}
 
-	applicationCredential, err := p.provisionApplicationCredential(ctx, project)
+	// Give the user only what permissions they need to provision a cluster and
+	// manage it during its lifetime.
+	if err := p.provisionProjectRoles(ctx, identityService, user.ID, project); err != nil {
+		return err
+	}
+
+	// Always use application credentials, they are scoped to a single project and
+	// cannot be used to break from that jail.
+	applicationCredential, err := p.provisionApplicationCredential(ctx, user.ID, password, project)
 	if err != nil {
 		return err
 	}
@@ -470,6 +496,16 @@ func (p *Provider) ConfigureCluster(ctx context.Context, cluster *unikornv1.Kube
 	if err != nil {
 		return err
 	}
+
+	if cluster.Annotations == nil {
+		cluster.Annotations = map[string]string{}
+	}
+
+	// Annotate the cluster with the project ID so we know a) we have created it
+	// and b) we can find it to make modifications e.g. add tags for garbage collection.
+	// User ID allows us to clean that up too.
+	cluster.Annotations[ProjectIDAnnotation] = project.ID
+	cluster.Annotations[UserIDAnnotation] = user.ID
 
 	if cluster.Spec.Openstack == nil {
 		cluster.Spec.Openstack = &unikornv1.KubernetesClusterOpenstackSpec{}
@@ -489,15 +525,28 @@ func (p *Provider) ConfigureCluster(ctx context.Context, cluster *unikornv1.Kube
 
 // DeconfigureCluster does any provider specific cluster cleanup.
 func (p *Provider) DeconfigureCluster(ctx context.Context, annotations map[string]string) error {
-	projectID, ok := annotations[ProjectIDAnnotation]
-	if !ok {
-		return fmt.Errorf("%w: missing project ID annotation", ErrKeyUndefined)
-	}
-
 	identityService, err := p.identity(ctx)
 	if err != nil {
 		return err
 	}
 
-	return identityService.DeleteProject(ctx, projectID)
+	userID, ok := annotations[UserIDAnnotation]
+	if !ok {
+		return fmt.Errorf("%w: missing user ID annotation", ErrKeyUndefined)
+	}
+
+	projectID, ok := annotations[ProjectIDAnnotation]
+	if !ok {
+		return fmt.Errorf("%w: missing project ID annotation", ErrKeyUndefined)
+	}
+
+	if err := identityService.DeleteUser(ctx, userID); err != nil {
+		return err
+	}
+
+	if err := identityService.DeleteProject(ctx, projectID); err != nil {
+		return err
+	}
+
+	return nil
 }

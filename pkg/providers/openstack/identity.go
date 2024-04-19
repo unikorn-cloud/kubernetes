@@ -311,6 +311,22 @@ func (c *IdentityClient) DeleteApplicationCredential(ctx context.Context, userID
 	return applicationcredentials.Delete(c.client, userID, id).ExtractErr()
 }
 
+// CreateUser creates a new user.
+func (c *IdentityClient) CreateUser(ctx context.Context, domainID, name, password string) (*users.User, error) {
+	tracer := otel.GetTracerProvider().Tracer(constants.Application)
+
+	_, span := tracer.Start(ctx, "/identity/v3/users", trace.WithSpanKind(trace.SpanKindClient))
+	defer span.End()
+
+	opts := &users.CreateOpts{
+		Name:     name,
+		DomainID: domainID,
+		Password: password,
+	}
+
+	return users.Create(c.client, opts).Extract()
+}
+
 // GetUser returns user details.
 func (c *IdentityClient) GetUser(ctx context.Context, userID string) (*users.User, error) {
 	tracer := otel.GetTracerProvider().Tracer(constants.Application)
@@ -319,4 +335,14 @@ func (c *IdentityClient) GetUser(ctx context.Context, userID string) (*users.Use
 	defer span.End()
 
 	return users.Get(c.client, userID).Extract()
+}
+
+// DeleteUser removes an existing user.
+func (c *IdentityClient) DeleteUser(ctx context.Context, userID string) error {
+	tracer := otel.GetTracerProvider().Tracer(constants.Application)
+
+	_, span := tracer.Start(ctx, "/identity/v3/users/"+userID, trace.WithSpanKind(trace.SpanKindClient))
+	defer span.End()
+
+	return users.Delete(c.client, userID).Err
 }
