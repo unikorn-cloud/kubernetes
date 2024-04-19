@@ -61,11 +61,10 @@ type Provider struct {
 	password string
 
 	// DO NOT USE DIRECTLY, CALL AN ACCESSOR.
-	_identity     *IdentityClient
-	_compute      *ComputeClient
-	_image        *ImageClient
-	_network      *NetworkClient
-	_blockStorage *BlockStorageClient
+	_identity *IdentityClient
+	_compute  *ComputeClient
+	_image    *ImageClient
+	_network  *NetworkClient
 
 	lock sync.Mutex
 }
@@ -138,7 +137,7 @@ func (p *Provider) serviceClientRefresh(ctx context.Context) error {
 	}
 
 	// Pass in an empty string to use the default project.
-	providerClient := NewPasswordProvider(region.Spec.Openstack.Endpoint, string(userID), string(password), "")
+	providerClient := NewDomainScopedPasswordProvider(region.Spec.Openstack.Endpoint, string(userID), string(password), string(domainID))
 
 	// Create the clients.
 	identity, err := NewIdentityClient(ctx, providerClient)
@@ -161,11 +160,6 @@ func (p *Provider) serviceClientRefresh(ctx context.Context) error {
 		return err
 	}
 
-	blockStorage, err := NewBlockStorageClient(ctx, providerClient)
-	if err != nil {
-		return err
-	}
-
 	// Save the current configuration for checking next time.
 	p.region = region
 	p.secret = secret
@@ -179,7 +173,6 @@ func (p *Provider) serviceClientRefresh(ctx context.Context) error {
 	p._compute = compute
 	p._image = image
 	p._network = network
-	p._blockStorage = blockStorage
 
 	return nil
 }
@@ -226,18 +219,6 @@ func (p *Provider) network(ctx context.Context) (*NetworkClient, error) {
 	}
 
 	return p._network, nil
-}
-
-//nolint:unused
-func (p *Provider) blockStorage(ctx context.Context) (*BlockStorageClient, error) {
-	p.lock.Lock()
-	defer p.lock.Unlock()
-
-	if err := p.serviceClientRefresh(ctx); err != nil {
-		return nil, err
-	}
-
-	return p._blockStorage, nil
 }
 
 // Flavors list all available flavors.
