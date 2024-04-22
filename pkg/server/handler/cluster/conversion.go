@@ -24,10 +24,11 @@ import (
 	"slices"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/core/pkg/constants"
+	coreconstants "github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/constants"
 	"github.com/unikorn-cloud/unikorn/pkg/providers"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
@@ -96,7 +97,7 @@ func convertMetadata(in *unikornv1.KubernetesCluster) (*generated.KubernetesClus
 	}
 
 	// Validated to exist by ResourceLabels()
-	project := labels[constants.ProjectLabel]
+	project := labels[coreconstants.ProjectLabel]
 
 	out := &generated.KubernetesClusterMetadata{
 		Project:      project,
@@ -426,9 +427,9 @@ func (c *Client) generate(ctx context.Context, provider providers.Provider, name
 			Name:      options.Name,
 			Namespace: namespace.Name,
 			Labels: map[string]string{
-				constants.VersionLabel:      constants.Version,
-				constants.OrganizationLabel: organization,
-				constants.ProjectLabel:      project,
+				coreconstants.VersionLabel:      constants.Version,
+				coreconstants.OrganizationLabel: organization,
+				coreconstants.ProjectLabel:      project,
 			},
 		},
 		Spec: unikornv1.KubernetesClusterSpec{
