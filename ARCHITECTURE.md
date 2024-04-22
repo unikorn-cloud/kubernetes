@@ -1,27 +1,28 @@
 ## Unikorn Resources
 
-Unikorn implements cluster provisioning with 3 resources that are nested in the given order:
+Unikorn implements cluster provisioning with 2 resources, nested within a project namespace as described by the [identity service](https://github.com/unikorn-cloud/identity/).
+These are:
 
-* Projects encapsulate the relationship between Unikorn and a tenancy on a multi-tenant cloud
-* Control Planes encapsulate cluster management e.g. CAPI.
-  These are kept deliberately separate from clusters to provide enviroments e.g. production, staging, that can be independently upgraded canary style
+* Cluster controllers encapsulate cluster life-cycle management e.g. CAPI.
 * Kubernetes Clusters that actually create an end-user accessible workload clusters
 
-Conceptually these resources form a forest as shown below:
+Because there are no direct references from, for example, a Kubernetes cluster to its owning project and organization, these are required to be added as labels.
+This allows the resource to construct a fully-qualified name for provisioning with a CD driver as describe by the [core library](https://github.com/unikorn-cloud/core/).
 
-![Unikorn CRD Hierarchy](docs/arch_crd_hierarchy.png)
+### Cluster controllers
 
-Projects are globally scoped, so one instance of Unikorn is associated with one cloud provider.
+The server component of this repository will automatically and transparently create a default cluster controller if one does not exist on Kubernetes cluster creation.
+You may specify an explicit name during Kubernetes cluster creation and a cluster controller will be created for you.
+The intention is to allow clusters to be managed by different controllers, giving rise to horizontal scaling, separate failure domains or different upgrade policies.
 
-Both projects and control planes dynamically allocate Kubernetes namespaces, allowing reuse of names for control planes across projects, and clusters across control planes.
-In layman's terms project A can have a control plane called X, and project B can have a control planes called X too.
+Cluster controllers are implemented in a [vCluster](https://www.vcluster.com/) as this allows CAPI to be be installed with minimal fuss, while maintaining separation between different instances.
+This includes any prerequisites-requisites required by CAPi.
 
-This is shown below:
+### Kubernetes Clusters
 
-![Unikorn CR Namespaces](docs/arch_namespaces.png)
+These are somewhat more involved than cluster managers.
 
-Because there are no direct references from, for example, a Kubernetes cluster to its owning project or control plane, these are required to be added as labels.
-The labels can be used to construct globally unique fully-qualified names, that include a combination of project, control plane and cluster.
+Clusters are composed of charts that define the cluster, any CNI, and cloud controller managers required for cluster bootstrap.
 
-Likewise, the namespaces use generated names, so also need labels to uniquely identify them when performing a lookup operation.
-Additionally, namespaces have a kind label, otherwise control plane namespaces will alias with their owning project as the latter's labels are a subset of the former.
+Once those components are up and running we install a generic and minimal set of add-ons such as the cluster autoscaler if required, then any GPU operators, metrics servers, etc.
+Additional applications should be provisioned by an application controller.
