@@ -353,8 +353,15 @@ func roleNameToID(roles []roles.Role, name string) (string, error) {
 	return "", fmt.Errorf("%w: role %s", ErrResourceNotFound, name)
 }
 
-// TODO: make this configurable, this is just a default.
+// getRequiredRoles returns the roles required for a user to create, manage and delete
+// a cluster.
 func (p *Provider) getRequiredRoles() []string {
+	if p.region.Spec.Openstack.Identity != nil && len(p.region.Spec.Openstack.Identity.ClusterRoles) > 0 {
+		return p.region.Spec.Openstack.Identity.ClusterRoles
+	}
+
+	// TODO: _member_ shouldn't be necessary, delete me when we get a hsndle on it.
+	// This is quired by Octavia to list providers and load balancers at the very least.
 	defaultRoles := []string{
 		"_member_",
 		"member",
