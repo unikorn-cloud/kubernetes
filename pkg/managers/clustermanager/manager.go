@@ -19,10 +19,10 @@ package clustermanager
 
 import (
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
-	"github.com/unikorn-cloud/core/pkg/constants"
 	coremanager "github.com/unikorn-cloud/core/pkg/manager"
 	"github.com/unikorn-cloud/core/pkg/manager/options"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/constants"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/managers/clustermanager"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"

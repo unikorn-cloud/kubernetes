@@ -35,10 +35,10 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/util"
 	"github.com/unikorn-cloud/core/pkg/util/cache"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/constants"
 )
 
 var (

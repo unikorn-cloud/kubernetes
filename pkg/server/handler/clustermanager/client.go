@@ -23,10 +23,11 @@ import (
 	"slices"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/core/pkg/constants"
+	coreconstants "github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util/retry"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/constants"
 	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/common"
@@ -138,7 +139,7 @@ func convertMetadata(in *unikornv1.ClusterManager) (*generated.ClusterManagerMet
 	}
 
 	// Validated to exist by ResourceLabels()
-	project := labels[constants.ProjectLabel]
+	project := labels[coreconstants.ProjectLabel]
 
 	out := &generated.ClusterManagerMetadata{
 		Project:      project,
@@ -276,9 +277,9 @@ func (c *Client) generate(ctx context.Context, namespace *corev1.Namespace, orga
 			Name:      parameters.Name,
 			Namespace: namespace.Name,
 			Labels: map[string]string{
-				constants.VersionLabel:      constants.Version,
-				constants.OrganizationLabel: organizationName,
-				constants.ProjectLabel:      projectName,
+				coreconstants.VersionLabel:      constants.Version,
+				coreconstants.OrganizationLabel: organizationName,
+				coreconstants.ProjectLabel:      projectName,
 			},
 		},
 		Spec: unikornv1.ClusterManagerSpec{
