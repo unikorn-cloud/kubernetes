@@ -218,8 +218,9 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 	}
 
 	serverMetadata := map[string]interface{}{
-		"cluster": cluster.Name,
-		"project": labels[constants.ProjectLabel],
+		"cluster":      cluster.Name,
+		"project":      labels[constants.ProjectLabel],
+		"organization": labels[constants.OrganizationLabel],
 	}
 
 	// TODO: generate types from the Helm values schema.
