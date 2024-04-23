@@ -29,12 +29,13 @@ By limiting the scope of list operations to that of the project domain we limit 
 A domain may also aid in simplifying operations like auditing and capacity planning.
 
 ```bash
-DOMAIN_ID=$(openstack domain create ${PROJECT} -f json | jq -r .id)
+DOMAIN_ID=$(openstack domain create ${DOMAIN} -f json | jq -r .id)
+```
 
 Crete the user.
 
 ```bash
-USER_ID=$(openstack user create --domain ${DOMAIN} --password ${PASSWORD} ${USER} -f json | jq -r .id)
+USER_ID=$(openstack user create --domain ${DOMAIN_ID} --password ${PASSWORD} ${USER} -f json | jq -r .id)
 ```
 
 Grant any roles to the user.
@@ -42,7 +43,7 @@ When a Kubernetes cluster is provisioned, it will be done using application cred
 
 ```bash
 for role in _member_ member load-balancer_member manager; do
-	openstack role add --user ${USER_ID} --domain ${DOMAIN} ${role}
+	openstack role add --user ${USER_ID} --domain ${DOMAIN_ID} ${role}
 done
 ```
 
@@ -80,7 +81,6 @@ Cleanup actions.
 ```bash
 unset DOMAIN_ID
 unset USER_ID
-unset PROJECT_ID
 unset PASSWORD
 unset DOMAIN
 unset USER
