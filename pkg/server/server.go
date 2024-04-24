@@ -20,7 +20,9 @@ package server
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net/http"
+	"net/http/pprof"
 
 	chi "github.com/go-chi/chi/v5"
 	"github.com/spf13/pflag"
@@ -104,6 +106,27 @@ func (s *Server) SetupOpenTelemetry(ctx context.Context) error {
 }
 
 func (s *Server) GetServer(client client.Client) (*http.Server, error) {
+	pprofHandler := http.NewServeMux()
+	pprofHandler.HandleFunc("/debug/pprof/", pprof.Index)
+	pprofHandler.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	pprofHandler.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	pprofHandler.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	pprofHandler.HandleFunc("/debug/pprof/trace", pprof.Trace)
+
+	go func() {
+		pprofServer := http.Server{
+			Addr:              ":6060",
+			ReadTimeout:       s.Options.ReadTimeout,
+			ReadHeaderTimeout: s.Options.ReadHeaderTimeout,
+			WriteTimeout:      s.Options.WriteTimeout,
+			Handler:           pprofHandler,
+		}
+
+		if err := pprofServer.ListenAndServe(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+
 	schema, err := openapi.NewSchema(generated.GetSwagger)
 	if err != nil {
 		return nil, err
