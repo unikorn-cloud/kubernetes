@@ -124,6 +124,8 @@ spec:
           containerPort: 6080
         - name: prometheus
           containerPort: 8080
+        - name: pprof
+          containerPort: 6060
         # Note, this is quite CPU intensive, especially when going wide!
         # TODO: profile me.
         resources:
