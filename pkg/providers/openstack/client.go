@@ -68,6 +68,7 @@ func (p *ApplicationCredentialProvider) Client() (*gophercloud.ProviderClient, e
 		IdentityEndpoint:            p.endpoint,
 		ApplicationCredentialID:     p.id,
 		ApplicationCredentialSecret: p.secret,
+		AllowReauth:                 true,
 	}
 
 	return authenticatedClient(options)
@@ -102,6 +103,7 @@ func (p *PasswordProvider) Client() (*gophercloud.ProviderClient, error) {
 		UserID:           p.userID,
 		Password:         p.password,
 		TenantID:         p.projectID,
+		AllowReauth:      true,
 	}
 
 	return authenticatedClient(options)
@@ -138,6 +140,7 @@ func (p *DomainScopedPasswordProvider) Client() (*gophercloud.ProviderClient, er
 		Scope: &gophercloud.AuthScope{
 			DomainID: p.domainID,
 		},
+		AllowReauth: true,
 	}
 
 	return authenticatedClient(options)
@@ -169,6 +172,7 @@ func (p *TokenProvider) Client() (*gophercloud.ProviderClient, error) {
 	options := gophercloud.AuthOptions{
 		IdentityEndpoint: p.endpoint,
 		TokenID:          p.token,
+		AllowReauth:      true,
 	}
 
 	return authenticatedClient(options)
