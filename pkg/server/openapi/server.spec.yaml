@@ -25,7 +25,7 @@ x-documentation-groups:
     have to choose some default values for you, however it provides a faster and better
     user experience.
 paths:
-  /api/v1/organizations/{organizationName}/clustermanagers:
+  /api/v1/organizations/{organization}/clustermanagers:
     x-documentation-group: main
     description: |-
       Implements cluster manager management services. Control planes manage the
@@ -35,7 +35,7 @@ paths:
       upgrade functionality.  Referencing an explicit cluster manager name will
       implicitly create the associated project.
     parameters:
-    - $ref: '#/components/parameters/organizationNameParameter'
+    - $ref: '#/components/parameters/organizationParameter'
     get:
       description: |-
         Lists cluster managers within the organization.
@@ -54,7 +54,7 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organizationName}/projects/{projectName}/clustermanagers:
+  /api/v1/organizations/{organization}/projects/{project}/clustermanagers:
     description: |-
       Implements cluster manager management services. Control planes manage the
       life cycle of Kubernetes clusters, through provisioning, upgrading, to deletion.
@@ -63,8 +63,8 @@ paths:
       upgrade functionality.  Referencing an explicit cluster manager name will
       implicitly create the associated project.
     parameters:
-    - $ref: '#/components/parameters/organizationNameParameter'
-    - $ref: '#/components/parameters/projectNameParameter'
+    - $ref: '#/components/parameters/organizationParameter'
+    - $ref: '#/components/parameters/projectParameter'
     post:
       description: |-
         Creates a new cluster manager within the project.
@@ -85,7 +85,7 @@ paths:
           $ref: '#/components/responses/conflictResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organizationName}/projects/{projectName}/clustermanagers/{clusterManagerName}:
+  /api/v1/organizations/{organization}/projects/{project}/clustermanagers/{clusterManager}:
     x-documentation-group: main
     description: |-
       Implements cluster manager management services. Control planes manage the
@@ -95,9 +95,9 @@ paths:
       upgrade functionality.  Referencing an explicit cluster manager name will
       implicitly create the associated project.
     parameters:
-    - $ref: '#/components/parameters/organizationNameParameter'
-    - $ref: '#/components/parameters/projectNameParameter'
-    - $ref: '#/components/parameters/clusterManagerNameParameter'
+    - $ref: '#/components/parameters/organizationParameter'
+    - $ref: '#/components/parameters/projectParameter'
+    - $ref: '#/components/parameters/clusterManagerParameter'
     put:
       description: |-
         Updates a cluster manager within the scoped project.
@@ -137,11 +137,11 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organizationName}/clusters:
+  /api/v1/organizations/{organization}/clusters:
     x-documentation-group: main
     description: Cluster services.
     parameters:
-    - $ref: '#/components/parameters/organizationNameParameter'
+    - $ref: '#/components/parameters/organizationParameter'
     get:
       description: |-
         List all clusters within the organization.
@@ -160,12 +160,12 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organizationName}/projects/{projectName}/clusters:
+  /api/v1/organizations/{organization}/projects/{project}/clusters:
     x-documentation-group: main
     description: Cluster services.
     parameters:
-    - $ref: '#/components/parameters/organizationNameParameter'
-    - $ref: '#/components/parameters/projectNameParameter'
+    - $ref: '#/components/parameters/organizationParameter'
+    - $ref: '#/components/parameters/projectParameter'
     post:
       description: |-
         Creates a new cluster within the selected cluster manager.
@@ -186,13 +186,13 @@ paths:
           $ref: '#/components/responses/conflictResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organizationName}/projects/{projectName}/clusters/{clusterName}:
+  /api/v1/organizations/{organization}/projects/{project}/clusters/{cluster}:
     x-documentation-group: main
     description: Cluster services.
     parameters:
-    - $ref: '#/components/parameters/organizationNameParameter'
-    - $ref: '#/components/parameters/projectNameParameter'
-    - $ref: '#/components/parameters/clusterNameParameter'
+    - $ref: '#/components/parameters/organizationParameter'
+    - $ref: '#/components/parameters/projectParameter'
+    - $ref: '#/components/parameters/clusterParameter'
     put:
       description: |-
         Update a cluster within the selected cluster manager.
@@ -231,13 +231,13 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organizationName}/projects/{projectName}/clusters/{clusterName}/kubeconfig:
+  /api/v1/organizations/{organization}/projects/{project}/clusters/{cluster}/kubeconfig:
     x-documentation-group: main
     description: Cluster services.
     parameters:
-    - $ref: '#/components/parameters/organizationNameParameter'
-    - $ref: '#/components/parameters/projectNameParameter'
-    - $ref: '#/components/parameters/clusterNameParameter'
+    - $ref: '#/components/parameters/organizationParameter'
+    - $ref: '#/components/parameters/projectParameter'
+    - $ref: '#/components/parameters/clusterParameter'
     get:
       description: |-
         Get a cluster's Kubernetes configuration.
@@ -331,24 +331,24 @@ paths:
           $ref: '#/components/responses/internalServerErrorResponse'
 components:
   parameters:
-    organizationNameParameter:
-      name: organizationName
+    organizationParameter:
+      name: organization
       in: path
       description: |-
         The organization name.
       required: true
       schema:
         $ref: '#/components/schemas/kubernetesNameParameter'
-    projectNameParameter:
-      name: projectName
+    projectParameter:
+      name: project
       in: path
       description: |-
         The project name.
       required: true
       schema:
         $ref: '#/components/schemas/kubernetesNameParameter'
-    clusterManagerNameParameter:
-      name: clusterManagerName
+    clusterManagerParameter:
+      name: clusterManager
       in: path
       description: |-
         The cluster manager name, if the cluster manager does not exist, then it may be
@@ -359,8 +359,8 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/kubernetesNameParameter'
-    clusterNameParameter:
-      name: clusterName
+    clusterParameter:
+      name: cluster
       in: path
       description: |-
         The cluster name. Must be a valid DNS containing only lower case characters,

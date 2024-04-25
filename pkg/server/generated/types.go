@@ -311,17 +311,17 @@ type Volume struct {
 	Size int `json:"size"`
 }
 
-// ClusterManagerNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
-type ClusterManagerNameParameter = KubernetesNameParameter
+// ClusterManagerParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
+type ClusterManagerParameter = KubernetesNameParameter
 
-// ClusterNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
-type ClusterNameParameter = KubernetesNameParameter
+// ClusterParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
+type ClusterParameter = KubernetesNameParameter
 
-// OrganizationNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
-type OrganizationNameParameter = KubernetesNameParameter
+// OrganizationParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
+type OrganizationParameter = KubernetesNameParameter
 
-// ProjectNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
-type ProjectNameParameter = KubernetesNameParameter
+// ProjectParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
+type ProjectParameter = KubernetesNameParameter
 
 // RegionNameParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type RegionNameParameter = KubernetesNameParameter
@@ -368,14 +368,14 @@ type CreateControlPlaneRequest = ClusterManagerSpec
 // CreateKubernetesClusterRequest Kubernetes cluster creation parameters.
 type CreateKubernetesClusterRequest = KubernetesClusterSpec
 
-// PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersJSONRequestBody defines body for PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers for application/json ContentType.
-type PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersJSONRequestBody = ClusterManagerSpec
+// PostApiV1OrganizationsOrganizationProjectsProjectClustermanagersJSONRequestBody defines body for PostApiV1OrganizationsOrganizationProjectsProjectClustermanagers for application/json ContentType.
+type PostApiV1OrganizationsOrganizationProjectsProjectClustermanagersJSONRequestBody = ClusterManagerSpec
 
-// PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody defines body for PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName for application/json ContentType.
-type PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerNameJSONRequestBody = ClusterManagerSpec
+// PutApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManagerJSONRequestBody defines body for PutApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManager for application/json ContentType.
+type PutApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManagerJSONRequestBody = ClusterManagerSpec
 
-// PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustersJSONRequestBody defines body for PostApiV1OrganizationsOrganizationNameProjectsProjectNameClusters for application/json ContentType.
-type PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustersJSONRequestBody = KubernetesClusterSpec
+// PostApiV1OrganizationsOrganizationProjectsProjectClustersJSONRequestBody defines body for PostApiV1OrganizationsOrganizationProjectsProjectClusters for application/json ContentType.
+type PostApiV1OrganizationsOrganizationProjectsProjectClustersJSONRequestBody = KubernetesClusterSpec
 
-// PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameJSONRequestBody defines body for PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName for application/json ContentType.
-type PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameJSONRequestBody = KubernetesClusterSpec
+// PutApiV1OrganizationsOrganizationProjectsProjectClustersClusterJSONRequestBody defines body for PutApiV1OrganizationsOrganizationProjectsProjectClustersCluster for application/json ContentType.
+type PutApiV1OrganizationsOrganizationProjectsProjectClustersClusterJSONRequestBody = KubernetesClusterSpec

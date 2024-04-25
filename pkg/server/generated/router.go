@@ -18,32 +18,32 @@ type ServerInterface interface {
 	// (GET /api/v1/applications)
 	GetApiV1Applications(w http.ResponseWriter, r *http.Request)
 
-	// (GET /api/v1/organizations/{organizationName}/clustermanagers)
-	GetApiV1OrganizationsOrganizationNameClustermanagers(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter)
+	// (GET /api/v1/organizations/{organization}/clustermanagers)
+	GetApiV1OrganizationsOrganizationClustermanagers(w http.ResponseWriter, r *http.Request, organization OrganizationParameter)
 
-	// (GET /api/v1/organizations/{organizationName}/clusters)
-	GetApiV1OrganizationsOrganizationNameClusters(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter)
+	// (GET /api/v1/organizations/{organization}/clusters)
+	GetApiV1OrganizationsOrganizationClusters(w http.ResponseWriter, r *http.Request, organization OrganizationParameter)
 
-	// (POST /api/v1/organizations/{organizationName}/projects/{projectName}/clustermanagers)
-	PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter, projectName ProjectNameParameter)
+	// (POST /api/v1/organizations/{organization}/projects/{project}/clustermanagers)
+	PostApiV1OrganizationsOrganizationProjectsProjectClustermanagers(w http.ResponseWriter, r *http.Request, organization OrganizationParameter, project ProjectParameter)
 
-	// (DELETE /api/v1/organizations/{organizationName}/projects/{projectName}/clustermanagers/{clusterManagerName})
-	DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter)
+	// (DELETE /api/v1/organizations/{organization}/projects/{project}/clustermanagers/{clusterManager})
+	DeleteApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManager(w http.ResponseWriter, r *http.Request, organization OrganizationParameter, project ProjectParameter, clusterManager ClusterManagerParameter)
 
-	// (PUT /api/v1/organizations/{organizationName}/projects/{projectName}/clustermanagers/{clusterManagerName})
-	PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter, projectName ProjectNameParameter, clusterManagerName ClusterManagerNameParameter)
+	// (PUT /api/v1/organizations/{organization}/projects/{project}/clustermanagers/{clusterManager})
+	PutApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManager(w http.ResponseWriter, r *http.Request, organization OrganizationParameter, project ProjectParameter, clusterManager ClusterManagerParameter)
 
-	// (POST /api/v1/organizations/{organizationName}/projects/{projectName}/clusters)
-	PostApiV1OrganizationsOrganizationNameProjectsProjectNameClusters(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter, projectName ProjectNameParameter)
+	// (POST /api/v1/organizations/{organization}/projects/{project}/clusters)
+	PostApiV1OrganizationsOrganizationProjectsProjectClusters(w http.ResponseWriter, r *http.Request, organization OrganizationParameter, project ProjectParameter)
 
-	// (DELETE /api/v1/organizations/{organizationName}/projects/{projectName}/clusters/{clusterName})
-	DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter, projectName ProjectNameParameter, clusterName ClusterNameParameter)
+	// (DELETE /api/v1/organizations/{organization}/projects/{project}/clusters/{cluster})
+	DeleteApiV1OrganizationsOrganizationProjectsProjectClustersCluster(w http.ResponseWriter, r *http.Request, organization OrganizationParameter, project ProjectParameter, cluster ClusterParameter)
 
-	// (PUT /api/v1/organizations/{organizationName}/projects/{projectName}/clusters/{clusterName})
-	PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter, projectName ProjectNameParameter, clusterName ClusterNameParameter)
+	// (PUT /api/v1/organizations/{organization}/projects/{project}/clusters/{cluster})
+	PutApiV1OrganizationsOrganizationProjectsProjectClustersCluster(w http.ResponseWriter, r *http.Request, organization OrganizationParameter, project ProjectParameter, cluster ClusterParameter)
 
-	// (GET /api/v1/organizations/{organizationName}/projects/{projectName}/clusters/{clusterName}/kubeconfig)
-	GetApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameKubeconfig(w http.ResponseWriter, r *http.Request, organizationName OrganizationNameParameter, projectName ProjectNameParameter, clusterName ClusterNameParameter)
+	// (GET /api/v1/organizations/{organization}/projects/{project}/clusters/{cluster}/kubeconfig)
+	GetApiV1OrganizationsOrganizationProjectsProjectClustersClusterKubeconfig(w http.ResponseWriter, r *http.Request, organization OrganizationParameter, project ProjectParameter, cluster ClusterParameter)
 
 	// (GET /api/v1/regions)
 	GetApiV1Regions(w http.ResponseWriter, r *http.Request)
@@ -81,25 +81,25 @@ func (siw *ServerInterfaceWrapper) GetApiV1Applications(w http.ResponseWriter, r
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetApiV1OrganizationsOrganizationNameClustermanagers operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1OrganizationsOrganizationNameClustermanagers(w http.ResponseWriter, r *http.Request) {
+// GetApiV1OrganizationsOrganizationClustermanagers operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1OrganizationsOrganizationClustermanagers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
 
-	// ------------- Path parameter "organizationName" -------------
-	var organizationName OrganizationNameParameter
+	// ------------- Path parameter "organization" -------------
+	var organization OrganizationParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "organizationName", runtime.ParamLocationPath, chi.URLParam(r, "organizationName"), &organizationName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "organization", runtime.ParamLocationPath, chi.URLParam(r, "organization"), &organization)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organizationName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organization", Err: err})
 		return
 	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1OrganizationsOrganizationNameClustermanagers(w, r, organizationName)
+		siw.Handler.GetApiV1OrganizationsOrganizationClustermanagers(w, r, organization)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -109,25 +109,25 @@ func (siw *ServerInterfaceWrapper) GetApiV1OrganizationsOrganizationNameClusterm
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetApiV1OrganizationsOrganizationNameClusters operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1OrganizationsOrganizationNameClusters(w http.ResponseWriter, r *http.Request) {
+// GetApiV1OrganizationsOrganizationClusters operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1OrganizationsOrganizationClusters(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
 
-	// ------------- Path parameter "organizationName" -------------
-	var organizationName OrganizationNameParameter
+	// ------------- Path parameter "organization" -------------
+	var organization OrganizationParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "organizationName", runtime.ParamLocationPath, chi.URLParam(r, "organizationName"), &organizationName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "organization", runtime.ParamLocationPath, chi.URLParam(r, "organization"), &organization)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organizationName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organization", Err: err})
 		return
 	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1OrganizationsOrganizationNameClusters(w, r, organizationName)
+		siw.Handler.GetApiV1OrganizationsOrganizationClusters(w, r, organization)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -137,34 +137,34 @@ func (siw *ServerInterfaceWrapper) GetApiV1OrganizationsOrganizationNameClusters
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers operation middleware
-func (siw *ServerInterfaceWrapper) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers(w http.ResponseWriter, r *http.Request) {
+// PostApiV1OrganizationsOrganizationProjectsProjectClustermanagers operation middleware
+func (siw *ServerInterfaceWrapper) PostApiV1OrganizationsOrganizationProjectsProjectClustermanagers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
 
-	// ------------- Path parameter "organizationName" -------------
-	var organizationName OrganizationNameParameter
+	// ------------- Path parameter "organization" -------------
+	var organization OrganizationParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "organizationName", runtime.ParamLocationPath, chi.URLParam(r, "organizationName"), &organizationName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "organization", runtime.ParamLocationPath, chi.URLParam(r, "organization"), &organization)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organizationName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organization", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "projectName" -------------
-	var projectName ProjectNameParameter
+	// ------------- Path parameter "project" -------------
+	var project ProjectParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "projectName", runtime.ParamLocationPath, chi.URLParam(r, "projectName"), &projectName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "project", runtime.ParamLocationPath, chi.URLParam(r, "project"), &project)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "project", Err: err})
 		return
 	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers(w, r, organizationName, projectName)
+		siw.Handler.PostApiV1OrganizationsOrganizationProjectsProjectClustermanagers(w, r, organization, project)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -174,43 +174,43 @@ func (siw *ServerInterfaceWrapper) PostApiV1OrganizationsOrganizationNameProject
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName operation middleware
-func (siw *ServerInterfaceWrapper) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request) {
+// DeleteApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManager operation middleware
+func (siw *ServerInterfaceWrapper) DeleteApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManager(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
 
-	// ------------- Path parameter "organizationName" -------------
-	var organizationName OrganizationNameParameter
+	// ------------- Path parameter "organization" -------------
+	var organization OrganizationParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "organizationName", runtime.ParamLocationPath, chi.URLParam(r, "organizationName"), &organizationName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "organization", runtime.ParamLocationPath, chi.URLParam(r, "organization"), &organization)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organizationName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organization", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "projectName" -------------
-	var projectName ProjectNameParameter
+	// ------------- Path parameter "project" -------------
+	var project ProjectParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "projectName", runtime.ParamLocationPath, chi.URLParam(r, "projectName"), &projectName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "project", runtime.ParamLocationPath, chi.URLParam(r, "project"), &project)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "project", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "clusterManagerName" -------------
-	var clusterManagerName ClusterManagerNameParameter
+	// ------------- Path parameter "clusterManager" -------------
+	var clusterManager ClusterManagerParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "clusterManagerName", runtime.ParamLocationPath, chi.URLParam(r, "clusterManagerName"), &clusterManagerName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "clusterManager", runtime.ParamLocationPath, chi.URLParam(r, "clusterManager"), &clusterManager)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "clusterManagerName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "clusterManager", Err: err})
 		return
 	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName(w, r, organizationName, projectName, clusterManagerName)
+		siw.Handler.DeleteApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManager(w, r, organization, project, clusterManager)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -220,43 +220,43 @@ func (siw *ServerInterfaceWrapper) DeleteApiV1OrganizationsOrganizationNameProje
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName operation middleware
-func (siw *ServerInterfaceWrapper) PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName(w http.ResponseWriter, r *http.Request) {
+// PutApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManager operation middleware
+func (siw *ServerInterfaceWrapper) PutApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManager(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
 
-	// ------------- Path parameter "organizationName" -------------
-	var organizationName OrganizationNameParameter
+	// ------------- Path parameter "organization" -------------
+	var organization OrganizationParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "organizationName", runtime.ParamLocationPath, chi.URLParam(r, "organizationName"), &organizationName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "organization", runtime.ParamLocationPath, chi.URLParam(r, "organization"), &organization)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organizationName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organization", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "projectName" -------------
-	var projectName ProjectNameParameter
+	// ------------- Path parameter "project" -------------
+	var project ProjectParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "projectName", runtime.ParamLocationPath, chi.URLParam(r, "projectName"), &projectName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "project", runtime.ParamLocationPath, chi.URLParam(r, "project"), &project)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "project", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "clusterManagerName" -------------
-	var clusterManagerName ClusterManagerNameParameter
+	// ------------- Path parameter "clusterManager" -------------
+	var clusterManager ClusterManagerParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "clusterManagerName", runtime.ParamLocationPath, chi.URLParam(r, "clusterManagerName"), &clusterManagerName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "clusterManager", runtime.ParamLocationPath, chi.URLParam(r, "clusterManager"), &clusterManager)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "clusterManagerName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "clusterManager", Err: err})
 		return
 	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName(w, r, organizationName, projectName, clusterManagerName)
+		siw.Handler.PutApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManager(w, r, organization, project, clusterManager)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -266,34 +266,34 @@ func (siw *ServerInterfaceWrapper) PutApiV1OrganizationsOrganizationNameProjects
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// PostApiV1OrganizationsOrganizationNameProjectsProjectNameClusters operation middleware
-func (siw *ServerInterfaceWrapper) PostApiV1OrganizationsOrganizationNameProjectsProjectNameClusters(w http.ResponseWriter, r *http.Request) {
+// PostApiV1OrganizationsOrganizationProjectsProjectClusters operation middleware
+func (siw *ServerInterfaceWrapper) PostApiV1OrganizationsOrganizationProjectsProjectClusters(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
 
-	// ------------- Path parameter "organizationName" -------------
-	var organizationName OrganizationNameParameter
+	// ------------- Path parameter "organization" -------------
+	var organization OrganizationParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "organizationName", runtime.ParamLocationPath, chi.URLParam(r, "organizationName"), &organizationName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "organization", runtime.ParamLocationPath, chi.URLParam(r, "organization"), &organization)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organizationName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organization", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "projectName" -------------
-	var projectName ProjectNameParameter
+	// ------------- Path parameter "project" -------------
+	var project ProjectParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "projectName", runtime.ParamLocationPath, chi.URLParam(r, "projectName"), &projectName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "project", runtime.ParamLocationPath, chi.URLParam(r, "project"), &project)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "project", Err: err})
 		return
 	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostApiV1OrganizationsOrganizationNameProjectsProjectNameClusters(w, r, organizationName, projectName)
+		siw.Handler.PostApiV1OrganizationsOrganizationProjectsProjectClusters(w, r, organization, project)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -303,43 +303,43 @@ func (siw *ServerInterfaceWrapper) PostApiV1OrganizationsOrganizationNameProject
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName operation middleware
-func (siw *ServerInterfaceWrapper) DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request) {
+// DeleteApiV1OrganizationsOrganizationProjectsProjectClustersCluster operation middleware
+func (siw *ServerInterfaceWrapper) DeleteApiV1OrganizationsOrganizationProjectsProjectClustersCluster(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
 
-	// ------------- Path parameter "organizationName" -------------
-	var organizationName OrganizationNameParameter
+	// ------------- Path parameter "organization" -------------
+	var organization OrganizationParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "organizationName", runtime.ParamLocationPath, chi.URLParam(r, "organizationName"), &organizationName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "organization", runtime.ParamLocationPath, chi.URLParam(r, "organization"), &organization)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organizationName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organization", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "projectName" -------------
-	var projectName ProjectNameParameter
+	// ------------- Path parameter "project" -------------
+	var project ProjectParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "projectName", runtime.ParamLocationPath, chi.URLParam(r, "projectName"), &projectName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "project", runtime.ParamLocationPath, chi.URLParam(r, "project"), &project)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "project", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "clusterName" -------------
-	var clusterName ClusterNameParameter
+	// ------------- Path parameter "cluster" -------------
+	var cluster ClusterParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "clusterName", runtime.ParamLocationPath, chi.URLParam(r, "clusterName"), &clusterName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "cluster", runtime.ParamLocationPath, chi.URLParam(r, "cluster"), &cluster)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "clusterName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cluster", Err: err})
 		return
 	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName(w, r, organizationName, projectName, clusterName)
+		siw.Handler.DeleteApiV1OrganizationsOrganizationProjectsProjectClustersCluster(w, r, organization, project, cluster)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -349,43 +349,43 @@ func (siw *ServerInterfaceWrapper) DeleteApiV1OrganizationsOrganizationNameProje
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName operation middleware
-func (siw *ServerInterfaceWrapper) PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName(w http.ResponseWriter, r *http.Request) {
+// PutApiV1OrganizationsOrganizationProjectsProjectClustersCluster operation middleware
+func (siw *ServerInterfaceWrapper) PutApiV1OrganizationsOrganizationProjectsProjectClustersCluster(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
 
-	// ------------- Path parameter "organizationName" -------------
-	var organizationName OrganizationNameParameter
+	// ------------- Path parameter "organization" -------------
+	var organization OrganizationParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "organizationName", runtime.ParamLocationPath, chi.URLParam(r, "organizationName"), &organizationName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "organization", runtime.ParamLocationPath, chi.URLParam(r, "organization"), &organization)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organizationName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organization", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "projectName" -------------
-	var projectName ProjectNameParameter
+	// ------------- Path parameter "project" -------------
+	var project ProjectParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "projectName", runtime.ParamLocationPath, chi.URLParam(r, "projectName"), &projectName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "project", runtime.ParamLocationPath, chi.URLParam(r, "project"), &project)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "project", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "clusterName" -------------
-	var clusterName ClusterNameParameter
+	// ------------- Path parameter "cluster" -------------
+	var cluster ClusterParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "clusterName", runtime.ParamLocationPath, chi.URLParam(r, "clusterName"), &clusterName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "cluster", runtime.ParamLocationPath, chi.URLParam(r, "cluster"), &cluster)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "clusterName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cluster", Err: err})
 		return
 	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName(w, r, organizationName, projectName, clusterName)
+		siw.Handler.PutApiV1OrganizationsOrganizationProjectsProjectClustersCluster(w, r, organization, project, cluster)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -395,43 +395,43 @@ func (siw *ServerInterfaceWrapper) PutApiV1OrganizationsOrganizationNameProjects
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameKubeconfig operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameKubeconfig(w http.ResponseWriter, r *http.Request) {
+// GetApiV1OrganizationsOrganizationProjectsProjectClustersClusterKubeconfig operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1OrganizationsOrganizationProjectsProjectClustersClusterKubeconfig(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
 
-	// ------------- Path parameter "organizationName" -------------
-	var organizationName OrganizationNameParameter
+	// ------------- Path parameter "organization" -------------
+	var organization OrganizationParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "organizationName", runtime.ParamLocationPath, chi.URLParam(r, "organizationName"), &organizationName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "organization", runtime.ParamLocationPath, chi.URLParam(r, "organization"), &organization)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organizationName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "organization", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "projectName" -------------
-	var projectName ProjectNameParameter
+	// ------------- Path parameter "project" -------------
+	var project ProjectParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "projectName", runtime.ParamLocationPath, chi.URLParam(r, "projectName"), &projectName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "project", runtime.ParamLocationPath, chi.URLParam(r, "project"), &project)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "project", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "clusterName" -------------
-	var clusterName ClusterNameParameter
+	// ------------- Path parameter "cluster" -------------
+	var cluster ClusterParameter
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "clusterName", runtime.ParamLocationPath, chi.URLParam(r, "clusterName"), &clusterName)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "cluster", runtime.ParamLocationPath, chi.URLParam(r, "cluster"), &cluster)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "clusterName", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cluster", Err: err})
 		return
 	}
 
 	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameKubeconfig(w, r, organizationName, projectName, clusterName)
+		siw.Handler.GetApiV1OrganizationsOrganizationProjectsProjectClustersClusterKubeconfig(w, r, organization, project, cluster)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -631,31 +631,31 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/api/v1/applications", wrapper.GetApiV1Applications)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/organizations/{organizationName}/clustermanagers", wrapper.GetApiV1OrganizationsOrganizationNameClustermanagers)
+		r.Get(options.BaseURL+"/api/v1/organizations/{organization}/clustermanagers", wrapper.GetApiV1OrganizationsOrganizationClustermanagers)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/organizations/{organizationName}/clusters", wrapper.GetApiV1OrganizationsOrganizationNameClusters)
+		r.Get(options.BaseURL+"/api/v1/organizations/{organization}/clusters", wrapper.GetApiV1OrganizationsOrganizationClusters)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/api/v1/organizations/{organizationName}/projects/{projectName}/clustermanagers", wrapper.PostApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagers)
+		r.Post(options.BaseURL+"/api/v1/organizations/{organization}/projects/{project}/clustermanagers", wrapper.PostApiV1OrganizationsOrganizationProjectsProjectClustermanagers)
 	})
 	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/api/v1/organizations/{organizationName}/projects/{projectName}/clustermanagers/{clusterManagerName}", wrapper.DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName)
+		r.Delete(options.BaseURL+"/api/v1/organizations/{organization}/projects/{project}/clustermanagers/{clusterManager}", wrapper.DeleteApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManager)
 	})
 	r.Group(func(r chi.Router) {
-		r.Put(options.BaseURL+"/api/v1/organizations/{organizationName}/projects/{projectName}/clustermanagers/{clusterManagerName}", wrapper.PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustermanagersClusterManagerName)
+		r.Put(options.BaseURL+"/api/v1/organizations/{organization}/projects/{project}/clustermanagers/{clusterManager}", wrapper.PutApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManager)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/api/v1/organizations/{organizationName}/projects/{projectName}/clusters", wrapper.PostApiV1OrganizationsOrganizationNameProjectsProjectNameClusters)
+		r.Post(options.BaseURL+"/api/v1/organizations/{organization}/projects/{project}/clusters", wrapper.PostApiV1OrganizationsOrganizationProjectsProjectClusters)
 	})
 	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/api/v1/organizations/{organizationName}/projects/{projectName}/clusters/{clusterName}", wrapper.DeleteApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName)
+		r.Delete(options.BaseURL+"/api/v1/organizations/{organization}/projects/{project}/clusters/{cluster}", wrapper.DeleteApiV1OrganizationsOrganizationProjectsProjectClustersCluster)
 	})
 	r.Group(func(r chi.Router) {
-		r.Put(options.BaseURL+"/api/v1/organizations/{organizationName}/projects/{projectName}/clusters/{clusterName}", wrapper.PutApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterName)
+		r.Put(options.BaseURL+"/api/v1/organizations/{organization}/projects/{project}/clusters/{cluster}", wrapper.PutApiV1OrganizationsOrganizationProjectsProjectClustersCluster)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/organizations/{organizationName}/projects/{projectName}/clusters/{clusterName}/kubeconfig", wrapper.GetApiV1OrganizationsOrganizationNameProjectsProjectNameClustersClusterNameKubeconfig)
+		r.Get(options.BaseURL+"/api/v1/organizations/{organization}/projects/{project}/clusters/{cluster}/kubeconfig", wrapper.GetApiV1OrganizationsOrganizationProjectsProjectClustersClusterKubeconfig)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/v1/regions", wrapper.GetApiV1Regions)
