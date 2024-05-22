@@ -112,7 +112,7 @@ spec:
   - networking
   - security
   versions:
-  - version: 1.14.1
+  - version: 1.15.5
     repo: https://helm.cilium.io
     chart: cilium
     parameters:
@@ -211,7 +211,7 @@ spec:
   tags:
   - monitoring
   versions:
-  - version: 3.11.0
+  - version: 3.12.1
     repo: https://kubernetes-sigs.github.io/metrics-server
     chart: metrics-server
     interface: 1.0.0
