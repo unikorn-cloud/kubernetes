@@ -20,8 +20,3 @@ spec:
         kind: HelmApplication
         name: cluster-api
         version: v0.1.11
-    - name: cluster-autoscaler
-      reference:
-        kind: HelmApplication
-        name: cluster-autoscaler
-        version: v9.37.0
