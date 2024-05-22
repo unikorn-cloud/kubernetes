@@ -9,7 +9,7 @@ spec:
     reference:
       kind: HelmApplication
       name: cluster-openstack
-      version: v0.3.27
+      version: v0.4.0
   - name: cilium
     reference:
       kind: HelmApplication
