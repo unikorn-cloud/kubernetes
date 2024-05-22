@@ -18,7 +18,7 @@ spec:
   - networking
   exported: true
   versions:
-  - version: v1.12.4
+  - version: v1.14.5
     repo: https://charts.jetstack.io
     chart: cert-manager
     release: cert-manager
