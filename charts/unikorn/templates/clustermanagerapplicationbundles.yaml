@@ -5,18 +5,23 @@ metadata:
 spec:
   version: 1.0.0
   applications:
-  - name: vcluster
-    reference:
-      kind: HelmApplication
-      name: vcluster
-      version: 0.15.7
-  - name: cert-manager
-    reference:
-      kind: HelmApplication
-      name: cert-manager
-      version: v1.12.4
-  - name: cluster-api
-    reference:
-      kind: HelmApplication
-      name: cluster-api
-      version: v0.1.11
+    - name: vcluster
+      reference:
+        kind: HelmApplication
+        name: vcluster
+        version: 0.15.7
+    - name: cert-manager
+      reference:
+        kind: HelmApplication
+        name: cert-manager
+        version: v1.12.4
+    - name: cluster-api
+      reference:
+        kind: HelmApplication
+        name: cluster-api
+        version: v0.1.11
+    - name: cluster-autoscaler
+      reference:
+        kind: HelmApplication
+        name: cluster-autoscaler
+        version: v9.37.0
