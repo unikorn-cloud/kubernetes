@@ -9,7 +9,7 @@ spec:
     reference:
       kind: HelmApplication
       name: vcluster
-      version: 0.15.7
+      version: 0.19.5
   - name: cert-manager
     reference:
       kind: HelmApplication
