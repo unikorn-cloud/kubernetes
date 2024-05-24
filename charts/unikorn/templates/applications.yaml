@@ -34,7 +34,7 @@ kind: HelmApplication
 metadata:
   name: cert-manager-issuers
 spec:
-  name: Eschercloud AI Issuers for cert-manager
+  name: Default ClusterIssuers for cert-manager
   description: |-
     Provides a default set of cluster-wide issuers for use with Jetstack cert-manager.
     These include Let's Encrypt staging and production servers.
@@ -68,7 +68,7 @@ spec:
   - security
   - infrastructure
   versions:
-  - version: 0.15.7
+  - version: 0.19.5
     repo: https://charts.loft.sh
     chart: vcluster
     release: vcluster
