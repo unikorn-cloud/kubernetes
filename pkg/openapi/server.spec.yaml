@@ -25,7 +25,7 @@ x-documentation-groups:
     have to choose some default values for you, however it provides a faster and better
     user experience.
 paths:
-  /api/v1/organizations/{organization}/clustermanagers:
+  /api/v1/organizations/{organizationID}/clustermanagers:
     x-documentation-group: main
     description: |-
       Implements cluster manager management services. Control planes manage the
@@ -35,7 +35,7 @@ paths:
       upgrade functionality.  Referencing an explicit cluster manager name will
       implicitly create the associated project.
     parameters:
-    - $ref: '#/components/parameters/organizationParameter'
+    - $ref: '#/components/parameters/organizationIDParameter'
     get:
       description: |-
         Lists cluster managers within the organization.
@@ -54,7 +54,7 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organization}/projects/{project}/clustermanagers:
+  /api/v1/organizations/{organizationID}/projects/{projectID}/clustermanagers:
     description: |-
       Implements cluster manager management services. Control planes manage the
       life cycle of Kubernetes clusters, through provisioning, upgrading, to deletion.
@@ -63,8 +63,8 @@ paths:
       upgrade functionality.  Referencing an explicit cluster manager name will
       implicitly create the associated project.
     parameters:
-    - $ref: '#/components/parameters/organizationParameter'
-    - $ref: '#/components/parameters/projectParameter'
+    - $ref: '#/components/parameters/organizationIDParameter'
+    - $ref: '#/components/parameters/projectIDParameter'
     post:
       description: |-
         Creates a new cluster manager within the project.
@@ -85,7 +85,7 @@ paths:
           $ref: '#/components/responses/conflictResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organization}/projects/{project}/clustermanagers/{clusterManager}:
+  /api/v1/organizations/{organizationID}/projects/{projectID}/clustermanagers/{clusterManagerID}:
     x-documentation-group: main
     description: |-
       Implements cluster manager management services. Control planes manage the
@@ -95,9 +95,9 @@ paths:
       upgrade functionality.  Referencing an explicit cluster manager name will
       implicitly create the associated project.
     parameters:
-    - $ref: '#/components/parameters/organizationParameter'
-    - $ref: '#/components/parameters/projectParameter'
-    - $ref: '#/components/parameters/clusterManagerParameter'
+    - $ref: '#/components/parameters/organizationIDParameter'
+    - $ref: '#/components/parameters/projectIDParameter'
+    - $ref: '#/components/parameters/clusterManagerIDParameter'
     put:
       description: |-
         Updates a cluster manager within the scoped project.
@@ -137,11 +137,11 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organization}/clusters:
+  /api/v1/organizations/{organizationID}/clusters:
     x-documentation-group: main
     description: Cluster services.
     parameters:
-    - $ref: '#/components/parameters/organizationParameter'
+    - $ref: '#/components/parameters/organizationIDParameter'
     get:
       description: |-
         List all clusters within the organization.
@@ -160,12 +160,12 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organization}/projects/{project}/clusters:
+  /api/v1/organizations/{organizationID}/projects/{projectID}/clusters:
     x-documentation-group: main
     description: Cluster services.
     parameters:
-    - $ref: '#/components/parameters/organizationParameter'
-    - $ref: '#/components/parameters/projectParameter'
+    - $ref: '#/components/parameters/organizationIDParameter'
+    - $ref: '#/components/parameters/projectIDParameter'
     post:
       description: |-
         Creates a new cluster within the selected cluster manager.
@@ -186,13 +186,13 @@ paths:
           $ref: '#/components/responses/conflictResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organization}/projects/{project}/clusters/{cluster}:
+  /api/v1/organizations/{organizationID}/projects/{projectID}/clusters/{clusterID}:
     x-documentation-group: main
     description: Cluster services.
     parameters:
-    - $ref: '#/components/parameters/organizationParameter'
-    - $ref: '#/components/parameters/projectParameter'
-    - $ref: '#/components/parameters/clusterParameter'
+    - $ref: '#/components/parameters/organizationIDParameter'
+    - $ref: '#/components/parameters/projectIDParameter'
+    - $ref: '#/components/parameters/clusterIDParameter'
     put:
       description: |-
         Update a cluster within the selected cluster manager.
@@ -231,13 +231,13 @@ paths:
           $ref: '#/components/responses/notFoundResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organization}/projects/{project}/clusters/{cluster}/kubeconfig:
+  /api/v1/organizations/{organizationID}/projects/{projectID}/clusters/{clusterID}/kubeconfig:
     x-documentation-group: main
     description: Cluster services.
     parameters:
-    - $ref: '#/components/parameters/organizationParameter'
-    - $ref: '#/components/parameters/projectParameter'
-    - $ref: '#/components/parameters/clusterParameter'
+    - $ref: '#/components/parameters/organizationIDParameter'
+    - $ref: '#/components/parameters/projectIDParameter'
+    - $ref: '#/components/parameters/clusterIDParameter'
     get:
       description: |-
         Get a cluster's Kubernetes configuration.
@@ -293,10 +293,10 @@ paths:
           $ref: '#/components/responses/unauthorizedResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/regions/{regionName}/flavors:
+  /api/v1/regions/{regionID}/flavors:
     description: Compute flavor services.
     parameters:
-    - $ref: '#/components/parameters/regionNameParameter'
+    - $ref: '#/components/parameters/regionIDParameter'
     get:
       description: |-
         Lists all compute flavors that the authenticated user has access to
@@ -311,10 +311,10 @@ paths:
           $ref: '#/components/responses/unauthorizedResponse'
         '500':
           $ref: '#/components/responses/internalServerErrorResponse'
-  /api/v1/regions/{regionName}/images:
+  /api/v1/regions/{regionID}/images:
     description: Compute image services.
     parameters:
-    - $ref: '#/components/parameters/regionNameParameter'
+    - $ref: '#/components/parameters/regionIDParameter'
     get:
       description: |-
         Lists all compute images that the authenticated user has access to.
@@ -331,24 +331,24 @@ paths:
           $ref: '#/components/responses/internalServerErrorResponse'
 components:
   parameters:
-    organizationParameter:
-      name: organization
+    organizationIDParameter:
+      name: organizationID
       in: path
       description: |-
         The organization name.
       required: true
       schema:
         $ref: '#/components/schemas/kubernetesNameParameter'
-    projectParameter:
-      name: project
+    projectIDParameter:
+      name: projectID
       in: path
       description: |-
         The project name.
       required: true
       schema:
         $ref: '#/components/schemas/kubernetesNameParameter'
-    clusterManagerParameter:
-      name: clusterManager
+    clusterManagerIDParameter:
+      name: clusterManagerID
       in: path
       description: |-
         The cluster manager name, if the cluster manager does not exist, then it may be
@@ -359,8 +359,8 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/kubernetesNameParameter'
-    clusterParameter:
-      name: cluster
+    clusterIDParameter:
+      name: clusterID
       in: path
       description: |-
         The cluster name. Must be a valid DNS containing only lower case characters,
@@ -369,8 +369,8 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/kubernetesNameParameter'
-    regionNameParameter:
-      name: regionName
+    regionIDParameter:
+      name: regionID
       in: path
       description: |-
         The region name.
@@ -414,108 +414,40 @@ components:
         error_description:
           description: Verbose message describing the error.
           type: string
-    resourceMetadata:
-      description: A resources's metadata
-      type: object
-      required:
-      - creationTime
-      - status
-      properties:
-        project:
-          description: Where the resource is related to a project, this is populated.
-          type: string
-        clustermanager:
-          description: Where the resource is scoped to a cluster manager, this is populated.
-          type: string
-        region:
-          description: Where the resource is scoped to a region, this is populated,
-          type: string
-        creationTime:
-          description: The time the resource was created.
-          type: string
-          format: date-time
-        deletionTime:
-          description: The time the resource was deleted.
-          type: string
-          format: date-time
-        status:
-          description: |-
-            The current status of the resource. Intially the status will be "Unknown" until
-            the resource is reconciled by the relevant controller. It then will transition to
-            "Provisioning" and will be ready for use when it changes to "Provisioned". The status
-            will also transition to the "Provisioning" status during an update. The
-            status will change to "Deprovisioning" when a delete request is being processed.
-            It may also change to "Error" if an unexpected error occurred during any operation.
-            Errors may be transient.
-          type: string
-    region:
+    regionRead:
       description: A region.
       type: object
       required:
-      - name
+      - metadata
       properties:
-        name:
-          description: The region name.
-          type: string
+        metadata:
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/schemas/resourceReadMetadata'
     regions:
       description: A list of regions.
       type: array
       items:
-        $ref: '#/components/schemas/region'
-    clusterManagerSpec:
-      description: A cluster manager.
-      type: object
-      required:
-      - name
-      properties:
-        name:
-          description: The name of the resource.
-          type: string
-    clusterManagerMetadata:
-      description: Required metadata for cluster managers.
-      type: object
-      required:
-      - project
-      - creationTime
-      - status
-      properties:
-        project:
-          description: Where the resource is related to a project, this is populated.
-          type: string
-        creationTime:
-          description: The time the resource was created.
-          type: string
-          format: date-time
-        deletionTime:
-          description: The time the resource was deleted.
-          type: string
-          format: date-time
-        status:
-          description: |-
-            The current status of the resource. Intially the status will be "Unknown" until
-            the resource is reconciled by the relevant controller. It then will transition to
-            "Provisioning" and will be ready for use when it changes to "Provisioned". The status
-            will also transition to the "Provisioning" status during an update. The
-            status will change to "Deprovisioning" when a delete request is being processed.
-            It may also change to "Error" if an unexpected error occurred during any operation.
-            Errors may be transient.
-          type: string
-    clusterManager:
+        $ref: '#/components/schemas/regionRead'
+    clusterManagerRead:
       description: A cluster manager.
       type: object
       required:
       - metadata
-      - spec
       properties:
         metadata:
-          $ref: '#/components/schemas/clusterManagerMetadata'
-        spec:
-          $ref: '#/components/schemas/clusterManagerSpec'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/schemas/projectScopedResourceReadMetadata'
+    clusterManagerWrite:
+      description: A cluster manager.
+      type: object
+      required:
+      - metadata
+      properties:
+        metadata:
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/schemas/resourceWriteMetadata'
     clusterManagers:
       description: A list of cluster managers.
       type: array
       items:
-        $ref: '#/components/schemas/clusterManager'
+        $ref: '#/components/schemas/clusterManagerRead'
     kubernetesClusterNetwork:
       description: A kubernetes cluster network settings.
       type: object
@@ -618,14 +550,10 @@ components:
       description: Kubernetes cluster creation parameters.
       type: object
       required:
-      - name
       - region
       - version
       - workloadPools
       properties:
-        name:
-          description: Cluster name.
-          type: string
         region:
           description: The region to provision the cluster in.
           type: string
@@ -640,44 +568,7 @@ components:
           type: string
         workloadPools:
           $ref: '#/components/schemas/kubernetesClusterWorkloadPools'
-    kubernetesClusterMetadata:
-      description: Required metadata for clusters.
-      type: object
-      required:
-      - project
-      - clustermanager
-      - region
-      - creationTime
-      - status
-      properties:
-        project:
-          description: Where the resource is related to a project, this is populated.
-          type: string
-        clustermanager:
-          description: Where the resource is scoped to a cluster manager, this is populated.
-          type: string
-        region:
-          description: Where the resource is scoped to a region, this is populated,
-          type: string
-        creationTime:
-          description: The time the resource was created.
-          type: string
-          format: date-time
-        deletionTime:
-          description: The time the resource was deleted.
-          type: string
-          format: date-time
-        status:
-          description: |-
-            The current status of the resource. Intially the status will be "Unknown" until
-            the resource is reconciled by the relevant controller. It then will transition to
-            "Provisioning" and will be ready for use when it changes to "Provisioned". The status
-            will also transition to the "Provisioning" status during an update. The
-            status will change to "Deprovisioning" when a delete request is being processed.
-            It may also change to "Error" if an unexpected error occurred during any operation.
-            Errors may be transient.
-          type: string
-    kubernetesCluster:
+    kubernetesClusterRead:
       description: Kubernetes cluster read.
       type: object
       required:
@@ -685,14 +576,25 @@ components:
       - spec
       properties:
         metadata:
-          $ref: '#/components/schemas/kubernetesClusterMetadata'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/schemas/projectScopedResourceReadMetadata'
+        spec:
+          $ref: '#/components/schemas/kubernetesClusterSpec'
+    kubernetesClusterWrite:
+      description: Kubernetes cluster create or update.
+      type: object
+      required:
+      - metadata
+      - spec
+      properties:
+        metadata:
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/schemas/resourceWriteMetadata'
         spec:
           $ref: '#/components/schemas/kubernetesClusterSpec'
     kubernetesClusters:
       description: A list of Kubernetes clusters.
       type: array
       items:
-        $ref: '#/components/schemas/kubernetesCluster'
+        $ref: '#/components/schemas/kubernetesClusterRead'
     applicationVersion:
       description: An application version.
       type: object
@@ -736,26 +638,18 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/applicationDependency'
-    application:
+    applicationSpec:
       description: An application.
       type: object
       required:
-      - name
       - humanReadableName
-      - description
       - documentation
       - license
       - icon
       - versions
       properties:
-        name:
-          description: Unique application name.
-          type: string
         humanReadableName:
           description: Human readable application name.
-          type: string
-        description:
-          description: Verbose description of what the application provides.
           type: string
         documentation:
           description: Documentation link for the application.
@@ -772,11 +666,21 @@ components:
           $ref: '#/components/schemas/applicationVersions'
         tags:
           $ref: '#/components/schemas/applicationTags'
+    applicationRead:
+      type: object
+      required:
+      - spec
+      - metadata
+      properties:
+        metadata:
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/schemas/resourceReadMetadata'
+        spec:
+          $ref: '#/components/schemas/applicationSpec'
     applications:
       description: A list of appications.
       type: array
       items:
-        $ref: '#/components/schemas/application'
+        $ref: '#/components/schemas/applicationRead'
     imageVersions:
       description: Image version metadata.
       type: object
@@ -865,27 +769,30 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/clusterManagerSpec'
+            $ref: '#/components/schemas/clusterManagerWrite'
           example:
-            name: default
+            metadata:
+              name: default
     createKubernetesClusterRequest:
       description: Kubernetes cluster request parameters.
       required: true
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/kubernetesClusterSpec'
+            $ref: '#/components/schemas/kubernetesClusterWrite'
           example:
-            region: uk-east-1
-            version: v1.27.2
-            name: cluster
-            workloadPools:
-            - autoscaling:
-                minimumReplicas: 0
-              machine:
-                flavorName: g.4.highmem.a100.1g.10gb
-                replicas: 3
-              name: default
+            metadata:
+              name: cluster
+            spec:
+              region: uk-east-1
+              version: v1.27.2
+              workloadPools:
+              - autoscaling:
+                  minimumReplicas: 0
+                machine:
+                  flavorName: g.4.highmem.a100.1g.10gb
+                  replicas: 3
+                name: default
   responses:
     acceptedResponse:
       description: |-
@@ -962,21 +869,26 @@ components:
           schema:
             $ref: '#/components/schemas/regions'
           example:
-          - name: uk-west
-          - name: uk-east
+          - metadata:
+              id: c7568e2d-f9ab-453d-9a3a-51375f78426b
+              name: uk-west
+              description: An oxymoronic tier-3 datacenter based in Liverpool.
+              creationTime: 2023-07-31T10:45:45Z
+              provisioningStatus: provisioned
     clusterManagerResponse:
       description: A cluster manager.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/clusterManager'
+            $ref: '#/components/schemas/clusterManagerRead'
           example:
             metadata:
-              project: foo
-              creationTime: 2023-07-31T10:45:42Z
-              status: Provisioned
-            spec:
-              name: default
+              id: c7568e2d-f9ab-453d-9a3a-51375f78426b
+              name: default 
+              organizationId: d4600d6e-e965-4b44-a808-84fb2fa36702
+              projectId: cae219d7-10e5-4601-8c2c-ee7e066b93ce
+              creationTime: 2023-07-31T10:45:45Z
+              provisioningStatus: provisioned
     clusterManagersResponse:
       description: A list of cluster managers.
       content:
@@ -985,11 +897,12 @@ components:
             $ref: '#/components/schemas/clusterManagers'
           example:
           - metadata:
-              project: foo
-              creationTime: 2023-07-31T10:45:42Z
-              status: Provisioned
-            spec:
+              id: c7568e2d-f9ab-453d-9a3a-51375f78426b
               name: default
+              organizationId: d4600d6e-e965-4b44-a808-84fb2fa36702
+              projectId: cae219d7-10e5-4601-8c2c-ee7e066b93ce
+              creationTime: 2023-07-31T10:45:45Z
+              provisioningStatus: provisioned
     kubernetesClusterKubeconfigResponse:
       description: A Kubernetes cluster configuration.
       content:
@@ -1002,15 +915,16 @@ components:
             $ref: '#/components/schemas/kubernetesClusters'
           example:
           - metadata:
-              project: foo
-              clustermanager: bar
-              region: africa
-              creationTime: 2023-07-31T10:45:45Z
-              status: Provisioned
-            spec:
+              id: c7568e2d-f9ab-453d-9a3a-51375f78426b
               name: cluster
+              organizationId: d4600d6e-e965-4b44-a808-84fb2fa36702
+              projectId: cae219d7-10e5-4601-8c2c-ee7e066b93ce
+              creationTime: 2023-07-31T10:45:45Z
+              provisioningStatus: provisioned
+            spec:
               region: uk-east-1
               version: v1.27.2
+              clusterManager: b85525fc-40ca-482b-ac07-eca8b01b09c2
               workloadPools:
               - name: default
                 machine:
@@ -1025,17 +939,22 @@ components:
           schema:
             $ref: '#/components/schemas/applications'
           example:
-          - description: |-
-              Provides an alternative replicated storage provider that distributes storage across
-              the Kubernetes cluster.  Features high-availabilty, incremental snapshots and backups,
-              disaster recovery, and shared file mounts (read/write many).
-            documentation: https://longhorn.io/
-            humanReadableName: Longhorn
-            icon: PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTQuMjU2MTkgMTU5LjA4OTEyIj48dGl0bGU+aWNvbjwvdGl0bGU+PHBhdGggZmlsbD0iIzVmMjI0YSIgZD0iTTk3LjEyODEsODAuNjI2OWExMC4wMDksMTAuMDA5LDAsMCwxLTEuOTU4LS4xOTMzNmwtNS4yODM5NC0xLjA1NDkzLDQuNTQ4NTksMjcuOTgzMTVhOS45MjQyOSw5LjkyNDI5LDAsMCwxLC4xMjk4OCwxLjYwNDQ5aDUuMTI2YTkuOTk5Nyw5Ljk5OTcsMCwwLDEsLjE2MzA4LTEuNzk3MzZsNS4wOTgxNS0yNy45MDY0M0w5OS4wODYxLDgwLjQzMzU0QTEwLjAwODkyLDEwLjAwODkyLDAsMCwxLDk3LjEyODEsODAuNjI2OVoiLz48cGF0aCBmaWxsPSIjNWYyMjRhIiBkPSJNMTczLjY5NTYsMEgyMC41NjA3MUEyMC42MjEwNSwyMC42MjEwNSwwLDAsMCwwLDIwLjU2MDY3VjEzOC41Mjg0NWEyMC42MjEwNiwyMC42MjEwNiwwLDAsMCwyMC41NjA2NywyMC41NjA2N0gxNzMuNjk1NmEyMC42MjEsMjAuNjIxLDAsMCwwLDIwLjU2MDU1LTIwLjU2MDY3VjIwLjU2MDY3QTIwLjYyMSwyMC42MjEsMCwwLDAsMTczLjY5NTYsMFptMy40NTUsNDEuNTgxLTIuNTAyLDE3YTEwLjAwMDYsMTAuMDAwNiwwLDAsMS03LjkzNTU0LDguMzUwNThMMTI2LjA0NTQ1LDc1LjA1MWMtLjAwNy4wNDA3MS0uMDA4NTQuMDgxMDYtLjAxNi4xMjE3N2wtNi4zNjYyMSwzNC44NTA1OEEyMC4wMjY1LDIwLjAyNjUsMCwwLDEsOTkuNjkwNiwxMjguOTY2MjVoLTUuMTI2YTIwLjAyNTg3LDIwLjAyNTg3LDAsMCwxLTE5Ljk3ODUyLTE5LjA1ODFMNjguOTQ0NzUsNzUuMTk3NThsLTQxLjQwMTYyLTguMjY2QTEwLjAwMDYsMTAuMDAwNiwwLDAsMSwxOS42MDc1OSw1OC41ODFsLTIuNTAyLTE3YTEwLjAwMDEzLDEwLjAwMDEzLDAsMCwxLDE5Ljc4NzExLTIuOTEyMTFsMS40NzU1OSwxMC4wMjkzTDk3LjEyODEsNjAuNDI5NjNsNTguNzU5NzYtMTEuNzMxNDQsMS40NzU1OS0xMC4wMjkzQTEwLjAwMDEzLDEwLjAwMDEzLDAsMCwxLDE3Ny4xNTA1Niw0MS41ODFaIi8+PC9zdmc+Cg==
-            license: Apache-2.0 License
-            name: longhorn-1.5.1-1
-            versions:
-            - version: 1.5.1
+          - metadata:
+              id: c7568e2d-f9ab-453d-9a3a-51375f78426b
+              name: longhorn
+              description: |-
+                Provides an alternative replicated storage provider that distributes storage across
+                the Kubernetes cluster.  Features high-availabilty, incremental snapshots and backups,
+                disaster recovery, and shared file mounts (read/write many).
+              creationTime: 2023-07-31T10:45:45Z
+              provisioningStatus: unknown
+            spec:
+              documentation: https://longhorn.io/
+              humanReadableName: Longhorn
+              icon: PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTQuMjU2MTkgMTU5LjA4OTEyIj48dGl0bGU+aWNvbjwvdGl0bGU+PHBhdGggZmlsbD0iIzVmMjI0YSIgZD0iTTk3LjEyODEsODAuNjI2OWExMC4wMDksMTAuMDA5LDAsMCwxLTEuOTU4LS4xOTMzNmwtNS4yODM5NC0xLjA1NDkzLDQuNTQ4NTksMjcuOTgzMTVhOS45MjQyOSw5LjkyNDI5LDAsMCwxLC4xMjk4OCwxLjYwNDQ5aDUuMTI2YTkuOTk5Nyw5Ljk5OTcsMCwwLDEsLjE2MzA4LTEuNzk3MzZsNS4wOTgxNS0yNy45MDY0M0w5OS4wODYxLDgwLjQzMzU0QTEwLjAwODkyLDEwLjAwODkyLDAsMCwxLDk3LjEyODEsODAuNjI2OVoiLz48cGF0aCBmaWxsPSIjNWYyMjRhIiBkPSJNMTczLjY5NTYsMEgyMC41NjA3MUEyMC42MjEwNSwyMC42MjEwNSwwLDAsMCwwLDIwLjU2MDY3VjEzOC41Mjg0NWEyMC42MjEwNiwyMC42MjEwNiwwLDAsMCwyMC41NjA2NywyMC41NjA2N0gxNzMuNjk1NmEyMC42MjEsMjAuNjIxLDAsMCwwLDIwLjU2MDU1LTIwLjU2MDY3VjIwLjU2MDY3QTIwLjYyMSwyMC42MjEsMCwwLDAsMTczLjY5NTYsMFptMy40NTUsNDEuNTgxLTIuNTAyLDE3YTEwLjAwMDYsMTAuMDAwNiwwLDAsMS03LjkzNTU0LDguMzUwNThMMTI2LjA0NTQ1LDc1LjA1MWMtLjAwNy4wNDA3MS0uMDA4NTQuMDgxMDYtLjAxNi4xMjE3N2wtNi4zNjYyMSwzNC44NTA1OEEyMC4wMjY1LDIwLjAyNjUsMCwwLDEsOTkuNjkwNiwxMjguOTY2MjVoLTUuMTI2YTIwLjAyNTg3LDIwLjAyNTg3LDAsMCwxLTE5Ljk3ODUyLTE5LjA1ODFMNjguOTQ0NzUsNzUuMTk3NThsLTQxLjQwMTYyLTguMjY2QTEwLjAwMDYsMTAuMDAwNiwwLDAsMSwxOS42MDc1OSw1OC41ODFsLTIuNTAyLTE3YTEwLjAwMDEzLDEwLjAwMDEzLDAsMCwxLDE5Ljc4NzExLTIuOTEyMTFsMS40NzU1OSwxMC4wMjkzTDk3LjEyODEsNjAuNDI5NjNsNTguNzU5NzYtMTEuNzMxNDQsMS40NzU1OS0xMC4wMjkzQTEwLjAwMDEzLDEwLjAwMDEzLDAsMCwxLDE3Ny4xNTA1Niw0MS41ODFaIi8+PC9zdmc+Cg==
+              license: Apache-2.0 License
+              versions:
+              - version: 1.5.1
     imagesResponse:
       description: A list of images that are compatible with this platform.
       content:

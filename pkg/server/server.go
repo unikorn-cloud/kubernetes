@@ -32,12 +32,12 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace"
 
 	"github.com/unikorn-cloud/core/pkg/server/middleware/cors"
-	"github.com/unikorn-cloud/core/pkg/server/middleware/openapi"
+	openapimiddleware "github.com/unikorn-cloud/core/pkg/server/middleware/openapi"
 	"github.com/unikorn-cloud/core/pkg/server/middleware/openapi/oidc"
 	"github.com/unikorn-cloud/core/pkg/server/middleware/opentelemetry"
 	"github.com/unikorn-cloud/core/pkg/server/middleware/timeout"
 	"github.com/unikorn-cloud/unikorn/pkg/constants"
-	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
+	"github.com/unikorn-cloud/unikorn/pkg/openapi"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -127,7 +127,7 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 		}
 	}()
 
-	schema, err := openapi.NewSchema(generated.GetSwagger)
+	schema, err := openapimiddleware.NewSchema(openapi.GetSwagger)
 	if err != nil {
 		return nil, err
 	}
@@ -145,11 +145,11 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 
 	// Middleware specified here is applied to all requests post-routing.
 	// NOTE: these are applied in reverse order!!
-	chiServerOptions := generated.ChiServerOptions{
+	chiServerOptions := openapi.ChiServerOptions{
 		BaseRouter:       router,
 		ErrorHandlerFunc: handler.HandleError,
-		Middlewares: []generated.MiddlewareFunc{
-			openapi.Middleware(authorizer, schema),
+		Middlewares: []openapi.MiddlewareFunc{
+			openapimiddleware.Middleware(authorizer, schema),
 		},
 	}
 
@@ -163,7 +163,7 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 		ReadTimeout:       s.Options.ReadTimeout,
 		ReadHeaderTimeout: s.Options.ReadHeaderTimeout,
 		WriteTimeout:      s.Options.WriteTimeout,
-		Handler:           generated.HandlerWithOptions(handlerInterface, chiServerOptions),
+		Handler:           openapi.HandlerWithOptions(handlerInterface, chiServerOptions),
 	}
 
 	return server, nil

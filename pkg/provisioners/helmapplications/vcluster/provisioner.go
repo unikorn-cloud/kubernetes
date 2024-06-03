@@ -25,11 +25,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 
-const (
-	// vclusterName is the unique application name.
-	vclusterName = "vcluster"
-)
-
 var (
 	// On home broadband it'll take about 90s to pull down images, plus any
 	// readniness gates we put in the way.  If images are cached then 20s.
@@ -50,5 +45,5 @@ func init() {
 
 // New returns a new initialized provisioner object.
 func New(getApplication application.GetterFunc, name string) *application.Provisioner {
-	return application.New(getApplication).WithApplicationName(vclusterName + "-" + name)
+	return application.New(getApplication)
 }

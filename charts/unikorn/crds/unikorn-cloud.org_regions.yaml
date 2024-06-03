@@ -17,6 +17,9 @@ spec:
   scope: Cluster
   versions:
   - additionalPrinterColumns:
+    - jsonPath: .metadata.labels['unikorn-cloud\.org/name']
+      name: display name
+      type: string
     - jsonPath: .spec.provider
       name: provider
       type: string

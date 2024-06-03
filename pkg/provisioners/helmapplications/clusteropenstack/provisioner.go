@@ -27,13 +27,6 @@ import (
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 )
 
-const (
-	// legacyApplicationName is what the application needs to be called so it's
-	// not deleted and recreated, which would be quite catastrophic for an entire
-	// Kubernetes cluster!
-	legacyApplicationName = "kubernetes-cluster"
-)
-
 // Provisioner encapsulates control plane provisioning.
 type Provisioner struct {
 	// clusterManagerPrefix contains the IP address prefix to add
@@ -47,7 +40,7 @@ func New(getApplication application.GetterFunc, clusterManagerPrefix string) *ap
 		clusterManagerPrefix: clusterManagerPrefix,
 	}
 
-	return application.New(getApplication).WithApplicationName(legacyApplicationName).WithGenerator(provisioner).AllowDegraded()
+	return application.New(getApplication).WithGenerator(provisioner).AllowDegraded()
 }
 
 // Ensure the Provisioner interface is implemented.

@@ -239,6 +239,8 @@ github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00/go.mod
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
+github.com/oapi-codegen/runtime v1.1.1 h1:EXLHh0DXIJnWhdRPN2w4MXAzFyE4CskzhNLUmtpMYro=
+github.com/oapi-codegen/runtime v1.1.1/go.mod h1:SK9X900oXmPWilYR5/WKPzt3Kqxn/uS/+lbpREv+eCg=
 github.com/onsi/ginkgo/v2 v2.14.0 h1:vSmGj2Z5YPb9JwCWT6z6ihcUvDhuXLc3sJiqd3jMKAY=
 github.com/onsi/ginkgo/v2 v2.14.0/go.mod h1:JkUdW7JkN0V6rFvsHcJ478egV3XH9NxpD27Hal/PhZw=
 github.com/onsi/gomega v1.30.0 h1:hvMK7xYz4D3HapigLTeGdId/NcfQx1VHMJc60ew99+8=
@@ -309,6 +311,14 @@ github.com/ugorji/go/codec v1.2.12 h1:9LC83zGrHhuUA9l16C9AHXAqEV/2wBQ4nkvumAE65E
 github.com/ugorji/go/codec v1.2.12/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
 github.com/unikorn-cloud/core v0.1.29 h1:LW0bhJD+wMM6xCs7MQTe/Sl0QiQyWKTM48vqWIxZhig=
 github.com/unikorn-cloud/core v0.1.29/go.mod h1:cP39UQN7aSmsfjQuSMsworI4oBIwx4oA4u20CbPpfZw=
+github.com/unikorn-cloud/core v0.1.37 h1:dqeTpBKaJDcKeML48cRskhuZ4+J9aO2kD7rk6jq/O6Q=
+github.com/unikorn-cloud/core v0.1.37/go.mod h1:cP39UQN7aSmsfjQuSMsworI4oBIwx4oA4u20CbPpfZw=
+github.com/unikorn-cloud/core v0.1.38 h1:OEXcQL5cJGvX2as6M2QxckAS0McT6Pk4BE3115tV88o=
+github.com/unikorn-cloud/core v0.1.38/go.mod h1:cP39UQN7aSmsfjQuSMsworI4oBIwx4oA4u20CbPpfZw=
+github.com/unikorn-cloud/core v0.1.39 h1:DjV4FTNl9Y4NQjLBaHscoKD6h4Y5u5nxOGdxfLJsJWo=
+github.com/unikorn-cloud/core v0.1.39/go.mod h1:cP39UQN7aSmsfjQuSMsworI4oBIwx4oA4u20CbPpfZw=
+github.com/unikorn-cloud/core v0.1.40 h1:irPBsbhfdCun9h6MRxEM7YEpRIJXtqDd8wPijgcXzpI=
+github.com/unikorn-cloud/core v0.1.40/go.mod h1:cP39UQN7aSmsfjQuSMsworI4oBIwx4oA4u20CbPpfZw=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasttemplate v1.2.2 h1:lxLXG0uE3Qnshl9QyaK6XJxMXlQZELvChBOCmQD0Loo=

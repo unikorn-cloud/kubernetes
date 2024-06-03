@@ -69,7 +69,7 @@ func (g *RemoteCluster) ID() *cd.ResourceIdentifier {
 	}
 
 	return &cd.ResourceIdentifier{
-		Name:   vclusterName + "-" + g.name,
+		Name:   "vcluster-" + g.name,
 		Labels: labels,
 	}
 }

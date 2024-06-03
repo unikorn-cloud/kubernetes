@@ -20,10 +20,12 @@ import (
 	"context"
 	"errors"
 
+	coreopenapi "github.com/unikorn-cloud/core/pkg/openapi"
+	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/openapi"
 	"github.com/unikorn-cloud/unikorn/pkg/providers"
 	"github.com/unikorn-cloud/unikorn/pkg/providers/openstack"
-	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -108,16 +110,16 @@ func (c *Client) Provider(ctx context.Context, regionName string) (providers.Pro
 	return provider, nil
 }
 
-func convert(in *unikornv1.Region) *generated.Region {
-	out := &generated.Region{
-		Name: in.Name,
+func convert(in *unikornv1.Region) *openapi.RegionRead {
+	out := &openapi.RegionRead{
+		Metadata: conversion.ResourceReadMetadata(in, coreopenapi.Provisioned),
 	}
 
 	return out
 }
 
-func convertList(in *unikornv1.RegionList) generated.Regions {
-	out := make(generated.Regions, 0, len(in.Items))
+func convertList(in *unikornv1.RegionList) openapi.Regions {
+	out := make(openapi.Regions, 0, len(in.Items))
 
 	for i := range in.Items {
 		out = append(out, *convert(&in.Items[i]))
@@ -126,7 +128,7 @@ func convertList(in *unikornv1.RegionList) generated.Regions {
 	return out
 }
 
-func (c *Client) List(ctx context.Context) (generated.Regions, error) {
+func (c *Client) List(ctx context.Context) (openapi.Regions, error) {
 	regions, err := c.list(ctx)
 	if err != nil {
 		return nil, err
