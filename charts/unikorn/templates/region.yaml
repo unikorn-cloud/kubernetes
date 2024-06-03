@@ -2,8 +2,9 @@
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: Region
 metadata:
-  name: {{ $region.name }}
+  name: {{ include "resource.id" $region.name }}
   labels:
+    unikorn-cloud.org/name: {{ $region.name }}
     {{- include "unikorn.labels" $ | nindent 4 }}
 spec:
   provider: {{ $region.provider }}

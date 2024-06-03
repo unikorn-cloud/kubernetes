@@ -94,10 +94,9 @@ func (c *ClusterManager) ResourceLabels() (labels.Set, error) {
 	}
 
 	labels := labels.Set{
-		constants.KindLabel:           constants.KindLabelValueClusterManager,
-		constants.OrganizationLabel:   organization,
-		constants.ProjectLabel:        project,
-		constants.ClusterManagerLabel: c.Name,
+		constants.KindLabel:         constants.KindLabelValueClusterManager,
+		constants.OrganizationLabel: organization,
+		constants.ProjectLabel:      project,
 	}
 
 	return labels, nil

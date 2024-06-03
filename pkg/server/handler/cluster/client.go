@@ -29,9 +29,9 @@ import (
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/openapi"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/vcluster"
-	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/clustermanager"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/common"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/region"
@@ -82,13 +82,13 @@ func NewClient(client client.Client, options *Options) *Client {
 }
 
 // List returns all clusters owned by the implicit control plane.
-func (c *Client) List(ctx context.Context, organizationName string) (generated.KubernetesClusters, error) {
-	scoper := scoping.New(ctx, c.client, organizationName)
+func (c *Client) List(ctx context.Context, organizationID string) (openapi.KubernetesClusters, error) {
+	scoper := scoping.New(ctx, c.client, organizationID)
 
 	selector, err := scoper.GetSelector(ctx)
 	if err != nil {
 		if goerrors.Is(err, scoping.ErrNoScope) {
-			return generated.KubernetesClusters{}, nil
+			return openapi.KubernetesClusters{}, nil
 		}
 
 		return nil, errors.OAuth2ServerError("failed to apply scoping rules").WithError(err)
@@ -106,19 +106,14 @@ func (c *Client) List(ctx context.Context, organizationName string) (generated.K
 
 	slices.SortStableFunc(result.Items, unikornv1.CompareKubernetesCluster)
 
-	out, err := c.convertList(result)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
+	return c.convertList(result), nil
 }
 
 // get returns the cluster.
-func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.KubernetesCluster, error) {
+func (c *Client) get(ctx context.Context, namespace, clusterID string) (*unikornv1.KubernetesCluster, error) {
 	result := &unikornv1.KubernetesCluster{}
 
-	if err := c.client.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, result); err != nil {
+	if err := c.client.Get(ctx, client.ObjectKey{Namespace: namespace, Name: clusterID}, result); err != nil {
 		if kerrors.IsNotFound(err) {
 			return nil, errors.HTTPNotFound().WithError(err)
 		}
@@ -130,8 +125,8 @@ func (c *Client) get(ctx context.Context, namespace, name string) (*unikornv1.Ku
 }
 
 // GetKubeconfig returns the kubernetes configuation associated with a cluster.
-func (c *Client) GetKubeconfig(ctx context.Context, organizationName, projectName, name string) ([]byte, error) {
-	project, err := common.New(c.client).ProjectNamespace(ctx, organizationName, projectName)
+func (c *Client) GetKubeconfig(ctx context.Context, organizationID, projectID, clusterID string) ([]byte, error) {
+	project, err := common.New(c.client).ProjectNamespace(ctx, organizationID, projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +149,7 @@ func (c *Client) GetKubeconfig(ctx context.Context, organizationName, projectNam
 
 	clusterObjectKey := client.ObjectKey{
 		Namespace: project.Name,
-		Name:      name,
+		Name:      clusterID,
 	}
 
 	cluster := &unikornv1.KubernetesCluster{}
@@ -164,7 +159,7 @@ func (c *Client) GetKubeconfig(ctx context.Context, organizationName, projectNam
 	}
 
 	objectKey := client.ObjectKey{
-		Namespace: name,
+		Namespace: clusterID,
 		Name:      clusteropenstack.KubeconfigSecretName(cluster),
 	}
 
@@ -207,31 +202,32 @@ func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Open
 */
 
 // Create creates the implicit cluster indentified by the JTW claims.
-func (c *Client) Create(ctx context.Context, organizationName, projectName string, options *generated.KubernetesClusterSpec) error {
-	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationName, projectName)
+func (c *Client) Create(ctx context.Context, organizationID, projectID string, request *openapi.KubernetesClusterWrite) error {
+	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationID, projectID)
 	if err != nil {
 		return err
 	}
 
 	// Implicitly create the controller manager.
-	if options.ClusterManager == nil {
-		options.ClusterManager = util.ToPointer("default")
-	}
+	if request.Spec.ClusterManager == nil {
+		clusterManager, err := clustermanager.NewClient(c.client).CreateImplicit(ctx, organizationID, projectID)
+		if err != nil {
+			return err
+		}
 
-	if err := clustermanager.NewClient(c.client).CreateImplicit(ctx, organizationName, projectName, *options.ClusterManager); err != nil {
-		return err
+		request.Spec.ClusterManager = util.ToPointer(clusterManager.Name)
 	}
 
 	if namespace.DeletionTimestamp != nil {
 		return errors.OAuth2InvalidRequest("control plane is being deleted")
 	}
 
-	provider, err := region.NewClient(c.client).Provider(ctx, options.Region)
+	provider, err := region.NewClient(c.client).Provider(ctx, request.Spec.Region)
 	if err != nil {
 		return err
 	}
 
-	cluster, err := c.generate(ctx, provider, namespace, organizationName, projectName, options)
+	cluster, err := c.generate(ctx, provider, namespace, organizationID, projectID, request)
 	if err != nil {
 		return err
 	}
@@ -253,8 +249,8 @@ func (c *Client) Create(ctx context.Context, organizationName, projectName strin
 }
 
 // Delete deletes the implicit cluster indentified by the JTW claims.
-func (c *Client) Delete(ctx context.Context, organizationName, projectName, name string) error {
-	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationName, projectName)
+func (c *Client) Delete(ctx context.Context, organizationID, projectID, clusterID string) error {
+	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationID, projectID)
 	if err != nil {
 		return err
 	}
@@ -265,7 +261,7 @@ func (c *Client) Delete(ctx context.Context, organizationName, projectName, name
 
 	cluster := &unikornv1.KubernetesCluster{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
+			Name:      clusterID,
 			Namespace: namespace.Name,
 		},
 	}
@@ -282,8 +278,8 @@ func (c *Client) Delete(ctx context.Context, organizationName, projectName, name
 }
 
 // Update implements read/modify/write for the cluster.
-func (c *Client) Update(ctx context.Context, organizationName, projectName, name string, request *generated.KubernetesClusterSpec) error {
-	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationName, projectName)
+func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterID string, request *openapi.KubernetesClusterWrite) error {
+	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationID, projectID)
 	if err != nil {
 		return err
 	}
@@ -292,31 +288,31 @@ func (c *Client) Update(ctx context.Context, organizationName, projectName, name
 		return errors.OAuth2InvalidRequest("control plane is being deleted")
 	}
 
-	resource, err := c.get(ctx, namespace.Name, name)
+	current, err := c.get(ctx, namespace.Name, clusterID)
 	if err != nil {
 		return err
 	}
 
-	provider, err := region.NewClient(c.client).Provider(ctx, request.Region)
+	provider, err := region.NewClient(c.client).Provider(ctx, request.Spec.Region)
 	if err != nil {
 		return err
 	}
 
-	required, err := c.generate(ctx, provider, namespace, organizationName, projectName, request)
+	required, err := c.generate(ctx, provider, namespace, organizationID, projectID, request)
 	if err != nil {
 		return err
 	}
 
 	// Experience has taught me that modifying caches by accident is a bad thing
 	// so be extra safe and deep copy the existing resource.
-	temp := resource.DeepCopy()
-	temp.Spec = required.Spec
+	updated := current.DeepCopy()
+	updated.Spec = required.Spec
 
 	/*
 		temp.Spec.ControlPlane.ServerGroupID = resource.Spec.ControlPlane.ServerGroupID
 	*/
 
-	if err := c.client.Patch(ctx, temp, client.MergeFrom(resource)); err != nil {
+	if err := c.client.Patch(ctx, updated, client.MergeFrom(current)); err != nil {
 		return errors.OAuth2ServerError("failed to patch cluster").WithError(err)
 	}
 

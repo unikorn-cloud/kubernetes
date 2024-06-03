@@ -180,7 +180,7 @@ var _ ConfigGetter = &Client{}
 // performs a retry until the provided context expires.  It also acknowledges that load
 // balancer services may take a while to get a public IP.
 func getClientConfig(ctx context.Context, getter ConfigGetter, namespace string, external bool) (*clientcmdapi.Config, error) {
-	secret, err := getter.GetSecret(ctx, namespace, "vc-"+vclusterName)
+	secret, err := getter.GetSecret(ctx, namespace, "vc-vcluster")
 	if err != nil {
 		return nil, err
 	}

@@ -20,11 +20,12 @@ package application
 import (
 	"context"
 	"slices"
-	"strings"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
+	coreopenapi "github.com/unikorn-cloud/core/pkg/openapi"
+	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
-	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
+	"github.com/unikorn-cloud/unikorn/pkg/openapi"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -42,19 +43,19 @@ func NewClient(client client.Client) *Client {
 	}
 }
 
-func convert(in *unikornv1core.HelmApplication) *generated.Application {
-	versions := make(generated.ApplicationVersions, 0, len(in.Spec.Versions))
+func convert(in *unikornv1core.HelmApplication) *openapi.ApplicationRead {
+	versions := make(openapi.ApplicationVersions, 0, len(in.Spec.Versions))
 
 	for _, version := range in.Spec.Versions {
-		v := generated.ApplicationVersion{
+		v := openapi.ApplicationVersion{
 			Version: *version.Version,
 		}
 
 		if len(version.Dependencies) != 0 {
-			deps := make(generated.ApplicationDependencies, 0, len(version.Dependencies))
+			deps := make(openapi.ApplicationDependencies, 0, len(version.Dependencies))
 
 			for _, dependency := range version.Dependencies {
-				deps = append(deps, generated.ApplicationDependency{
+				deps = append(deps, openapi.ApplicationDependency{
 					Name: *dependency.Name,
 				})
 			}
@@ -63,10 +64,10 @@ func convert(in *unikornv1core.HelmApplication) *generated.Application {
 		}
 
 		if len(version.Recommends) != 0 {
-			recommends := make(generated.ApplicationRecommends, 0, len(version.Recommends))
+			recommends := make(openapi.ApplicationRecommends, 0, len(version.Recommends))
 
 			for _, recommend := range version.Recommends {
-				recommends = append(recommends, generated.ApplicationDependency{
+				recommends = append(recommends, openapi.ApplicationDependency{
 					Name: *recommend.Name,
 				})
 			}
@@ -77,22 +78,22 @@ func convert(in *unikornv1core.HelmApplication) *generated.Application {
 		versions = append(versions, v)
 	}
 
-	out := &generated.Application{
-		Name:              in.Name,
-		HumanReadableName: *in.Spec.Name,
-		Description:       strings.ReplaceAll(*in.Spec.Description, "\n", " "),
-		Documentation:     *in.Spec.Documentation,
-		License:           *in.Spec.License,
-		Icon:              in.Spec.Icon,
-		Versions:          versions,
-		Tags:              &in.Spec.Tags,
+	out := &openapi.ApplicationRead{
+		Metadata: conversion.ResourceReadMetadata(in, coreopenapi.Provisioned),
+		Spec: openapi.ApplicationSpec{
+			Documentation: *in.Spec.Documentation,
+			License:       *in.Spec.License,
+			Icon:          in.Spec.Icon,
+			Versions:      versions,
+			Tags:          &in.Spec.Tags,
+		},
 	}
 
 	return out
 }
 
-func convertList(in []unikornv1core.HelmApplication) []*generated.Application {
-	out := make([]*generated.Application, len(in))
+func convertList(in []unikornv1core.HelmApplication) []*openapi.ApplicationRead {
+	out := make([]*openapi.ApplicationRead, len(in))
 
 	for i := range in {
 		out[i] = convert(&in[i])
@@ -101,7 +102,7 @@ func convertList(in []unikornv1core.HelmApplication) []*generated.Application {
 	return out
 }
 
-func (c *Client) List(ctx context.Context) ([]*generated.Application, error) {
+func (c *Client) List(ctx context.Context) ([]*openapi.ApplicationRead, error) {
 	result := &unikornv1core.HelmApplicationList{}
 
 	if err := c.client.List(ctx, result); err != nil {

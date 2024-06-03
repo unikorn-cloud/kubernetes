@@ -40,10 +40,6 @@ CMDDIR = cmd
 SRCDIR = src
 GENDIR = generated
 CRDDIR = charts/unikorn/crds
-SRVBASE = pkg/server
-SRVSCHEMA = $(SRVBASE)/openapi/server.spec.yaml
-SRVGENPKG = generated
-SRVGENDIR = $(SRVBASE)/$(SRVGENPKG)
 
 # Where to install things.
 PREFIX = $(HOME)/bin
@@ -54,8 +50,6 @@ CONTROLLER_BINARIES := $(foreach arch,$(CONTROLLER_ARCH),$(foreach ctrl,$(CONTRO
 # List of sources to trigger a build.
 # TODO: Bazel may be quicker, but it's a massive hog, and a pain in the arse.
 SOURCES := $(shell find . -type f -name *.go) go.mod go.sum
-
-SERVER_COMPONENT_SOURCES := $(patsubst %,$(SRVGENDIR)/%,$(SERVER_COMPONENTS))
 
 # Source files defining custom resource APIs
 APISRC = $(shell find pkg/apis -name [^z]*.go -type f)
@@ -77,7 +71,14 @@ CONTROLLER_TOOLS_VERSION=v0.14.0
 # This should be kept in sync with the Kubenetes library versions defined in go.mod.
 CODEGEN_VERSION=v0.27.3
 
-OPENAPI_CODEGEN_VERSION=v1.12.4
+OPENAPI_CODEGEN_VERSION=v1.16.2
+OPENAPI_CODEGEN_FLAGS=-package openapi -config pkg/openapi/config.yaml
+OPENAPI_SCHEMA=pkg/openapi/server.spec.yaml
+OPENAPI_FILES = \
+	pkg/openapi/types.go \
+	pkg/openapi/schema.go \
+	pkg/openapi/client.go \
+	pkg/openapi/router.go
 
 MOCKGEN_VERSION=v0.3.0
 
@@ -103,10 +104,10 @@ $(BINDIR) $(BINDIR)/amd64-linux-gnu $(BINDIR)/arm64-linux-gnu:
 	mkdir -p $@
 
 # Create a binary from a command.
-$(BINDIR)/%: $(SOURCES) $(GENDIR) $(SRVGENDIR) | $(BINDIR)
+$(BINDIR)/%: $(SOURCES) $(GENDIR) $(OPENAPI_FILES) | $(BINDIR)
 	CGO_ENABLED=0 go build $(FLAGS) -o $@ $(CMDDIR)/$*/main.go
 
-$(BINDIR)/amd64-linux-gnu/%: $(SOURCES) $(GENDIR) $(SRVGENDIR) | $(BINDIR)/amd64-linux-gnu
+$(BINDIR)/amd64-linux-gnu/%: $(SOURCES) $(GENDIR) $(OPENAPI_FILES) | $(BINDIR)/amd64-linux-gnu
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(FLAGS) -o $@ $(CMDDIR)/$*/main.go
 
 $(BINDIR)/arm64-linux-gnu/%: $(SOURCES) $(GENDIR) | $(BINDIR)/arm64-linux-gnu
@@ -160,14 +161,21 @@ $(GENDIR): $(APISRC)
 	@touch $@
 
 # Generate the server schema, types and router boilerplate.
-$(SRVGENDIR): $(SRVSCHEMA)
-	@mkdir -p $@
+pkg/openapi/types.go: $(OPENAPI_SCHEMA)
 	@go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@$(OPENAPI_CODEGEN_VERSION)
-	oapi-codegen -generate spec -package $(SRVGENPKG) $< > $(SRVGENDIR)/schema.go
-	oapi-codegen -generate types -package $(SRVGENPKG) $< > $(SRVGENDIR)/types.go
-	oapi-codegen -generate chi-server -package $(SRVGENPKG) $< > $(SRVGENDIR)/router.go
-	oapi-codegen -generate client -package $(SRVGENPKG) $< > $(SRVGENDIR)/client.go
-	@touch $@
+	oapi-codegen -generate types $(OPENAPI_CODEGEN_FLAGS) -o $@ $<
+
+pkg/openapi/schema.go: $(OPENAPI_SCHEMA)
+	@go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@$(OPENAPI_CODEGEN_VERSION)
+	oapi-codegen -generate spec $(OPENAPI_CODEGEN_FLAGS) -o $@ $<
+
+pkg/openapi/client.go: $(OPENAPI_SCHEMA)
+	@go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@$(OPENAPI_CODEGEN_VERSION)
+	oapi-codegen -generate client $(OPENAPI_CODEGEN_FLAGS) -o $@ $<
+
+pkg/openapi/router.go: $(OPENAPI_SCHEMA)
+	@go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@$(OPENAPI_CODEGEN_VERSION)
+	oapi-codegen -generate chi-server $(OPENAPI_CODEGEN_FLAGS) -o $@ $<
 
 # When checking out, the files timestamps are pretty much random, and make cause
 # spurious rebuilds of generated content.  Call this to prevent that.
@@ -185,12 +193,12 @@ lint: $(GENDIR)
 
 # Validate the server OpenAPI schema is legit.
 .PHONY: validate
-validate: $(SRVGENDIR)
+validate: $(OPENAPI_FILES)
 	go run ./hack/validate_openapi
 
 # Validate the docs can be generated without fail.
 .PHONY: validate-docs
-validate-docs: $(SRVGENDIR)
+validate-docs: $(OPENAPI_FILES)
 	go run github.com/unikorn-cloud/core/hack/docs --dry-run
 
 # Perform license checking.
