@@ -1,0 +1,26 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: unikorn-monitor
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
+rules:
+# Manage kubernetes clusters and control planes (my job).
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - clustermanagers
+  - kubernetesclusters
+  verbs:
+  - list
+  - watch
+  - update
+# Get application bundles
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - clustermanagerapplicationbundles
+  - kubernetesclusterapplicationbundles
+  verbs:
+  - list
+  - watch

@@ -1,0 +1,79 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: unikorn-cluster-controller
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
+rules:
+# Manage kubernetes clusters (my job).
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - kubernetesclusters
+  verbs:
+  - list
+  - get
+  - patch
+  - watch
+  - update
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - kubernetesclusters/status
+  verbs:
+  - update
+# Get my owning control plane.
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - clustermanagers
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - list
+  - watch
+# Get application bundles
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - helmapplications
+  - kubernetesclusterapplicationbundles
+  verbs:
+  - list
+  - watch
+# ArgoCD integration.
+- apiGroups:
+  - argoproj.io
+  resources:
+  - applications
+  verbs:
+  - create
+  - list
+  - get
+  - watch
+  - patch
+  - delete
+# ArgoCD integration (access to API secret).
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - list
+  - watch
+  - create
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - update
+  - patch

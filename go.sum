@@ -179,8 +179,8 @@ github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsT
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/ugorji/go/codec v1.2.12 h1:9LC83zGrHhuUA9l16C9AHXAqEV/2wBQ4nkvumAE65EE=
 github.com/ugorji/go/codec v1.2.12/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
-github.com/unikorn-cloud/core v0.1.40 h1:irPBsbhfdCun9h6MRxEM7YEpRIJXtqDd8wPijgcXzpI=
-github.com/unikorn-cloud/core v0.1.40/go.mod h1:cP39UQN7aSmsfjQuSMsworI4oBIwx4oA4u20CbPpfZw=
+github.com/unikorn-cloud/core v0.1.41 h1:hjiGB8lZkLR3306BlR/jy6Bx2uvecm0W8YFE2GrdVDY=
+github.com/unikorn-cloud/core v0.1.41/go.mod h1:cP39UQN7aSmsfjQuSMsworI4oBIwx4oA4u20CbPpfZw=
 github.com/xlab/treeprint v1.2.0 h1:HzHnuAF1plUN2zGlAFHbSQP2qJ0ZAD3XF5XD7OesXRQ=
 github.com/xlab/treeprint v1.2.0/go.mod h1:gj5Gd3gPdKtR1ikdDK6fnFLdmIS0X30kTTuNd/WEJu0=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

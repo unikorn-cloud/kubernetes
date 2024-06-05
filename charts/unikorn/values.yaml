@@ -81,9 +81,6 @@ monitor:
 
 # REST server specific configuration.
 server:
-  # Temporarily block deployment until it's complete.
-  enabled: false
-
   # Allows override of the global default image.
   image:
 
