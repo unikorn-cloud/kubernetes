@@ -79,7 +79,7 @@ func convert(in *unikornv1core.HelmApplication) *openapi.ApplicationRead {
 	}
 
 	out := &openapi.ApplicationRead{
-		Metadata: conversion.ResourceReadMetadata(in, coreopenapi.Provisioned),
+		Metadata: conversion.ResourceReadMetadata(in, coreopenapi.ResourceProvisioningStatusProvisioned),
 		Spec: openapi.ApplicationSpec{
 			Documentation: *in.Spec.Documentation,
 			License:       *in.Spec.License,

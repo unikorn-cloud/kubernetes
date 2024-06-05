@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/oapi-codegen/runtime"
+	externalRef0 "github.com/unikorn-cloud/core/pkg/openapi"
 )
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
@@ -1000,9 +1001,9 @@ type GetApiV1ApplicationsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ApplicationResponse
-	JSON400      *BadRequestResponse
-	JSON401      *UnauthorizedResponse
-	JSON500      *InternalServerErrorResponse
+	JSON400      *externalRef0.BadRequestResponse
+	JSON401      *externalRef0.UnauthorizedResponse
+	JSON500      *externalRef0.InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1025,11 +1026,11 @@ type GetApiV1OrganizationsOrganizationIDClustermanagersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ClusterManagersResponse
-	JSON400      *BadRequestResponse
-	JSON401      *UnauthorizedResponse
-	JSON403      *ForbiddenResponse
-	JSON404      *NotFoundResponse
-	JSON500      *InternalServerErrorResponse
+	JSON400      *externalRef0.BadRequestResponse
+	JSON401      *externalRef0.UnauthorizedResponse
+	JSON403      *externalRef0.ForbiddenResponse
+	JSON404      *externalRef0.NotFoundResponse
+	JSON500      *externalRef0.InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1052,11 +1053,11 @@ type GetApiV1OrganizationsOrganizationIDClustersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *KubernetesClustersResponse
-	JSON400      *BadRequestResponse
-	JSON401      *UnauthorizedResponse
-	JSON403      *ForbiddenResponse
-	JSON404      *NotFoundResponse
-	JSON500      *InternalServerErrorResponse
+	JSON400      *externalRef0.BadRequestResponse
+	JSON401      *externalRef0.UnauthorizedResponse
+	JSON403      *externalRef0.ForbiddenResponse
+	JSON404      *externalRef0.NotFoundResponse
+	JSON500      *externalRef0.InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1078,11 +1079,11 @@ func (r GetApiV1OrganizationsOrganizationIDClustersResponse) StatusCode() int {
 type PostApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *BadRequestResponse
-	JSON401      *UnauthorizedResponse
-	JSON403      *ForbiddenResponse
-	JSON409      *ConflictResponse
-	JSON500      *InternalServerErrorResponse
+	JSON400      *externalRef0.BadRequestResponse
+	JSON401      *externalRef0.UnauthorizedResponse
+	JSON403      *externalRef0.ForbiddenResponse
+	JSON409      *externalRef0.ConflictResponse
+	JSON500      *externalRef0.InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1104,11 +1105,11 @@ func (r PostApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersResp
 type DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersClusterManagerIDResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *BadRequestResponse
-	JSON401      *UnauthorizedResponse
-	JSON403      *ForbiddenResponse
-	JSON404      *NotFoundResponse
-	JSON500      *InternalServerErrorResponse
+	JSON400      *externalRef0.BadRequestResponse
+	JSON401      *externalRef0.UnauthorizedResponse
+	JSON403      *externalRef0.ForbiddenResponse
+	JSON404      *externalRef0.NotFoundResponse
+	JSON500      *externalRef0.InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1130,11 +1131,11 @@ func (r DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersCl
 type PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersClusterManagerIDResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *BadRequestResponse
-	JSON401      *UnauthorizedResponse
-	JSON403      *ForbiddenResponse
-	JSON404      *NotFoundResponse
-	JSON500      *InternalServerErrorResponse
+	JSON400      *externalRef0.BadRequestResponse
+	JSON401      *externalRef0.UnauthorizedResponse
+	JSON403      *externalRef0.ForbiddenResponse
+	JSON404      *externalRef0.NotFoundResponse
+	JSON500      *externalRef0.InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1156,11 +1157,11 @@ func (r PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersClust
 type PostApiV1OrganizationsOrganizationIDProjectsProjectIDClustersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *BadRequestResponse
-	JSON401      *UnauthorizedResponse
-	JSON403      *ForbiddenResponse
-	JSON409      *ConflictResponse
-	JSON500      *InternalServerErrorResponse
+	JSON400      *externalRef0.BadRequestResponse
+	JSON401      *externalRef0.UnauthorizedResponse
+	JSON403      *externalRef0.ForbiddenResponse
+	JSON409      *externalRef0.ConflictResponse
+	JSON500      *externalRef0.InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1182,11 +1183,11 @@ func (r PostApiV1OrganizationsOrganizationIDProjectsProjectIDClustersResponse) S
 type DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *BadRequestResponse
-	JSON401      *UnauthorizedResponse
-	JSON403      *ForbiddenResponse
-	JSON404      *NotFoundResponse
-	JSON500      *InternalServerErrorResponse
+	JSON400      *externalRef0.BadRequestResponse
+	JSON401      *externalRef0.UnauthorizedResponse
+	JSON403      *externalRef0.ForbiddenResponse
+	JSON404      *externalRef0.NotFoundResponse
+	JSON500      *externalRef0.InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1208,11 +1209,11 @@ func (r DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterID
 type PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *BadRequestResponse
-	JSON401      *UnauthorizedResponse
-	JSON403      *ForbiddenResponse
-	JSON404      *NotFoundResponse
-	JSON500      *InternalServerErrorResponse
+	JSON400      *externalRef0.BadRequestResponse
+	JSON401      *externalRef0.UnauthorizedResponse
+	JSON403      *externalRef0.ForbiddenResponse
+	JSON404      *externalRef0.NotFoundResponse
+	JSON500      *externalRef0.InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1234,11 +1235,11 @@ func (r PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDRes
 type GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfigResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *BadRequestResponse
-	JSON401      *UnauthorizedResponse
-	JSON403      *ForbiddenResponse
-	JSON404      *NotFoundResponse
-	JSON500      *InternalServerErrorResponse
+	JSON400      *externalRef0.BadRequestResponse
+	JSON401      *externalRef0.UnauthorizedResponse
+	JSON403      *externalRef0.ForbiddenResponse
+	JSON404      *externalRef0.NotFoundResponse
+	JSON500      *externalRef0.InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1261,8 +1262,8 @@ type GetApiV1RegionsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *RegionsResponse
-	JSON401      *UnauthorizedResponse
-	JSON500      *InternalServerErrorResponse
+	JSON401      *externalRef0.UnauthorizedResponse
+	JSON500      *externalRef0.InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1285,9 +1286,9 @@ type GetApiV1RegionsRegionIDFlavorsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *FlavorsResponse
-	JSON400      *BadRequestResponse
-	JSON401      *UnauthorizedResponse
-	JSON500      *InternalServerErrorResponse
+	JSON400      *externalRef0.BadRequestResponse
+	JSON401      *externalRef0.UnauthorizedResponse
+	JSON500      *externalRef0.InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1310,9 +1311,9 @@ type GetApiV1RegionsRegionIDImagesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ImagesResponse
-	JSON400      *BadRequestResponse
-	JSON401      *UnauthorizedResponse
-	JSON500      *InternalServerErrorResponse
+	JSON400      *externalRef0.BadRequestResponse
+	JSON401      *externalRef0.UnauthorizedResponse
+	JSON500      *externalRef0.InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1502,21 +1503,21 @@ func ParseGetApiV1ApplicationsResponse(rsp *http.Response) (*GetApiV1Application
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest UnauthorizedResponse
+		var dest externalRef0.UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalServerErrorResponse
+		var dest externalRef0.InternalServerErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1549,35 +1550,35 @@ func ParseGetApiV1OrganizationsOrganizationIDClustermanagersResponse(rsp *http.R
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest UnauthorizedResponse
+		var dest externalRef0.UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ForbiddenResponse
+		var dest externalRef0.ForbiddenResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFoundResponse
+		var dest externalRef0.NotFoundResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalServerErrorResponse
+		var dest externalRef0.InternalServerErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1610,35 +1611,35 @@ func ParseGetApiV1OrganizationsOrganizationIDClustersResponse(rsp *http.Response
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest UnauthorizedResponse
+		var dest externalRef0.UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ForbiddenResponse
+		var dest externalRef0.ForbiddenResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFoundResponse
+		var dest externalRef0.NotFoundResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalServerErrorResponse
+		var dest externalRef0.InternalServerErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1664,35 +1665,35 @@ func ParsePostApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersRe
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest UnauthorizedResponse
+		var dest externalRef0.UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ForbiddenResponse
+		var dest externalRef0.ForbiddenResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest ConflictResponse
+		var dest externalRef0.ConflictResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalServerErrorResponse
+		var dest externalRef0.InternalServerErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1718,35 +1719,35 @@ func ParseDeleteApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagers
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest UnauthorizedResponse
+		var dest externalRef0.UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ForbiddenResponse
+		var dest externalRef0.ForbiddenResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFoundResponse
+		var dest externalRef0.NotFoundResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalServerErrorResponse
+		var dest externalRef0.InternalServerErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1772,35 +1773,35 @@ func ParsePutApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersClu
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest UnauthorizedResponse
+		var dest externalRef0.UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ForbiddenResponse
+		var dest externalRef0.ForbiddenResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFoundResponse
+		var dest externalRef0.NotFoundResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalServerErrorResponse
+		var dest externalRef0.InternalServerErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1826,35 +1827,35 @@ func ParsePostApiV1OrganizationsOrganizationIDProjectsProjectIDClustersResponse(
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest UnauthorizedResponse
+		var dest externalRef0.UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ForbiddenResponse
+		var dest externalRef0.ForbiddenResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest ConflictResponse
+		var dest externalRef0.ConflictResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalServerErrorResponse
+		var dest externalRef0.InternalServerErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1880,35 +1881,35 @@ func ParseDeleteApiV1OrganizationsOrganizationIDProjectsProjectIDClustersCluster
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest UnauthorizedResponse
+		var dest externalRef0.UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ForbiddenResponse
+		var dest externalRef0.ForbiddenResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFoundResponse
+		var dest externalRef0.NotFoundResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalServerErrorResponse
+		var dest externalRef0.InternalServerErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1934,35 +1935,35 @@ func ParsePutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDR
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest UnauthorizedResponse
+		var dest externalRef0.UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ForbiddenResponse
+		var dest externalRef0.ForbiddenResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFoundResponse
+		var dest externalRef0.NotFoundResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalServerErrorResponse
+		var dest externalRef0.InternalServerErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1988,35 +1989,35 @@ func ParseGetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDK
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest UnauthorizedResponse
+		var dest externalRef0.UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ForbiddenResponse
+		var dest externalRef0.ForbiddenResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFoundResponse
+		var dest externalRef0.NotFoundResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalServerErrorResponse
+		var dest externalRef0.InternalServerErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2049,14 +2050,14 @@ func ParseGetApiV1RegionsResponse(rsp *http.Response) (*GetApiV1RegionsResponse,
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest UnauthorizedResponse
+		var dest externalRef0.UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalServerErrorResponse
+		var dest externalRef0.InternalServerErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2089,21 +2090,21 @@ func ParseGetApiV1RegionsRegionIDFlavorsResponse(rsp *http.Response) (*GetApiV1R
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest UnauthorizedResponse
+		var dest externalRef0.UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalServerErrorResponse
+		var dest externalRef0.InternalServerErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2136,21 +2137,21 @@ func ParseGetApiV1RegionsRegionIDImagesResponse(rsp *http.Response) (*GetApiV1Re
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest UnauthorizedResponse
+		var dest externalRef0.UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalServerErrorResponse
+		var dest externalRef0.InternalServerErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

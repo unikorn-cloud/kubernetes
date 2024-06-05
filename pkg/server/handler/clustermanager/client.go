@@ -116,7 +116,7 @@ func (c *Client) CreateImplicit(ctx context.Context, organizationID, projectID s
 
 // convert converts from Kubernetes into OpenAPI types.
 func (c *Client) convert(in *unikornv1.ClusterManager) *openapi.ClusterManagerRead {
-	provisioningStatus := coreopenapi.Unknown
+	provisioningStatus := coreopenapi.ResourceProvisioningStatusUnknown
 
 	if condition, err := in.StatusConditionRead(unikornv1core.ConditionAvailable); err == nil {
 		provisioningStatus = conversion.ConvertStatusCondition(condition)

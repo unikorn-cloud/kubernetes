@@ -90,7 +90,7 @@ func convertWorkloadPools(in *unikornv1.KubernetesCluster) []openapi.KubernetesC
 
 // convert converts from a custom resource into the API definition.
 func (c *Client) convert(in *unikornv1.KubernetesCluster) *openapi.KubernetesClusterRead {
-	provisioningStatus := coreopenapi.Unknown
+	provisioningStatus := coreopenapi.ResourceProvisioningStatusUnknown
 
 	if condition, err := in.StatusConditionRead(unikornv1core.ConditionAvailable); err == nil {
 		provisioningStatus = conversion.ConvertStatusCondition(condition)
