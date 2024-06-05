@@ -112,7 +112,7 @@ func (c *Client) Provider(ctx context.Context, regionName string) (providers.Pro
 
 func convert(in *unikornv1.Region) *openapi.RegionRead {
 	out := &openapi.RegionRead{
-		Metadata: conversion.ResourceReadMetadata(in, coreopenapi.Provisioned),
+		Metadata: conversion.ResourceReadMetadata(in, coreopenapi.ResourceProvisioningStatusProvisioned),
 	}
 
 	return out

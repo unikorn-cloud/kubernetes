@@ -13,25 +13,6 @@ const (
 	Oauth2AuthenticationScopes = "oauth2Authentication.Scopes"
 )
 
-// Defines values for Oauth2ErrorError.
-const (
-	AccessDenied            Oauth2ErrorError = "access_denied"
-	Conflict                Oauth2ErrorError = "conflict"
-	Forbidden               Oauth2ErrorError = "forbidden"
-	InvalidClient           Oauth2ErrorError = "invalid_client"
-	InvalidGrant            Oauth2ErrorError = "invalid_grant"
-	InvalidRequest          Oauth2ErrorError = "invalid_request"
-	InvalidScope            Oauth2ErrorError = "invalid_scope"
-	MethodNotAllowed        Oauth2ErrorError = "method_not_allowed"
-	NotFound                Oauth2ErrorError = "not_found"
-	ServerError             Oauth2ErrorError = "server_error"
-	TemporarilyUnavailable  Oauth2ErrorError = "temporarily_unavailable"
-	UnauthorizedClient      Oauth2ErrorError = "unauthorized_client"
-	UnsupportedGrantType    Oauth2ErrorError = "unsupported_grant_type"
-	UnsupportedMediaType    Oauth2ErrorError = "unsupported_media_type"
-	UnsupportedResponseType Oauth2ErrorError = "unsupported_response_type"
-)
-
 // ApplicationDependencies A set of applications that will be installed before this application.
 type ApplicationDependencies = []ApplicationDependency
 
@@ -242,18 +223,6 @@ type MachinePool struct {
 	Replicas *int `json:"replicas,omitempty"`
 }
 
-// Oauth2Error Generic error message.
-type Oauth2Error struct {
-	// Error A terse error string expanding on the HTTP error code. Errors are based on the OAuth2 specification, but are expanded with proprietary status codes for APIs other than those specified by OAuth2.
-	Error Oauth2ErrorError `json:"error"`
-
-	// ErrorDescription Verbose message describing the error.
-	ErrorDescription string `json:"error_description"`
-}
-
-// Oauth2ErrorError A terse error string expanding on the HTTP error code. Errors are based on the OAuth2 specification, but are expanded with proprietary status codes for APIs other than those specified by OAuth2.
-type Oauth2ErrorError string
-
 // RegionRead A region.
 type RegionRead struct {
 	// Metadata Resource metadata valid for all reads.
@@ -287,38 +256,20 @@ type RegionIDParameter = KubernetesNameParameter
 // ApplicationResponse A list of appications.
 type ApplicationResponse = Applications
 
-// BadRequestResponse Generic error message.
-type BadRequestResponse = Oauth2Error
-
 // ClusterManagersResponse A list of cluster managers.
 type ClusterManagersResponse = ClusterManagers
-
-// ConflictResponse Generic error message.
-type ConflictResponse = Oauth2Error
 
 // FlavorsResponse A list of flavors.
 type FlavorsResponse = Flavors
 
-// ForbiddenResponse Generic error message.
-type ForbiddenResponse = Oauth2Error
-
 // ImagesResponse A list of images that are compatible with this platform.
 type ImagesResponse = Images
-
-// InternalServerErrorResponse Generic error message.
-type InternalServerErrorResponse = Oauth2Error
 
 // KubernetesClustersResponse A list of Kubernetes clusters.
 type KubernetesClustersResponse = KubernetesClusters
 
-// NotFoundResponse Generic error message.
-type NotFoundResponse = Oauth2Error
-
 // RegionsResponse A list of regions.
 type RegionsResponse = Regions
-
-// UnauthorizedResponse Generic error message.
-type UnauthorizedResponse = Oauth2Error
 
 // CreateControlPlaneRequest A cluster manager.
 type CreateControlPlaneRequest = ClusterManagerWrite

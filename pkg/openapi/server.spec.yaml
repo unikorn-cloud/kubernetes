@@ -45,15 +45,15 @@ paths:
         '200':
           $ref: '#/components/responses/clusterManagersResponse'
         '400':
-          $ref: '#/components/responses/badRequestResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
         '401':
-          $ref: '#/components/responses/unauthorizedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '403':
-          $ref: '#/components/responses/forbiddenResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/forbiddenResponse'
         '404':
-          $ref: '#/components/responses/notFoundResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/notFoundResponse'
         '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/organizations/{organizationID}/projects/{projectID}/clustermanagers:
     description: |-
       Implements cluster manager management services. Control planes manage the
@@ -74,17 +74,17 @@ paths:
         $ref: '#/components/requestBodies/createControlPlaneRequest'
       responses:
         '202':
-          $ref: '#/components/responses/acceptedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/acceptedResponse'
         '400':
-          $ref: '#/components/responses/badRequestResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
         '401':
-          $ref: '#/components/responses/unauthorizedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '403':
-          $ref: '#/components/responses/forbiddenResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/forbiddenResponse'
         '409':
-          $ref: '#/components/responses/conflictResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/conflictResponse'
         '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/organizations/{organizationID}/projects/{projectID}/clustermanagers/{clusterManagerID}:
     x-documentation-group: main
     description: |-
@@ -107,17 +107,17 @@ paths:
         $ref: '#/components/requestBodies/createControlPlaneRequest'
       responses:
         '202':
-          $ref: '#/components/responses/acceptedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/acceptedResponse'
         '400':
-          $ref: '#/components/responses/badRequestResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
         '401':
-          $ref: '#/components/responses/unauthorizedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '403':
-          $ref: '#/components/responses/forbiddenResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/forbiddenResponse'
         '404':
-          $ref: '#/components/responses/notFoundResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/notFoundResponse'
         '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
     delete:
       description: |-
         Deletes a cluster manager from within the scoped project.
@@ -126,17 +126,17 @@ paths:
       - oauth2Authentication: []
       responses:
         '202':
-          $ref: '#/components/responses/acceptedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/acceptedResponse'
         '400':
-          $ref: '#/components/responses/badRequestResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
         '401':
-          $ref: '#/components/responses/unauthorizedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '403':
-          $ref: '#/components/responses/forbiddenResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/forbiddenResponse'
         '404':
-          $ref: '#/components/responses/notFoundResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/notFoundResponse'
         '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/organizations/{organizationID}/clusters:
     x-documentation-group: main
     description: Cluster services.
@@ -151,15 +151,15 @@ paths:
         '200':
           $ref: '#/components/responses/kubernetesClustersResponse'
         '400':
-          $ref: '#/components/responses/badRequestResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
         '401':
-          $ref: '#/components/responses/unauthorizedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '403':
-          $ref: '#/components/responses/forbiddenResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/forbiddenResponse'
         '404':
-          $ref: '#/components/responses/notFoundResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/notFoundResponse'
         '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/organizations/{organizationID}/projects/{projectID}/clusters:
     x-documentation-group: main
     description: Cluster services.
@@ -175,17 +175,17 @@ paths:
         $ref: '#/components/requestBodies/createKubernetesClusterRequest'
       responses:
         '202':
-          $ref: '#/components/responses/acceptedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/acceptedResponse'
         '400':
-          $ref: '#/components/responses/badRequestResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
         '401':
-          $ref: '#/components/responses/unauthorizedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '403':
-          $ref: '#/components/responses/forbiddenResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/forbiddenResponse'
         '409':
-          $ref: '#/components/responses/conflictResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/conflictResponse'
         '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/organizations/{organizationID}/projects/{projectID}/clusters/{clusterID}:
     x-documentation-group: main
     description: Cluster services.
@@ -202,17 +202,17 @@ paths:
         $ref: '#/components/requestBodies/createKubernetesClusterRequest'
       responses:
         '202':
-          $ref: '#/components/responses/acceptedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/acceptedResponse'
         '400':
-          $ref: '#/components/responses/badRequestResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
         '401':
-          $ref: '#/components/responses/unauthorizedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '403':
-          $ref: '#/components/responses/forbiddenResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/forbiddenResponse'
         '404':
-          $ref: '#/components/responses/notFoundResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/notFoundResponse'
         '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
     delete:
       description: |-
         Delete a cluster from within a the selected cluster manager.
@@ -220,17 +220,17 @@ paths:
       - oauth2Authentication: []
       responses:
         '202':
-          $ref: '#/components/responses/acceptedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/acceptedResponse'
         '400':
-          $ref: '#/components/responses/badRequestResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
         '401':
-          $ref: '#/components/responses/unauthorizedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '403':
-          $ref: '#/components/responses/forbiddenResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/forbiddenResponse'
         '404':
-          $ref: '#/components/responses/notFoundResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/notFoundResponse'
         '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/organizations/{organizationID}/projects/{projectID}/clusters/{clusterID}/kubeconfig:
     x-documentation-group: main
     description: Cluster services.
@@ -247,15 +247,15 @@ paths:
         '200':
           $ref: '#/components/responses/kubernetesClusterKubeconfigResponse'
         '400':
-          $ref: '#/components/responses/badRequestResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
         '401':
-          $ref: '#/components/responses/unauthorizedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '403':
-          $ref: '#/components/responses/forbiddenResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/forbiddenResponse'
         '404':
-          $ref: '#/components/responses/notFoundResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/notFoundResponse'
         '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/applications:
     x-documentation-group: main
     description: Cluster application services.
@@ -268,11 +268,11 @@ paths:
         '200':
           $ref: '#/components/responses/applicationResponse'
         '400':
-          $ref: '#/components/responses/badRequestResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
         '401':
-          $ref: '#/components/responses/unauthorizedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/regions:
     description: |-
       Regions define a cloud.  This may be geographical or any logical partition.
@@ -290,9 +290,9 @@ paths:
         '200':
           $ref: '#/components/responses/regionsResponse'
         '401':
-          $ref: '#/components/responses/unauthorizedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/regions/{regionID}/flavors:
     description: Compute flavor services.
     parameters:
@@ -306,11 +306,11 @@ paths:
         '200':
           $ref: '#/components/responses/flavorsResponse'
         '400':
-          $ref: '#/components/responses/badRequestResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
         '401':
-          $ref: '#/components/responses/unauthorizedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/regions/{regionID}/images:
     description: Compute image services.
     parameters:
@@ -324,11 +324,11 @@ paths:
         '200':
           $ref: '#/components/responses/imagesResponse'
         '400':
-          $ref: '#/components/responses/badRequestResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
         '401':
-          $ref: '#/components/responses/unauthorizedResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '500':
-          $ref: '#/components/responses/internalServerErrorResponse'
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
 components:
   parameters:
     organizationIDParameter:
@@ -794,74 +794,6 @@ components:
                   replicas: 3
                 name: default
   responses:
-    acceptedResponse:
-      description: |-
-        The request has been accepted and will be fulfilled asynchronously.
-        You may poll the resource and monitor its status for completion.
-    badRequestResponse:
-      description: |-
-        Request body failed schema validation, or the request does not contain
-        all the required fields.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/oauth2Error'
-          example:
-            error: invalid_request
-            error_description: request body invalid
-    unauthorizedResponse:
-      description: |-
-        Authentication failed or the access token has expired.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/oauth2Error'
-          example:
-            error: access_denied
-            error_description: authentication failed
-    forbiddenResponse:
-      description: |-
-        Request was denied by authorisation, this may be caused by the authorisation
-        token not having the required scope for an API, or the user doesn't have the
-        necessary privileges on the provider platform.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/oauth2Error'
-          example:
-            error: forbidden
-            error_description: user credentials do not have the required privileges
-    notFoundResponse:
-      description: |-
-        Unable to find a resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/oauth2Error'
-          example:
-            error: not_found
-            error_description: the requested resource does not exist
-    conflictResponse:
-      description: |-
-        Resource conflicts with another, usually this means they have the same name.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/oauth2Error'
-          example:
-            error: conflict
-            error_description: a resource with the same name already exists
-    internalServerErrorResponse:
-      description: |-
-        An unexpected error occurred, this may be an unexpected transient error and
-        may succeed on a retry. If this isn't the case, please report it as an issue.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/oauth2Error'
-          example:
-            error: server_error
-            error_description: failed to token claim
     regionsResponse:
       description: A list of regions.
       content:
