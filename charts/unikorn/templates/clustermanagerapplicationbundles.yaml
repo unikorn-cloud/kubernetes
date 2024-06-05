@@ -8,15 +8,15 @@ spec:
   - name: vcluster
     reference:
       kind: HelmApplication
-      name: vcluster
+      name: {{ include "resource.id" "vcluster" }}
       version: 0.19.5
   - name: cert-manager
     reference:
       kind: HelmApplication
-      name: cert-manager
+      name: {{ include "resource.id" "cert-manager" }}
       version: v1.14.5
   - name: cluster-api
     reference:
       kind: HelmApplication
-      name: cluster-api
+      name: {{ include "resource.id" "cluster-api" }}
       version: v0.2.0

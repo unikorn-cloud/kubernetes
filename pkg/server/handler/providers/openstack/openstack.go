@@ -35,7 +35,7 @@ import (
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/providers/openstack"
 	"github.com/unikorn-cloud/unikorn/pkg/server/errors"
-	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
+	"github.com/unikorn-cloud/unikorn/pkg/openapi"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

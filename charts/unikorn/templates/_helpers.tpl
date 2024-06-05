@@ -115,3 +115,14 @@ Create image pull secrets
 - name: docker-config
 {{- end }}
 {{- end }}
+
+{{/*
+Creates predicatable Kubernetes name compatible UUIDs from name.
+Note we always start with a letter (kubernetes DNS label requirement),
+group 3 starts with "4" (UUIDv4 aka "random") and group 4 with "8"
+(the variant aka RFC9562).
+*/}}
+{{ define "resource.id" -}}
+{{- $sum := sha256sum . -}}
+{{ printf "f%s-%s-4%s-8%s-%s" (substr 1 8 $sum) (substr 8 12 $sum) (substr 13 16 $sum) (substr 17 20 $sum) (substr 20 32 $sum) }}
+{{- end }}

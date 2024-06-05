@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
+	"github.com/unikorn-cloud/unikorn/pkg/openapi"
 )
 
 //nolint:gochecknoglobals
@@ -37,7 +37,7 @@ func report(v ...interface{}) {
 
 //nolint:gocognit,cyclop
 func main() {
-	spec, err := generated.GetSwagger()
+	spec, err := openapi.GetSwagger()
 	if err != nil {
 		report("failed to load spec", err)
 	}

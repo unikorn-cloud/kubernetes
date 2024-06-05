@@ -31,7 +31,7 @@ import (
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/server/middleware/openapi/oidc"
 	coreutil "github.com/unikorn-cloud/core/pkg/util"
-	"github.com/unikorn-cloud/unikorn/pkg/server/generated"
+	"github.com/unikorn-cloud/unikorn/pkg/openapi"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/application"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/cluster"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/clustermanager"
@@ -72,8 +72,8 @@ func (h *Handler) setUncacheable(w http.ResponseWriter) {
 }
 
 //nolint:unparam
-func (h *Handler) checkRBAC(ctx context.Context, organization, scope string, permission constants.Permission) error {
-	aclGetter := rbac.NewIdentityACLGetter(h.authorizerOptions.Issuer, organization).WithCA(h.authorizerOptions.IssuerCA)
+func (h *Handler) checkRBAC(ctx context.Context, organizationID, scope string, permission constants.Permission) error {
+	aclGetter := rbac.NewIdentityACLGetter(h.authorizerOptions.Issuer, organizationID).WithCA(h.authorizerOptions.IssuerCA)
 
 	authorizer, err := userinfo.NewAuthorizer(ctx, aclGetter)
 	if err != nil {
@@ -87,13 +87,13 @@ func (h *Handler) checkRBAC(ctx context.Context, organization, scope string, per
 	return nil
 }
 
-func (h *Handler) GetApiV1OrganizationsOrganizationClustermanagers(w http.ResponseWriter, r *http.Request, organization generated.OrganizationParameter) {
-	if err := h.checkRBAC(r.Context(), organization, "infrastructure", constants.Read); err != nil {
+func (h *Handler) GetApiV1OrganizationsOrganizationIDClustermanagers(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter) {
+	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Read); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	result, err := clustermanager.NewClient(h.client).List(r.Context(), organization)
+	result, err := clustermanager.NewClient(h.client).List(r.Context(), organizationID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -103,20 +103,20 @@ func (h *Handler) GetApiV1OrganizationsOrganizationClustermanagers(w http.Respon
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) PostApiV1OrganizationsOrganizationProjectsProjectClustermanagers(w http.ResponseWriter, r *http.Request, organization generated.OrganizationParameter, project generated.ProjectParameter) {
-	if err := h.checkRBAC(r.Context(), organization, "infrastructure", constants.Create); err != nil {
+func (h *Handler) PostApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagers(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter) {
+	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Create); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	request := &generated.ClusterManagerSpec{}
+	request := &openapi.ClusterManagerWrite{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if err := clustermanager.NewClient(h.client).Create(r.Context(), organization, project, request); err != nil {
+	if _, err := clustermanager.NewClient(h.client).Create(r.Context(), organizationID, projectID, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -125,13 +125,13 @@ func (h *Handler) PostApiV1OrganizationsOrganizationProjectsProjectClustermanage
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) DeleteApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManager(w http.ResponseWriter, r *http.Request, organization generated.OrganizationParameter, project generated.ProjectParameter, clusterManager generated.ClusterManagerParameter) {
-	if err := h.checkRBAC(r.Context(), organization, "infrastructure", constants.Delete); err != nil {
+func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersClusterManagerID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterManagerID openapi.ClusterManagerIDParameter) {
+	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Delete); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if err := clustermanager.NewClient(h.client).Delete(r.Context(), organization, project, clusterManager); err != nil {
+	if err := clustermanager.NewClient(h.client).Delete(r.Context(), organizationID, projectID, clusterManagerID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -140,20 +140,20 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationProjectsProjectClustermana
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) PutApiV1OrganizationsOrganizationProjectsProjectClustermanagersClusterManager(w http.ResponseWriter, r *http.Request, organization generated.OrganizationParameter, project generated.ProjectParameter, controlPlaneName generated.ClusterManagerParameter) {
-	if err := h.checkRBAC(r.Context(), organization, "infrastructure", constants.Update); err != nil {
+func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersClusterManagerID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterManagerID openapi.ClusterManagerIDParameter) {
+	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Update); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	request := &generated.ClusterManagerSpec{}
+	request := &openapi.ClusterManagerWrite{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if err := clustermanager.NewClient(h.client).Update(r.Context(), organization, project, controlPlaneName, request); err != nil {
+	if err := clustermanager.NewClient(h.client).Update(r.Context(), organizationID, projectID, clusterManagerID, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -162,13 +162,13 @@ func (h *Handler) PutApiV1OrganizationsOrganizationProjectsProjectClustermanager
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) GetApiV1OrganizationsOrganizationClusters(w http.ResponseWriter, r *http.Request, organization generated.OrganizationParameter) {
-	if err := h.checkRBAC(r.Context(), organization, "infrastructure", constants.Read); err != nil {
+func (h *Handler) GetApiV1OrganizationsOrganizationIDClusters(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter) {
+	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Read); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	result, err := cluster.NewClient(h.client, &h.options.Cluster).List(r.Context(), organization)
+	result, err := cluster.NewClient(h.client, &h.options.Cluster).List(r.Context(), organizationID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -178,20 +178,20 @@ func (h *Handler) GetApiV1OrganizationsOrganizationClusters(w http.ResponseWrite
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) PostApiV1OrganizationsOrganizationProjectsProjectClusters(w http.ResponseWriter, r *http.Request, organization generated.OrganizationParameter, project generated.ProjectParameter) {
-	if err := h.checkRBAC(r.Context(), organization, "infrastructure", constants.Create); err != nil {
+func (h *Handler) PostApiV1OrganizationsOrganizationIDProjectsProjectIDClusters(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter) {
+	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Create); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	request := &generated.KubernetesClusterSpec{}
+	request := &openapi.KubernetesClusterWrite{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if err := cluster.NewClient(h.client, &h.options.Cluster).Create(r.Context(), organization, project, request); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster).Create(r.Context(), organizationID, projectID, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -200,13 +200,13 @@ func (h *Handler) PostApiV1OrganizationsOrganizationProjectsProjectClusters(w ht
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) DeleteApiV1OrganizationsOrganizationProjectsProjectClustersCluster(w http.ResponseWriter, r *http.Request, organization generated.OrganizationParameter, project generated.ProjectParameter, clusterName generated.ClusterParameter) {
-	if err := h.checkRBAC(r.Context(), organization, "infrastructure", constants.Delete); err != nil {
+func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterID openapi.ClusterIDParameter) {
+	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Delete); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if err := cluster.NewClient(h.client, &h.options.Cluster).Delete(r.Context(), organization, project, clusterName); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster).Delete(r.Context(), organizationID, projectID, clusterID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -215,20 +215,20 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationProjectsProjectClustersClu
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) PutApiV1OrganizationsOrganizationProjectsProjectClustersCluster(w http.ResponseWriter, r *http.Request, organization generated.OrganizationParameter, project generated.ProjectParameter, clusterName generated.ClusterParameter) {
-	if err := h.checkRBAC(r.Context(), organization, "infrastructure", constants.Update); err != nil {
+func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterID openapi.ClusterIDParameter) {
+	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Update); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	request := &generated.KubernetesClusterSpec{}
+	request := &openapi.KubernetesClusterWrite{}
 
 	if err := util.ReadJSONBody(r, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if err := cluster.NewClient(h.client, &h.options.Cluster).Update(r.Context(), organization, project, clusterName, request); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster).Update(r.Context(), organizationID, projectID, clusterID, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -237,13 +237,13 @@ func (h *Handler) PutApiV1OrganizationsOrganizationProjectsProjectClustersCluste
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) GetApiV1OrganizationsOrganizationProjectsProjectClustersClusterKubeconfig(w http.ResponseWriter, r *http.Request, organization generated.OrganizationParameter, project generated.ProjectParameter, clusterName generated.ClusterParameter) {
-	if err := h.checkRBAC(r.Context(), organization, "infrastructure", constants.Read); err != nil {
+func (h *Handler) GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfig(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterID openapi.ClusterIDParameter) {
+	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Read); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	result, err := cluster.NewClient(h.client, &h.options.Cluster).GetKubeconfig(r.Context(), organization, project, clusterName)
+	result, err := cluster.NewClient(h.client, &h.options.Cluster).GetKubeconfig(r.Context(), organizationID, projectID, clusterID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -275,8 +275,8 @@ func (h *Handler) GetApiV1Regions(w http.ResponseWriter, r *http.Request) {
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) GetApiV1RegionsRegionNameFlavors(w http.ResponseWriter, r *http.Request, regionName generated.RegionNameParameter) {
-	provider, err := region.NewClient(h.client).Provider(r.Context(), regionName)
+func (h *Handler) GetApiV1RegionsRegionIDFlavors(w http.ResponseWriter, r *http.Request, regionID openapi.RegionIDParameter) {
+	provider, err := region.NewClient(h.client).Provider(r.Context(), regionID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -291,10 +291,10 @@ func (h *Handler) GetApiV1RegionsRegionNameFlavors(w http.ResponseWriter, r *htt
 	// Apply ordering guarantees.
 	sort.Stable(result)
 
-	out := make(generated.Flavors, 0, len(result))
+	out := make(openapi.Flavors, 0, len(result))
 
 	for _, r := range result {
-		t := generated.Flavor{
+		t := openapi.Flavor{
 			Name:   r.Name,
 			Cpus:   r.CPUs,
 			Memory: int(r.Memory.Value()) >> 30,
@@ -312,8 +312,8 @@ func (h *Handler) GetApiV1RegionsRegionNameFlavors(w http.ResponseWriter, r *htt
 	util.WriteJSONResponse(w, r, http.StatusOK, out)
 }
 
-func (h *Handler) GetApiV1RegionsRegionNameImages(w http.ResponseWriter, r *http.Request, regionName generated.RegionNameParameter) {
-	provider, err := region.NewClient(h.client).Provider(r.Context(), regionName)
+func (h *Handler) GetApiV1RegionsRegionIDImages(w http.ResponseWriter, r *http.Request, regionID openapi.RegionIDParameter) {
+	provider, err := region.NewClient(h.client).Provider(r.Context(), regionID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -328,14 +328,14 @@ func (h *Handler) GetApiV1RegionsRegionNameImages(w http.ResponseWriter, r *http
 	// Apply ordering guarantees.
 	sort.Stable(result)
 
-	out := make(generated.Images, 0, len(result))
+	out := make(openapi.Images, 0, len(result))
 
 	for _, r := range result {
-		out = append(out, generated.Image{
+		out = append(out, openapi.Image{
 			Name:     r.Name,
 			Created:  r.Created,
 			Modified: r.Modified,
-			Versions: generated.ImageVersions{
+			Versions: openapi.ImageVersions{
 				Kubernetes: r.KubernetesVersion,
 			},
 		})
