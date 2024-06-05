@@ -139,15 +139,27 @@ spec:
 
 #### Installing Unikorn
 
-**NOTE**: Unikorn Server is not installed by default, see below for details.
-
-Then install Unikorn:
+Unikorn Server uses OIDC (oauth2) to authenticate API requests.
+You must deploy [Unikorn Identity](https://github.com/unikorn-cloud/identity) first in order to use it.
 
 <details>
 <summary>Helm</summary>
 
+Create a `values.yaml` for the server component:
+A typical `values.yaml` that uses cert-manager and ACME, and external DNS could look like:
+
+```yaml
+server:
+  ingress:
+    host: unikorn.unikorn-cloud.org
+    clusterIssuer: letsencrypt-production
+    externalDns: true
+  oidc:
+    issuer: https://identity.unikorn-cloud.org
+```
+
 ```shell
-helm install unikorn charts/unikorn --namespace unikorn --create-namespace
+helm install unikorn charts/unikorn --namespace unikorn --create-namespace --values values.yaml
 ```
 </details>
 
@@ -177,38 +189,6 @@ spec:
     - CreateNamespace=true
 ```
 </details>
-
-#### Installing Unikorn Server
-
-To enable it add the parameter `--set server.enabled=true`.
-This will install a developer version of the server with a self-signed certificate.
-
-Rudimentary support exists for ACME certificates using the DNS01 protocol.
-Only Cloudflare has been implemented and tested.
-
-A typical `values.yaml` that uses ACME could look like:
-
-```yaml
-server:
-  enabled: true
-  ingress:
-    host: unikorn.unikorn-cloud.org
-  oidc:
-    issuer: https://identity.unikorn-cloud.org
-```
-
-The host defines the X.509 SAN, and indeed the host the Ingress will respond to.
-There is no automated DDNS yet, so you will need to manually add the A record when the ingress comes up.
-
-Unikorn Server uses OIDC (oauth2) to authenticate API requests.
-YOu must deploy [Unikorn Identity](https://github.com/unikorn-cloud/identity) first in order to use it.
-
-#### Installing Unikorn UI
-
-To enable Unikorn UI `--set ui.enabled=true`.
-This only enables the ingress route for now.
-You will also need to install the UI using Helm as described in the [unikorn-ui repository](https://github.com/unikorn-cloud/ui).
-It **must** be installed in the same namespace as Unikorn server in order for the service to be seen by the Ingress.
 
 ## Monitoring & Logging
 

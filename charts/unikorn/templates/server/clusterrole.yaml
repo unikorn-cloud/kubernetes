@@ -1,0 +1,56 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: unikorn-server
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
+rules:
+# Orchestrate Unikorn resources (my job).
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - clustermanagers
+  - kubernetesclusters
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - patch
+  - delete
+- apiGroups:
+  - unikorn-cloud.org
+  resources:
+  - regions
+  - clustermanagerapplicationbundles
+  - kubernetesclusterapplicationbundles
+  - helmapplications
+  verbs:
+  - list
+  - watch
+# Find project namespaces
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - list
+  - watch
+# Get secrets, ugh, for kubeconfigs.
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - get
+  - list
+  - watch

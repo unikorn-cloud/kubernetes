@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: unikorn-server
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
+  annotations:
+  {{- if .Values.server.ingress.clusterIssuer }}
+    cert-manager.io/cluster-issuer: {{ .Values.server.ingress.clusterIssuer | indent 2 }}
+  {{- else if .Values.server.ingress.issuer }}
+    cert-manager.io/issuer: {{ .Values.server.ingress.issuer }}
+  {{- else }}
+    cert-manager.io/issuer: unikorn-server-ingress
+  {{- end }}
+  {{- if .Values.server.ingress.externalDns }}
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.server.ingress.host }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.server.ingress.class }}
+  # For development you will want to add these names to /etc/hosts for the ingress
+  # endpoint address.
+  tls:
+  - hosts:
+    - {{ .Values.server.ingress.host }}
+    secretName: unikorn-server-ingress-tls
+  rules:
+  # The the UI is written as a JAMstack application, so the API is accessed via
+  # the same host to avoid CORS, and therefore uses routing to hit the correct
+  # service.
+  - host: {{ .Values.server.ingress.host }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: unikorn-server
+            port:
+              name: http
