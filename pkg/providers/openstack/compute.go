@@ -19,7 +19,6 @@ package openstack
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
@@ -27,13 +26,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
-	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/availabilityzones"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/flavors"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/keypairs"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servergroups"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
@@ -52,12 +50,12 @@ type ComputeClient struct {
 	options *unikornv1.RegionOpenstackComputeSpec
 	client  *gophercloud.ServiceClient
 
-	flavorCache *cache.TimeoutCache[[]Flavor]
+	flavorCache *cache.TimeoutCache[[]flavors.Flavor]
 }
 
 // NewComputeClient provides a simple one-liner to start computing.
 func NewComputeClient(ctx context.Context, provider CredentialProvider, options *unikornv1.RegionOpenstackComputeSpec) (*ComputeClient, error) {
-	providerClient, err := provider.Client()
+	providerClient, err := provider.Client(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +72,7 @@ func NewComputeClient(ctx context.Context, provider CredentialProvider, options 
 	c := &ComputeClient{
 		options:     options,
 		client:      client,
-		flavorCache: cache.New[[]Flavor](time.Hour),
+		flavorCache: cache.New[[]flavors.Flavor](time.Hour),
 	}
 
 	return c, nil
@@ -87,7 +85,7 @@ func (c *ComputeClient) KeyPairs(ctx context.Context) ([]keypairs.KeyPair, error
 	_, span := tracer.Start(ctx, "/compute/v2/os-keypairs", trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
-	page, err := keypairs.List(c.client, &keypairs.ListOpts{}).AllPages()
+	page, err := keypairs.List(c.client, &keypairs.ListOpts{}).AllPages(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -95,56 +93,10 @@ func (c *ComputeClient) KeyPairs(ctx context.Context) ([]keypairs.KeyPair, error
 	return keypairs.ExtractKeyPairs(page)
 }
 
-// Flavor defines an extended set of flavor information not included
-// by default in gophercloud.
-type Flavor struct {
-	flavors.Flavor
-
-	ExtraSpecs map[string]string
-}
-
-// UnmarshalJSON is required because "flavors.Flavor" already defines
-// this, and it will undergo method promotion.
-func (f *Flavor) UnmarshalJSON(b []byte) error {
-	// Unmarshal the native type using its UnmarshalJSON.
-	if err := json.Unmarshal(b, &f.Flavor); err != nil {
-		return err
-	}
-
-	// Create a new anonymous structure, and unmarshal the custom fields
-	// into that, so we don't end up in an infinite loop.
-	var s struct {
-		//nolint:tagliatelle
-		ExtraSpecs map[string]string `json:"extra_specs"`
-	}
-
-	if err := json.Unmarshal(b, &s); err != nil {
-		return err
-	}
-
-	// Copy from the anonymous struct to our flavor definition.
-	f.ExtraSpecs = s.ExtraSpecs
-
-	return nil
-}
-
-// ExtractFlavors takes raw JSON and decodes it into our custom
-// flavour struct.
-func ExtractFlavors(r pagination.Page) ([]Flavor, error) {
-	var s struct {
-		Flavors []Flavor `json:"flavors"`
-	}
-
-	//nolint:forcetypeassert
-	err := (r.(flavors.FlavorPage)).ExtractInto(&s)
-
-	return s.Flavors, err
-}
-
 // Flavors returns a list of flavors.
 //
 //nolint:cyclop
-func (c *ComputeClient) Flavors(ctx context.Context) ([]Flavor, error) {
+func (c *ComputeClient) Flavors(ctx context.Context) ([]flavors.Flavor, error) {
 	if result, ok := c.flavorCache.Get(); ok {
 		return result, nil
 	}
@@ -154,17 +106,17 @@ func (c *ComputeClient) Flavors(ctx context.Context) ([]Flavor, error) {
 	_, span := tracer.Start(ctx, "/compute/v2/flavors", trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
-	page, err := flavors.ListDetail(c.client, &flavors.ListOpts{SortKey: "name"}).AllPages()
+	page, err := flavors.ListDetail(c.client, &flavors.ListOpts{SortKey: "name"}).AllPages(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	flavors, err := ExtractFlavors(page)
+	result, err := flavors.ExtractFlavors(page)
 	if err != nil {
 		return nil, err
 	}
 
-	flavors = slices.DeleteFunc(flavors, func(flavor Flavor) bool {
+	result = slices.DeleteFunc(result, func(flavor flavors.Flavor) bool {
 		// We are admin, so see all the things, throw out private flavors.
 		// TODO: we _could_ allow if our project is in the allowed IDs.
 		if !flavor.IsPublic {
@@ -199,9 +151,9 @@ func (c *ComputeClient) Flavors(ctx context.Context) ([]Flavor, error) {
 		return false
 	})
 
-	c.flavorCache.Set(flavors)
+	c.flavorCache.Set(result)
 
-	return flavors, nil
+	return result, nil
 }
 
 // GPUMeta describes GPUs.
@@ -252,7 +204,7 @@ func (c *ComputeClient) extraSpecToGPUs(name, value string) (int, error) {
 // FlavorGPUs returns metadata about GPUs, e.g. the number of GPUs.  Sadly there is absolutely
 // no way of assiging metadata to flavors without having to add those same values to your host
 // aggregates, so we have to have knowledge of flavors built in somewhere.
-func (c *ComputeClient) FlavorGPUs(flavor *Flavor) (GPUMeta, error) {
+func (c *ComputeClient) FlavorGPUs(flavor *flavors.Flavor) (GPUMeta, error) {
 	var result GPUMeta
 
 	for name, value := range flavor.ExtraSpecs {
@@ -280,7 +232,7 @@ func (c *ComputeClient) AvailabilityZones(ctx context.Context) ([]availabilityzo
 	_, span := tracer.Start(ctx, "/compute/v2/os-availability-zones", trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
-	page, err := availabilityzones.List(c.client).AllPages()
+	page, err := availabilityzones.List(c.client).AllPages(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -310,7 +262,7 @@ func (c *ComputeClient) ListServerGroups(ctx context.Context) ([]servergroups.Se
 	_, span := tracer.Start(ctx, "/compute/v2/os-server-groups", trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
-	page, err := servergroups.List(c.client, &servergroups.ListOpts{}).AllPages()
+	page, err := servergroups.List(c.client, &servergroups.ListOpts{}).AllPages(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -335,5 +287,5 @@ func (c *ComputeClient) CreateServerGroup(ctx context.Context, name string) (*se
 		opts.Policy = *c.options.ServerGroupPolicy
 	}
 
-	return servergroups.Create(c.client, opts).Extract()
+	return servergroups.Create(ctx, c.client, opts).Extract()
 }
