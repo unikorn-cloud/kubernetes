@@ -36,6 +36,7 @@ import (
 	"github.com/unikorn-cloud/core/pkg/server/middleware/openapi/oidc"
 	"github.com/unikorn-cloud/core/pkg/server/middleware/opentelemetry"
 	"github.com/unikorn-cloud/core/pkg/server/middleware/timeout"
+	"github.com/unikorn-cloud/unikorn/pkg/clients/region"
 	"github.com/unikorn-cloud/unikorn/pkg/constants"
 	"github.com/unikorn-cloud/unikorn/pkg/openapi"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler"
@@ -60,6 +61,9 @@ type Server struct {
 
 	// CORSOptions are for remote resource sharing.
 	CORSOptions cors.Options
+
+	// RegionOptions are for the region controller.
+	RegionOptions region.Options
 }
 
 func (s *Server) AddFlags(goflags *flag.FlagSet, flags *pflag.FlagSet) {
@@ -69,6 +73,7 @@ func (s *Server) AddFlags(goflags *flag.FlagSet, flags *pflag.FlagSet) {
 	s.HandlerOptions.AddFlags(flags)
 	s.AuthorizerOptions.AddFlags(flags)
 	s.CORSOptions.AddFlags(flags)
+	s.RegionOptions.AddFlags(flags)
 }
 
 func (s *Server) SetupLogging() {
@@ -153,7 +158,7 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 		},
 	}
 
-	handlerInterface, err := handler.New(client, &s.HandlerOptions, &s.AuthorizerOptions)
+	handlerInterface, err := handler.New(client, &s.HandlerOptions, &s.AuthorizerOptions, &s.RegionOptions)
 	if err != nil {
 		return nil, err
 	}

@@ -86,7 +86,7 @@ server:
 
   ingress:
     # Sets the ingress class to use.
-    class: nginx
+    # class: nginx
 
     # Sets the DNS hosts/X.509 Certs.
     host: unikorn.unikorn-cloud.org
@@ -116,6 +116,12 @@ server:
     # This is a base64 encoded PEM file.
     # issuerCA:
 
+  region:
+    # Region controller URL.
+    host: https://region.unikorn-cloud.org
+    # CA file if using self signed/private certificates.
+    # This is a base64 encoded PEM file.
+    # ca: 
   # Sets the OTLP endpoint for shipping spans.
   # otlpEndpoint: jaeger-collector.default:4318
 

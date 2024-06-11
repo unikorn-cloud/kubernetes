@@ -44,15 +44,6 @@ type ServerInterface interface {
 
 	// (GET /api/v1/organizations/{organizationID}/projects/{projectID}/clusters/{clusterID}/kubeconfig)
 	GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfig(w http.ResponseWriter, r *http.Request, organizationID OrganizationIDParameter, projectID ProjectIDParameter, clusterID ClusterIDParameter)
-
-	// (GET /api/v1/regions)
-	GetApiV1Regions(w http.ResponseWriter, r *http.Request)
-
-	// (GET /api/v1/regions/{regionID}/flavors)
-	GetApiV1RegionsRegionIDFlavors(w http.ResponseWriter, r *http.Request, regionID RegionIDParameter)
-
-	// (GET /api/v1/regions/{regionID}/images)
-	GetApiV1RegionsRegionIDImages(w http.ResponseWriter, r *http.Request, regionID RegionIDParameter)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -106,21 +97,6 @@ func (_ Unimplemented) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClust
 
 // (GET /api/v1/organizations/{organizationID}/projects/{projectID}/clusters/{clusterID}/kubeconfig)
 func (_ Unimplemented) GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfig(w http.ResponseWriter, r *http.Request, organizationID OrganizationIDParameter, projectID ProjectIDParameter, clusterID ClusterIDParameter) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// (GET /api/v1/regions)
-func (_ Unimplemented) GetApiV1Regions(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// (GET /api/v1/regions/{regionID}/flavors)
-func (_ Unimplemented) GetApiV1RegionsRegionIDFlavors(w http.ResponseWriter, r *http.Request, regionID RegionIDParameter) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// (GET /api/v1/regions/{regionID}/images)
-func (_ Unimplemented) GetApiV1RegionsRegionIDImages(w http.ResponseWriter, r *http.Request, regionID RegionIDParameter) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -510,79 +486,6 @@ func (siw *ServerInterfaceWrapper) GetApiV1OrganizationsOrganizationIDProjectsPr
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetApiV1Regions operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1Regions(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{})
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1Regions(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// GetApiV1RegionsRegionIDFlavors operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionIDFlavors(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// ------------- Path parameter "regionID" -------------
-	var regionID RegionIDParameter
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "regionID", runtime.ParamLocationPath, chi.URLParam(r, "regionID"), &regionID)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "regionID", Err: err})
-		return
-	}
-
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{})
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1RegionsRegionIDFlavors(w, r, regionID)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// GetApiV1RegionsRegionIDImages operation middleware
-func (siw *ServerInterfaceWrapper) GetApiV1RegionsRegionIDImages(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// ------------- Path parameter "regionID" -------------
-	var regionID RegionIDParameter
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "regionID", runtime.ParamLocationPath, chi.URLParam(r, "regionID"), &regionID)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "regionID", Err: err})
-		return
-	}
-
-	ctx = context.WithValue(ctx, Oauth2AuthenticationScopes, []string{})
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApiV1RegionsRegionIDImages(w, r, regionID)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
 type UnescapedCookieParamError struct {
 	ParamName string
 	Err       error
@@ -725,15 +628,6 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/v1/organizations/{organizationID}/projects/{projectID}/clusters/{clusterID}/kubeconfig", wrapper.GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfig)
-	})
-	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/regions", wrapper.GetApiV1Regions)
-	})
-	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/regions/{regionID}/flavors", wrapper.GetApiV1RegionsRegionIDFlavors)
-	})
-	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/v1/regions/{regionID}/images", wrapper.GetApiV1RegionsRegionIDImages)
 	})
 
 	return r

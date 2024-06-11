@@ -273,62 +273,6 @@ paths:
           $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
         '500':
           $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
-  /api/v1/regions:
-    description: |-
-      Regions define a cloud.  This may be geographical or any logical partition.
-      Either way this is the primitive that is used to associate metadata such as
-      geographical locale, an organisation's reserved blob of compute etc.
-      Each region has its own provider associated with it, for example OpenStack, and
-      its own set of credentials so things can be scoped to a specific slice of a
-      shared cloud through whatever mechanism is available on that cloud provider.
-    get:
-      description: |-
-        List all regions.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '200':
-          $ref: '#/components/responses/regionsResponse'
-        '401':
-          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
-        '500':
-          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
-  /api/v1/regions/{regionID}/flavors:
-    description: Compute flavor services.
-    parameters:
-    - $ref: '#/components/parameters/regionIDParameter'
-    get:
-      description: |-
-        Lists all compute flavors that the authenticated user has access to
-      security:
-      - oauth2Authentication: []
-      responses:
-        '200':
-          $ref: '#/components/responses/flavorsResponse'
-        '400':
-          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
-        '401':
-          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
-        '500':
-          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
-  /api/v1/regions/{regionID}/images:
-    description: Compute image services.
-    parameters:
-    - $ref: '#/components/parameters/regionIDParameter'
-    get:
-      description: |-
-        Lists all compute images that the authenticated user has access to.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '200':
-          $ref: '#/components/responses/imagesResponse'
-        '400':
-          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
-        '401':
-          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
-        '500':
-          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
 components:
   parameters:
     organizationIDParameter:
@@ -369,64 +313,12 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/kubernetesNameParameter'
-    regionIDParameter:
-      name: regionID
-      in: path
-      description: |-
-        The region name.
-      required: true
-      schema:
-        $ref: '#/components/schemas/kubernetesNameParameter'
   schemas:
     kubernetesNameParameter:
       description: A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
       type: string
       minLength: 1
       maxLength: 63
-    oauth2Error:
-      description: Generic error message.
-      type: object
-      required:
-      - error
-      - error_description
-      properties:
-        error:
-          description: A terse error string expanding on the HTTP error code. Errors are based on the OAuth2 specification, but are expanded with proprietary status codes for APIs other than those specified by OAuth2.
-          type: string
-          enum:
-          # Defined by OAuth2
-          - invalid_request
-          - unauthorized_client
-          - access_denied
-          - unsupported_response_type
-          - invalid_scope
-          - server_error
-          - temporarily_unavailable
-          - invalid_client
-          - invalid_grant
-          - unsupported_grant_type
-          # Proprietary
-          - not_found
-          - conflict
-          - method_not_allowed
-          - unsupported_media_type
-          - forbidden
-        error_description:
-          description: Verbose message describing the error.
-          type: string
-    regionRead:
-      description: A region.
-      type: object
-      required:
-      - metadata
-      properties:
-        metadata:
-          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/schemas/resourceReadMetadata'
-    regions:
-      description: A list of regions.
-      type: array
-      items:
-        $ref: '#/components/schemas/regionRead'
     clusterManagerRead:
       description: A cluster manager.
       type: object
@@ -502,8 +394,8 @@ components:
           description: Number of machines for a statically sized pool or the maximum
             for an auto-scaled pool.
           type: integer
-        flavorName:
-          description: Flavor name.
+        flavorId:
+          description: Flavor ID.
           type: string
           minLength: 1
         disk:
@@ -550,11 +442,11 @@ components:
       description: Kubernetes cluster creation parameters.
       type: object
       required:
-      - region
+      - regionId
       - version
       - workloadPools
       properties:
-        region:
+        regionId:
           description: The region to provision the cluster in.
           type: string
         clusterManager:
@@ -681,87 +573,6 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/applicationRead'
-    imageVersions:
-      description: Image version metadata.
-      type: object
-      required:
-      - kubernetes
-      - nvidiaDriver
-      properties:
-        kubernetes:
-          description: |-
-            The kubernetes semantic version.  This should be used directly when specifying
-            Kubernetes cluster managers and workload pools in a cluster specification.
-          type: string
-        nvidiaDriver:
-          description: The nvidia driver version.
-          type: string
-    image:
-      description: An image.
-      type: object
-      required:
-      - id
-      - name
-      - created
-      - modified
-      - versions
-      properties:
-        id:
-          description: The unique image ID.
-          type: string
-        name:
-          description: The image name.
-          type: string
-        created:
-          description: |-
-            Time when the image was created. Images with a newer creation time should
-            be favoured over older images as they will contain updates and fewer vulnerabilities.
-          type: string
-          format: date-time
-        modified:
-          description: Time when the image was last modified.
-          type: string
-          format: date-time
-        versions:
-          $ref: '#/components/schemas/imageVersions'
-    images:
-      description: A list of images that are compatible with this platform.
-      type: array
-      items:
-        $ref: '#/components/schemas/image'
-    flavor:
-      description: A flavor.
-      type: object
-      required:
-      - id
-      - name
-      - cpus
-      - memory
-      - disk
-      properties:
-        id:
-          description: The unique flavor ID.
-          type: string
-        name:
-          description: The flavor name.
-          type: string
-        cpus:
-          description: The number of CPUs.
-          type: integer
-        memory:
-          description: The amount of memory in GiB.
-          type: integer
-        disk:
-          description: The amount of ephemeral disk in GB.
-          type: integer
-        gpus:
-          description: The number of GPUs, if not set there are none.
-          type: integer
-    flavors:
-      description: A list of flavors.
-      type: array
-      items:
-        $ref: '#/components/schemas/flavor'
   requestBodies:
     createControlPlaneRequest:
       description: Control plane request parameters.
@@ -784,29 +595,16 @@ components:
             metadata:
               name: cluster
             spec:
-              region: uk-east-1
+              regionId: b059b3e6-9ae5-42b7-94b4-f42fb7a6baee
               version: v1.27.2
               workloadPools:
               - autoscaling:
                   minimumReplicas: 0
                 machine:
-                  flavorName: g.4.highmem.a100.1g.10gb
+                  flavorId: c7568e2d-f9ab-453d-9a3a-51375f78426b
                   replicas: 3
                 name: default
   responses:
-    regionsResponse:
-      description: A list of regions.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/regions'
-          example:
-          - metadata:
-              id: c7568e2d-f9ab-453d-9a3a-51375f78426b
-              name: uk-west
-              description: An oxymoronic tier-3 datacenter based in Liverpool.
-              creationTime: 2023-07-31T10:45:45Z
-              provisioningStatus: provisioned
     clusterManagerResponse:
       description: A cluster manager.
       content:
@@ -854,7 +652,7 @@ components:
               creationTime: 2023-07-31T10:45:45Z
               provisioningStatus: provisioned
             spec:
-              region: uk-east-1
+              regionId: b059b3e6-9ae5-42b7-94b4-f42fb7a6baee
               version: v1.27.2
               clusterManager: b85525fc-40ca-482b-ac07-eca8b01b09c2
               workloadPools:
@@ -862,7 +660,7 @@ components:
                 machine:
                   disk:
                     size: 50
-                  flavorName: g.4.highmem.a100.1g.10gb
+                  flavorId: c7568e2d-f9ab-453d-9a3a-51375f78426b
                   replicas: 3
     applicationResponse:
       description: A list of available applications.
@@ -887,33 +685,6 @@ components:
               license: Apache-2.0 License
               versions:
               - version: 1.5.1
-    imagesResponse:
-      description: A list of images that are compatible with this platform.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/images'
-          example:
-          - created: 2023-02-22T12:04:13Z
-            id: a64f9269-36e0-4312-b8d1-52d93d569b7b
-            modified: 2023-02-22T12:15:18Z
-            name: ubu2204-v1.25.6-gpu-525.85.05-7ced4154
-            versions:
-              kubernetes: v1.25.6
-              nvidiaDriver: 525.85.05
-    flavorsResponse:
-      description: A list of flavors.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/flavors'
-          example:
-          - cpus: 4
-            disk: 20
-            gpus: 1
-            id: 9a8c6370-4065-4d4a-9da0-7678df40cd9d
-            memory: 32
-            name: g.4.highmem.a100.1g.10gb
   securitySchemes:
     oauth2Authentication:
       description: Operation requires OAuth2 bearer token authentication.

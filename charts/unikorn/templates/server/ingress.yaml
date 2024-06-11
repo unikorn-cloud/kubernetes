@@ -12,11 +12,17 @@ metadata:
   {{- else }}
     cert-manager.io/issuer: unikorn-server-ingress
   {{- end }}
-  {{- if .Values.server.ingress.externalDns }}
-    external-dns.alpha.kubernetes.io/hostname: {{ .Values.server.ingress.host }}
+  {{- with $ingress := .Values.server.ingress }}
+  {{- if $ingress.externalDns }}
+    external-dns.alpha.kubernetes.io/hostname: {{ .ingress.host }}
+  {{- end }}
   {{- end }}
 spec:
-  ingressClassName: {{ .Values.server.ingress.class }}
+  {{- with $ingress := .Values.server.ingress }}
+  {{- if $ingress.class }}
+  ingressClassName: {{ $ingress.class }}
+  {{- end }}
+  {{- end }}
   # For development you will want to add these names to /etc/hosts for the ingress
   # endpoint address.
   tls:

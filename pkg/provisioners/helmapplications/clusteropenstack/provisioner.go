@@ -52,8 +52,8 @@ var _ application.PostProvisionHook = &Provisioner{}
 // expected by the underlying Helm chart.
 func (p *Provisioner) generateMachineHelmValues(machine *unikornv1.MachineGeneric, failureDomain *string) map[string]interface{} {
 	object := map[string]interface{}{
-		"image":  *machine.Image,
-		"flavor": *machine.Flavor,
+		"imageID":  *machine.ImageID,
+		"flavorID": *machine.FlavorID,
 	}
 
 	if failureDomain != nil {
@@ -184,9 +184,12 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 	}
 
 	openstackValues := map[string]interface{}{
-		"cloud":             *cluster.Spec.Openstack.Cloud,
-		"cloudsYAML":        base64.StdEncoding.EncodeToString(*cluster.Spec.Openstack.CloudConfig),
-		"externalNetworkID": *cluster.Spec.Openstack.ExternalNetworkID,
+		"cloud":      *cluster.Spec.Openstack.Cloud,
+		"cloudsYAML": base64.StdEncoding.EncodeToString(*cluster.Spec.Openstack.CloudConfig),
+	}
+
+	if cluster.Spec.Openstack.ExternalNetworkID != nil {
+		openstackValues["externalNetworkID"] = *cluster.Spec.Openstack.ExternalNetworkID
 	}
 
 	if cluster.Spec.Openstack.CACert != nil {

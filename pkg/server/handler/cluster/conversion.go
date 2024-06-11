@@ -28,9 +28,9 @@ import (
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util"
+	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/unikorn/pkg/openapi"
-	"github.com/unikorn-cloud/unikorn/pkg/providers"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
 
 	corev1 "k8s.io/api/core/v1"
@@ -44,8 +44,8 @@ var (
 // convertMachine converts from a custom resource into the API definition.
 func convertMachine(in *unikornv1.MachineGeneric) *openapi.MachinePool {
 	machine := &openapi.MachinePool{
-		Replicas:   in.Replicas,
-		FlavorName: in.Flavor,
+		Replicas: in.Replicas,
+		FlavorId: in.FlavorID,
 	}
 
 	if in.DiskSize != nil {
@@ -99,7 +99,7 @@ func (c *Client) convert(in *unikornv1.KubernetesCluster) *openapi.KubernetesClu
 	out := &openapi.KubernetesClusterRead{
 		Metadata: conversion.ProjectScopedResourceReadMetadata(in, provisioningStatus),
 		Spec: openapi.KubernetesClusterSpec{
-			Region:         in.Spec.Region,
+			RegionId:       in.Spec.RegionID,
 			ClusterManager: &in.Spec.ClusterManager,
 			Version:        string(*in.Spec.Version),
 			WorkloadPools:  convertWorkloadPools(in),
@@ -150,13 +150,15 @@ func (c *Client) defaultApplicationBundle(ctx context.Context) (*unikornv1.Kuber
 // one that doesxn't have any GPUs.  The provider ensures the "nost cost-effective"
 // comes first.
 // TODO: we should allow this to be configured per region.
-func (c *Client) defaultControlPlaneFlavor(ctx context.Context, provider providers.Provider) (*providers.Flavor, error) {
-	flavors, err := provider.Flavors(ctx)
+func (c *Client) defaultControlPlaneFlavor(ctx context.Context, region regionapi.ClientWithResponsesInterface, regionID string) (*regionapi.Flavor, error) {
+	resp, err := region.GetApiV1RegionsRegionIDFlavorsWithResponse(ctx, regionID)
 	if err != nil {
 		return nil, err
 	}
 
-	flavors = slices.DeleteFunc(flavors, func(x providers.Flavor) bool { return x.GPUs != 0 })
+	flavors := *resp.JSON200
+
+	flavors = slices.DeleteFunc(flavors, func(x regionapi.Flavor) bool { return x.Spec.Gpu != nil })
 
 	if len(flavors) == 0 {
 		return nil, errors.OAuth2ServerError("unable to select a control plane flavor")
@@ -167,15 +169,16 @@ func (c *Client) defaultControlPlaneFlavor(ctx context.Context, provider provide
 
 // defaultImage returns a default image for either control planes or workload pools
 // based on the specified Kubernetes version.
-func (c *Client) defaultImage(ctx context.Context, provider providers.Provider, version string) (*providers.Image, error) {
-	// Images will be
-	images, err := provider.Images(ctx)
+func (c *Client) defaultImage(ctx context.Context, region regionapi.ClientWithResponsesInterface, regionID, version string) (*regionapi.Image, error) {
+	resp, err := region.GetApiV1RegionsRegionIDImagesWithResponse(ctx, regionID)
 	if err != nil {
 		return nil, err
 	}
 
-	images = slices.DeleteFunc(images, func(x providers.Image) bool {
-		return x.KubernetesVersion != version
+	images := *resp.JSON200
+
+	images = slices.DeleteFunc(images, func(x regionapi.Image) bool {
+		return x.Spec.SoftwareVersions == nil || x.Spec.SoftwareVersions.Kubernetes == nil || *x.Spec.SoftwareVersions.Kubernetes != version
 	})
 
 	if len(images) == 0 {
@@ -205,20 +208,21 @@ func (c *Client) generateNetwork() *unikornv1.KubernetesClusterNetworkSpec {
 }
 
 // generateMachineGeneric generates a generic machine part of the cluster.
-func (c *Client) generateMachineGeneric(ctx context.Context, provider providers.Provider, options *openapi.KubernetesClusterSpec, m *openapi.MachinePool) (*unikornv1.MachineGeneric, error) {
+func (c *Client) generateMachineGeneric(ctx context.Context, region regionapi.ClientWithResponsesInterface, options *openapi.KubernetesClusterSpec, m *openapi.MachinePool, flavorName string) (*unikornv1.MachineGeneric, error) {
 	if m.Replicas == nil {
 		m.Replicas = util.ToPointer(3)
 	}
 
-	image, err := c.defaultImage(ctx, provider, options.Version)
+	image, err := c.defaultImage(ctx, region, options.RegionId, options.Version)
 	if err != nil {
 		return nil, err
 	}
 
 	machine := &unikornv1.MachineGeneric{
 		Replicas: m.Replicas,
-		Image:    util.ToPointer(image.Name),
-		Flavor:   m.FlavorName,
+		ImageID:  util.ToPointer(image.Metadata.Id),
+		// TODO: this is a hack because CAPO is "broken".
+		FlavorID: &flavorName,
 	}
 
 	if m.Disk != nil {
@@ -234,18 +238,18 @@ func (c *Client) generateMachineGeneric(ctx context.Context, provider providers.
 }
 
 // generateControlPlane generates the control plane part of a cluster.
-func (c *Client) generateControlPlane(ctx context.Context, provider providers.Provider, options *openapi.KubernetesClusterSpec) (*unikornv1.KubernetesClusterControlPlaneSpec, error) {
+func (c *Client) generateControlPlane(ctx context.Context, region regionapi.ClientWithResponsesInterface, options *openapi.KubernetesClusterSpec) (*unikornv1.KubernetesClusterControlPlaneSpec, error) {
 	// Add in any missing defaults.
-	resource, err := c.defaultControlPlaneFlavor(ctx, provider)
+	resource, err := c.defaultControlPlaneFlavor(ctx, region, options.RegionId)
 	if err != nil {
 		return nil, err
 	}
 
 	machineOptions := &openapi.MachinePool{
-		FlavorName: &resource.Name,
+		FlavorId: &resource.Metadata.Id,
 	}
 
-	machine, err := c.generateMachineGeneric(ctx, provider, options, machineOptions)
+	machine, err := c.generateMachineGeneric(ctx, region, options, machineOptions, resource.Metadata.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -258,13 +262,18 @@ func (c *Client) generateControlPlane(ctx context.Context, provider providers.Pr
 }
 
 // generateWorkloadPools generates the workload pools part of a cluster.
-func (c *Client) generateWorkloadPools(ctx context.Context, provider providers.Provider, options *openapi.KubernetesClusterSpec) (*unikornv1.KubernetesClusterWorkloadPoolsSpec, error) {
+func (c *Client) generateWorkloadPools(ctx context.Context, region regionapi.ClientWithResponsesInterface, options *openapi.KubernetesClusterSpec) (*unikornv1.KubernetesClusterWorkloadPoolsSpec, error) {
 	workloadPools := &unikornv1.KubernetesClusterWorkloadPoolsSpec{}
 
 	for i := range options.WorkloadPools {
 		pool := &options.WorkloadPools[i]
 
-		machine, err := c.generateMachineGeneric(ctx, provider, options, &pool.Machine)
+		flavor, err := lookupFlavor(ctx, region, options.RegionId, *pool.Machine.FlavorId)
+		if err != nil {
+			return nil, err
+		}
+
+		machine, err := c.generateMachineGeneric(ctx, region, options, &pool.Machine, flavor.Metadata.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -284,7 +293,7 @@ func (c *Client) generateWorkloadPools(ctx context.Context, provider providers.P
 		// the flavor used in validation, this prevents having to surface this
 		// complexity to the client via the API.
 		if pool.Autoscaling != nil {
-			flavor, err := lookupFlavor(ctx, provider, *machine.Flavor)
+			memory, err := resource.ParseQuantity(fmt.Sprintf("%dGi", flavor.Spec.Memory))
 			if err != nil {
 				return nil, err
 			}
@@ -293,19 +302,19 @@ func (c *Client) generateWorkloadPools(ctx context.Context, provider providers.P
 				MinimumReplicas: &pool.Autoscaling.MinimumReplicas,
 				MaximumReplicas: pool.Machine.Replicas,
 				Scheduler: &unikornv1.MachineGenericAutoscalingScheduler{
-					CPU:    &flavor.CPUs,
-					Memory: flavor.Memory,
+					CPU:    &flavor.Spec.Cpus,
+					Memory: &memory,
 				},
 			}
 
-			if flavor.GPUs > 0 {
+			if flavor.Spec.Gpu != nil {
 				// TODO: this is needed for scale from zero, at no point do the docs
 				// mention AMD...
 				t := "nvidia.com/gpu"
 
 				workloadPool.Autoscaling.Scheduler.GPU = &unikornv1.MachineGenericAutoscalingSchedulerGPU{
 					Type:  &t,
-					Count: &flavor.GPUs,
+					Count: &flavor.Spec.Gpu.Count,
 				}
 			}
 		}
@@ -318,18 +327,20 @@ func (c *Client) generateWorkloadPools(ctx context.Context, provider providers.P
 
 // lookupFlavor resolves the flavor from its name.
 // NOTE: It looks like garbage performance, but the provider should be memoized...
-func lookupFlavor(ctx context.Context, provider providers.Provider, name string) (*providers.Flavor, error) {
-	flavors, err := provider.Flavors(ctx)
+func lookupFlavor(ctx context.Context, region regionapi.ClientWithResponsesInterface, regionID, id string) (*regionapi.Flavor, error) {
+	resp, err := region.GetApiV1RegionsRegionIDFlavorsWithResponse(ctx, regionID)
 	if err != nil {
 		return nil, err
 	}
 
-	index := slices.IndexFunc(flavors, func(flavor providers.Flavor) bool {
-		return flavor.Name == name
+	flavors := *resp.JSON200
+
+	index := slices.IndexFunc(flavors, func(flavor regionapi.Flavor) bool {
+		return flavor.Metadata.Id == id
 	})
 
 	if index < 0 {
-		return nil, fmt.Errorf("%w: flavor %s", ErrResourceLookup, name)
+		return nil, fmt.Errorf("%w: flavor %s", ErrResourceLookup, id)
 	}
 
 	return &flavors[index], nil
@@ -337,14 +348,14 @@ func lookupFlavor(ctx context.Context, provider providers.Provider, name string)
 
 // installNvidiaOperator installs the nvidia operator if any workload pool flavor
 // has a GPU in it.
-func installNvidiaOperator(ctx context.Context, provider providers.Provider, cluster *unikornv1.KubernetesCluster) error {
-	for _, pool := range cluster.Spec.WorkloadPools.Pools {
-		flavor, err := lookupFlavor(ctx, provider, *pool.MachineGeneric.Flavor)
+func installNvidiaOperator(ctx context.Context, region regionapi.ClientWithResponsesInterface, request *openapi.KubernetesClusterWrite, cluster *unikornv1.KubernetesCluster) error {
+	for _, pool := range request.Spec.WorkloadPools {
+		flavor, err := lookupFlavor(ctx, region, request.Spec.RegionId, *pool.Machine.FlavorId)
 		if err != nil {
 			return err
 		}
 
-		if flavor.GPUs > 0 {
+		if flavor.Spec.Gpu != nil {
 			cluster.Spec.Features.NvidiaOperator = util.ToPointer(true)
 
 			return nil
@@ -368,13 +379,13 @@ func installClusterAutoscaler(cluster *unikornv1.KubernetesCluster) {
 }
 
 // generate generates the full cluster custom resource.
-func (c *Client) generate(ctx context.Context, provider providers.Provider, namespace *corev1.Namespace, organizationID, projectID string, request *openapi.KubernetesClusterWrite) (*unikornv1.KubernetesCluster, error) {
-	kubernetesControlPlane, err := c.generateControlPlane(ctx, provider, &request.Spec)
+func (c *Client) generate(ctx context.Context, region regionapi.ClientWithResponsesInterface, namespace *corev1.Namespace, organizationID, projectID string, request *openapi.KubernetesClusterWrite) (*unikornv1.KubernetesCluster, error) {
+	kubernetesControlPlane, err := c.generateControlPlane(ctx, region, &request.Spec)
 	if err != nil {
 		return nil, err
 	}
 
-	kubernetesWorkloadPools, err := c.generateWorkloadPools(ctx, provider, &request.Spec)
+	kubernetesWorkloadPools, err := c.generateWorkloadPools(ctx, region, &request.Spec)
 	if err != nil {
 		return nil, err
 	}
@@ -384,17 +395,12 @@ func (c *Client) generate(ctx context.Context, provider providers.Provider, name
 		return nil, err
 	}
 
-	version := request.Spec.Version
-	if version[0] != 'v' {
-		version = "v" + version
-	}
-
 	cluster := &unikornv1.KubernetesCluster{
 		ObjectMeta: conversion.ProjectScopedObjectMetadata(&request.Metadata, namespace.Name, organizationID, projectID),
 		Spec: unikornv1.KubernetesClusterSpec{
-			Region:                       request.Spec.Region,
+			RegionID:                     request.Spec.RegionId,
 			ClusterManager:               *request.Spec.ClusterManager,
-			Version:                      util.ToPointer(unikornv1.SemanticVersion(version)),
+			Version:                      util.ToPointer(unikornv1.SemanticVersion(request.Spec.Version)),
 			ApplicationBundle:            &applicationBundle.Name,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
 			Network:                      c.generateNetwork(),
@@ -406,7 +412,7 @@ func (c *Client) generate(ctx context.Context, provider providers.Provider, name
 
 	installClusterAutoscaler(cluster)
 
-	if err := installNvidiaOperator(ctx, provider, cluster); err != nil {
+	if err := installNvidiaOperator(ctx, region, request, cluster); err != nil {
 		return nil, err
 	}
 

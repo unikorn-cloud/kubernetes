@@ -19,22 +19,26 @@ package cluster
 
 import (
 	"context"
+	"encoding/base64"
 	goerrors "errors"
 	"net"
+	"net/http"
 	"slices"
 
 	"github.com/spf13/pflag"
 
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
+	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util"
+	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/unikorn/pkg/clients/region"
 	"github.com/unikorn-cloud/unikorn/pkg/openapi"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/vcluster"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/clustermanager"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/common"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/region"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/scoping"
 
 	corev1 "k8s.io/api/core/v1"
@@ -71,13 +75,17 @@ type Client struct {
 
 	// options control various defaults and the like.
 	options *Options
+
+	// regionOptions are for the region controller.
+	regionOptions *region.Options
 }
 
 // NewClient returns a new client with required parameters.
-func NewClient(client client.Client, options *Options) *Client {
+func NewClient(client client.Client, options *Options, regionOptions *region.Options) *Client {
 	return &Client{
-		client:  client,
-		options: options,
+		client:        client,
+		options:       options,
+		regionOptions: regionOptions,
 	}
 }
 
@@ -201,6 +209,75 @@ func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Open
 }
 */
 
+func createIdentity(ctx context.Context, region regionapi.ClientWithResponsesInterface, regionID, organizationID, projectID, clusterID string) (*regionapi.IdentityRead, error) {
+	request := regionapi.PostApiV1RegionsRegionIDIdentitiesJSONRequestBody{
+		OrganizationId: organizationID,
+		ProjectId:      projectID,
+		ClusterId:      clusterID,
+	}
+
+	resp, err := region.PostApiV1RegionsRegionIDIdentitiesWithResponse(ctx, regionID, request)
+	if err != nil {
+		return nil, errors.OAuth2ServerError("unable to create identity").WithError(err)
+	}
+
+	if resp.StatusCode() != http.StatusCreated {
+		return nil, errors.OAuth2ServerError("unable to create identity")
+	}
+
+	return resp.JSON201, nil
+}
+
+func getExternalNetworks(ctx context.Context, region regionapi.ClientWithResponsesInterface, regionID string) (regionapi.ExternalNetworks, error) {
+	resp, err := region.GetApiV1RegionsRegionIDExternalnetworksWithResponse(ctx, regionID)
+	if err != nil {
+		return nil, errors.OAuth2ServerError("unable to get external networks").WithError(err)
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return nil, errors.OAuth2ServerError("unable to get external networks")
+	}
+
+	return *resp.JSON200, nil
+}
+
+func applyCloudSpecificConfiguration(ctx context.Context, region regionapi.ClientWithResponsesInterface, regionID string, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
+	// Save the identity ID for later cleanup.
+	if cluster.Annotations == nil {
+		cluster.Annotations = map[string]string{}
+	}
+
+	cluster.Annotations[constants.CloudIdentityAnnotation] = identity.Metadata.Id
+
+	// Setup the provider specific stuff, this should be as minial as possible!
+	switch identity.Spec.Type {
+	case regionapi.Openstack:
+		externalNetworks, err := getExternalNetworks(ctx, region, regionID)
+		if err != nil {
+			return err
+		}
+
+		if len(externalNetworks) == 0 {
+			return errors.OAuth2ServerError("no external networks present")
+		}
+
+		cloudConfig, err := base64.URLEncoding.DecodeString(identity.Spec.Openstack.CloudConfig)
+		if err != nil {
+			return errors.OAuth2ServerError("failed to decode cloud config").WithError(err)
+		}
+
+		cluster.Spec.Openstack = &unikornv1.KubernetesClusterOpenstackSpec{
+			Cloud:             &identity.Spec.Openstack.Cloud,
+			CloudConfig:       &cloudConfig,
+			ExternalNetworkID: &externalNetworks[0].Id,
+		}
+	default:
+		return errors.OAuth2ServerError("unhandled provider type")
+	}
+
+	return nil
+}
+
 // Create creates the implicit cluster indentified by the JTW claims.
 func (c *Client) Create(ctx context.Context, organizationID, projectID string, request *openapi.KubernetesClusterWrite) error {
 	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationID, projectID)
@@ -218,21 +295,22 @@ func (c *Client) Create(ctx context.Context, organizationID, projectID string, r
 		request.Spec.ClusterManager = util.ToPointer(clusterManager.Name)
 	}
 
-	if namespace.DeletionTimestamp != nil {
-		return errors.OAuth2InvalidRequest("control plane is being deleted")
-	}
-
-	provider, err := region.NewClient(c.client).Provider(ctx, request.Spec.Region)
+	region, err := region.New(c.regionOptions)
 	if err != nil {
 		return err
 	}
 
-	cluster, err := c.generate(ctx, provider, namespace, organizationID, projectID, request)
+	cluster, err := c.generate(ctx, region, namespace, organizationID, projectID, request)
 	if err != nil {
 		return err
 	}
 
-	if err := provider.ConfigureCluster(ctx, cluster); err != nil {
+	identity, err := createIdentity(ctx, region, request.Spec.RegionId, organizationID, projectID, cluster.Name)
+	if err != nil {
+		return err
+	}
+
+	if err := applyCloudSpecificConfiguration(ctx, region, request.Spec.RegionId, identity, cluster); err != nil {
 		return err
 	}
 
@@ -293,12 +371,7 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 		return err
 	}
 
-	provider, err := region.NewClient(c.client).Provider(ctx, request.Spec.Region)
-	if err != nil {
-		return err
-	}
-
-	required, err := c.generate(ctx, provider, namespace, organizationID, projectID, request)
+	required, err := c.generate(ctx, nil, namespace, organizationID, projectID, request)
 	if err != nil {
 		return err
 	}

@@ -311,9 +311,9 @@ type ClusterManagerStatus struct {
 // Kubernetes cluster manager nodes and workload pools.
 type MachineGeneric struct {
 	// Image is the OpenStack Glance image to deploy with.
-	Image *string `json:"image"`
+	ImageID *string `json:"imageId"`
 	// Flavor is the OpenStack Nova flavor to deploy with.
-	Flavor *string `json:"flavor"`
+	FlavorID *string `json:"flavorId"`
 	// DiskSize is the persistent root disk size to deploy with.  This
 	// overrides the default ephemeral disk size defined in the flavor.
 	DiskSize *resource.Quantity `json:"diskSize,omitempty"`
@@ -432,7 +432,7 @@ type KubernetesClusterSpec struct {
 	// Pause, if true, will inhibit reconciliation.
 	Pause bool `json:"pause,omitempty"`
 	// Region to provision the cluster in.
-	Region string `json:"region"`
+	RegionID string `json:"regionId"`
 	// ClusterManager that provides lifecycle management for the cluster.
 	ClusterManager string `json:"clusterManager"`
 	// Version is the Kubernetes version to install.  For performance
@@ -482,7 +482,7 @@ type KubernetesClusterOpenstackSpec struct {
 	// to FailureDomain, but you shouldn't reply on this behaviour.
 	VolumeFailureDomain *string `json:"volumeFailureDomain,omitempty"`
 	// ExternalNetworkID is the Openstack external network ID.
-	ExternalNetworkID *string `json:"externalNetworkId"`
+	ExternalNetworkID *string `json:"externalNetworkId,omitempty"`
 }
 
 type KubernetesClusterAPISpec struct {
