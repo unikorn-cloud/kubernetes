@@ -43,3 +43,10 @@ var (
 func VersionString() string {
 	return fmt.Sprintf("%s/%s (revision/%s)", Application, Version, Revision)
 }
+
+const (
+	// CloudIdentityAnnotation is used to remember a cluster's identity created
+	// by the region service.
+	// TODO: most likely this should be shared in core.
+	CloudIdentityAnnotation = "unikorn-cloud.org/identity-id"
+)

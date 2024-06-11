@@ -75,7 +75,7 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add nginx https://helm.nginx.com/stable
 helm repo update
 helm install cert-manager jetstack/cert-manager -v v1.10.1 -n cert-manager --create-namespace
-helm install nginx-ingress nginx/nginx-ingress -v 0.16.1 -n nginx-ingress --create-namespace
+helm install nginx-ingress nginx/nginx-ingress -v 0.16.1 -n nginx-ingress --create-namespace --set controller.ingressClassResource.default=true
 ```
 </details>
 

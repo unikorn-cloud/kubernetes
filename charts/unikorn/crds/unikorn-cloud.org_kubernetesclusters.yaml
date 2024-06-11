@@ -280,10 +280,10 @@ spec:
                       overrides the default ephemeral disk size defined in the flavor.
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
-                  flavor:
+                  flavorId:
                     description: Flavor is the OpenStack Nova flavor to deploy with.
                     type: string
-                  image:
+                  imageId:
                     description: Image is the OpenStack Glance image to deploy with.
                     type: string
                   replicas:
@@ -302,8 +302,8 @@ spec:
                       on a per machine deployment basis.
                     type: string
                 required:
-                - flavor
-                - image
+                - flavorId
+                - imageId
                 type: object
               features:
                 description: Features defines add-on features that can be enabled
@@ -394,12 +394,11 @@ spec:
                 required:
                 - cloud
                 - cloudConfig
-                - externalNetworkId
                 type: object
               pause:
                 description: Pause, if true, will inhibit reconciliation.
                 type: boolean
-              region:
+              regionId:
                 description: Region to provision the cluster in.
                 type: string
               version:
@@ -521,11 +520,11 @@ spec:
                             - path
                             type: object
                           type: array
-                        flavor:
+                        flavorId:
                           description: Flavor is the OpenStack Nova flavor to deploy
                             with.
                           type: string
-                        image:
+                        imageId:
                           description: Image is the OpenStack Glance image to deploy
                             with.
                           type: string
@@ -555,8 +554,8 @@ spec:
                             on a per machine deployment basis.
                           type: string
                       required:
-                      - flavor
-                      - image
+                      - flavorId
+                      - imageId
                       - name
                       type: object
                     type: array
@@ -567,7 +566,7 @@ spec:
             - controlPlane
             - network
             - openstack
-            - region
+            - regionId
             - version
             - workloadPools
             type: object

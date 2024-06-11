@@ -20,22 +20,18 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"sort"
-	"time"
 
 	"github.com/unikorn-cloud/core/pkg/authorization/constants"
 	"github.com/unikorn-cloud/core/pkg/authorization/rbac"
 	"github.com/unikorn-cloud/core/pkg/authorization/userinfo"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/server/middleware/openapi/oidc"
-	coreutil "github.com/unikorn-cloud/core/pkg/util"
+	"github.com/unikorn-cloud/unikorn/pkg/clients/region"
 	"github.com/unikorn-cloud/unikorn/pkg/openapi"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/application"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/cluster"
 	"github.com/unikorn-cloud/unikorn/pkg/server/handler/clustermanager"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/region"
 	"github.com/unikorn-cloud/unikorn/pkg/server/util"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -50,22 +46,28 @@ type Handler struct {
 
 	// authorizerOptions allows access to the identity service for RBAC callbacks.
 	authorizerOptions *oidc.Options
+
+	// regionOptions are for the region controller.
+	regionOptions *region.Options
 }
 
-func New(client client.Client, options *Options, authorizerOptions *oidc.Options) (*Handler, error) {
+func New(client client.Client, options *Options, authorizerOptions *oidc.Options, regionOptions *region.Options) (*Handler, error) {
 	h := &Handler{
 		client:            client,
 		options:           options,
 		authorizerOptions: authorizerOptions,
+		regionOptions:     regionOptions,
 	}
 
 	return h, nil
 }
 
+/*
 func (h *Handler) setCacheable(w http.ResponseWriter) {
 	w.Header().Add("Cache-Control", fmt.Sprintf("max-age=%d", h.options.CacheMaxAge/time.Second))
 	w.Header().Add("Cache-Control", "private")
 }
+*/
 
 func (h *Handler) setUncacheable(w http.ResponseWriter) {
 	w.Header().Add("Cache-Control", "no-cache")
@@ -168,7 +170,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDClusters(w http.ResponseWri
 		return
 	}
 
-	result, err := cluster.NewClient(h.client, &h.options.Cluster).List(r.Context(), organizationID)
+	result, err := cluster.NewClient(h.client, &h.options.Cluster, h.regionOptions).List(r.Context(), organizationID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -191,7 +193,7 @@ func (h *Handler) PostApiV1OrganizationsOrganizationIDProjectsProjectIDClusters(
 		return
 	}
 
-	if err := cluster.NewClient(h.client, &h.options.Cluster).Create(r.Context(), organizationID, projectID, request); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster, h.regionOptions).Create(r.Context(), organizationID, projectID, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -206,7 +208,7 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDCluster
 		return
 	}
 
-	if err := cluster.NewClient(h.client, &h.options.Cluster).Delete(r.Context(), organizationID, projectID, clusterID); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster, h.regionOptions).Delete(r.Context(), organizationID, projectID, clusterID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -228,7 +230,7 @@ func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersCl
 		return
 	}
 
-	if err := cluster.NewClient(h.client, &h.options.Cluster).Update(r.Context(), organizationID, projectID, clusterID, request); err != nil {
+	if err := cluster.NewClient(h.client, &h.options.Cluster, h.regionOptions).Update(r.Context(), organizationID, projectID, clusterID, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -243,7 +245,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersCl
 		return
 	}
 
-	result, err := cluster.NewClient(h.client, &h.options.Cluster).GetKubeconfig(r.Context(), organizationID, projectID, clusterID)
+	result, err := cluster.NewClient(h.client, &h.options.Cluster, h.regionOptions).GetKubeconfig(r.Context(), organizationID, projectID, clusterID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -262,85 +264,4 @@ func (h *Handler) GetApiV1Applications(w http.ResponseWriter, r *http.Request) {
 
 	h.setUncacheable(w)
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
-}
-
-func (h *Handler) GetApiV1Regions(w http.ResponseWriter, r *http.Request) {
-	result, err := region.NewClient(h.client).List(r.Context())
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setUncacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
-}
-
-func (h *Handler) GetApiV1RegionsRegionIDFlavors(w http.ResponseWriter, r *http.Request, regionID openapi.RegionIDParameter) {
-	provider, err := region.NewClient(h.client).Provider(r.Context(), regionID)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := provider.Flavors(r.Context())
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	// Apply ordering guarantees.
-	sort.Stable(result)
-
-	out := make(openapi.Flavors, 0, len(result))
-
-	for _, r := range result {
-		t := openapi.Flavor{
-			Name:   r.Name,
-			Cpus:   r.CPUs,
-			Memory: int(r.Memory.Value()) >> 30,
-			Disk:   int(r.Disk.Value()) / 1000000000,
-		}
-
-		if r.GPUs != 0 {
-			t.Gpus = coreutil.ToPointer(r.GPUs)
-		}
-
-		out = append(out, t)
-	}
-
-	h.setCacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, out)
-}
-
-func (h *Handler) GetApiV1RegionsRegionIDImages(w http.ResponseWriter, r *http.Request, regionID openapi.RegionIDParameter) {
-	provider, err := region.NewClient(h.client).Provider(r.Context(), regionID)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := provider.Images(r.Context())
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	// Apply ordering guarantees.
-	sort.Stable(result)
-
-	out := make(openapi.Images, 0, len(result))
-
-	for _, r := range result {
-		out = append(out, openapi.Image{
-			Name:     r.Name,
-			Created:  r.Created,
-			Modified: r.Modified,
-			Versions: openapi.ImageVersions{
-				Kubernetes: r.KubernetesVersion,
-			},
-		})
-	}
-
-	h.setCacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, out)
 }

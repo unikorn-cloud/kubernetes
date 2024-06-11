@@ -127,15 +127,6 @@ type ClientInterface interface {
 
 	// GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfig request
 	GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfig(ctx context.Context, organizationID OrganizationIDParameter, projectID ProjectIDParameter, clusterID ClusterIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetApiV1Regions request
-	GetApiV1Regions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetApiV1RegionsRegionIDFlavors request
-	GetApiV1RegionsRegionIDFlavors(ctx context.Context, regionID RegionIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetApiV1RegionsRegionIDImages request
-	GetApiV1RegionsRegionIDImages(ctx context.Context, regionID RegionIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetApiV1Applications(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -296,42 +287,6 @@ func (c *Client) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClu
 
 func (c *Client) GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfig(ctx context.Context, organizationID OrganizationIDParameter, projectID ProjectIDParameter, clusterID ClusterIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfigRequest(c.Server, organizationID, projectID, clusterID)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetApiV1Regions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1RegionsRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetApiV1RegionsRegionIDFlavors(ctx context.Context, regionID RegionIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1RegionsRegionIDFlavorsRequest(c.Server, regionID)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetApiV1RegionsRegionIDImages(ctx context.Context, regionID RegionIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1RegionsRegionIDImagesRequest(c.Server, regionID)
 	if err != nil {
 		return nil, err
 	}
@@ -811,101 +766,6 @@ func NewGetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKub
 	return req, nil
 }
 
-// NewGetApiV1RegionsRequest generates requests for GetApiV1Regions
-func NewGetApiV1RegionsRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/api/v1/regions")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetApiV1RegionsRegionIDFlavorsRequest generates requests for GetApiV1RegionsRegionIDFlavors
-func NewGetApiV1RegionsRegionIDFlavorsRequest(server string, regionID RegionIDParameter) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "regionID", runtime.ParamLocationPath, regionID)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/api/v1/regions/%s/flavors", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetApiV1RegionsRegionIDImagesRequest generates requests for GetApiV1RegionsRegionIDImages
-func NewGetApiV1RegionsRegionIDImagesRequest(server string, regionID RegionIDParameter) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "regionID", runtime.ParamLocationPath, regionID)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/api/v1/regions/%s/images", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -986,15 +846,6 @@ type ClientWithResponsesInterface interface {
 
 	// GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfigWithResponse request
 	GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfigWithResponse(ctx context.Context, organizationID OrganizationIDParameter, projectID ProjectIDParameter, clusterID ClusterIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfigResponse, error)
-
-	// GetApiV1RegionsWithResponse request
-	GetApiV1RegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1RegionsResponse, error)
-
-	// GetApiV1RegionsRegionIDFlavorsWithResponse request
-	GetApiV1RegionsRegionIDFlavorsWithResponse(ctx context.Context, regionID RegionIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionIDFlavorsResponse, error)
-
-	// GetApiV1RegionsRegionIDImagesWithResponse request
-	GetApiV1RegionsRegionIDImagesWithResponse(ctx context.Context, regionID RegionIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionIDImagesResponse, error)
 }
 
 type GetApiV1ApplicationsResponse struct {
@@ -1258,80 +1109,6 @@ func (r GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKub
 	return 0
 }
 
-type GetApiV1RegionsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *RegionsResponse
-	JSON401      *externalRef0.UnauthorizedResponse
-	JSON500      *externalRef0.InternalServerErrorResponse
-}
-
-// Status returns HTTPResponse.Status
-func (r GetApiV1RegionsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1RegionsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetApiV1RegionsRegionIDFlavorsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *FlavorsResponse
-	JSON400      *externalRef0.BadRequestResponse
-	JSON401      *externalRef0.UnauthorizedResponse
-	JSON500      *externalRef0.InternalServerErrorResponse
-}
-
-// Status returns HTTPResponse.Status
-func (r GetApiV1RegionsRegionIDFlavorsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1RegionsRegionIDFlavorsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetApiV1RegionsRegionIDImagesResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *ImagesResponse
-	JSON400      *externalRef0.BadRequestResponse
-	JSON401      *externalRef0.UnauthorizedResponse
-	JSON500      *externalRef0.InternalServerErrorResponse
-}
-
-// Status returns HTTPResponse.Status
-func (r GetApiV1RegionsRegionIDImagesResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1RegionsRegionIDImagesResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 // GetApiV1ApplicationsWithResponse request returning *GetApiV1ApplicationsResponse
 func (c *ClientWithResponses) GetApiV1ApplicationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ApplicationsResponse, error) {
 	rsp, err := c.GetApiV1Applications(ctx, reqEditors...)
@@ -1452,33 +1229,6 @@ func (c *ClientWithResponses) GetApiV1OrganizationsOrganizationIDProjectsProject
 		return nil, err
 	}
 	return ParseGetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfigResponse(rsp)
-}
-
-// GetApiV1RegionsWithResponse request returning *GetApiV1RegionsResponse
-func (c *ClientWithResponses) GetApiV1RegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1RegionsResponse, error) {
-	rsp, err := c.GetApiV1Regions(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetApiV1RegionsResponse(rsp)
-}
-
-// GetApiV1RegionsRegionIDFlavorsWithResponse request returning *GetApiV1RegionsRegionIDFlavorsResponse
-func (c *ClientWithResponses) GetApiV1RegionsRegionIDFlavorsWithResponse(ctx context.Context, regionID RegionIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionIDFlavorsResponse, error) {
-	rsp, err := c.GetApiV1RegionsRegionIDFlavors(ctx, regionID, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetApiV1RegionsRegionIDFlavorsResponse(rsp)
-}
-
-// GetApiV1RegionsRegionIDImagesWithResponse request returning *GetApiV1RegionsRegionIDImagesResponse
-func (c *ClientWithResponses) GetApiV1RegionsRegionIDImagesWithResponse(ctx context.Context, regionID RegionIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1RegionsRegionIDImagesResponse, error) {
-	rsp, err := c.GetApiV1RegionsRegionIDImages(ctx, regionID, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetApiV1RegionsRegionIDImagesResponse(rsp)
 }
 
 // ParseGetApiV1ApplicationsResponse parses an HTTP response from a GetApiV1ApplicationsWithResponse call
@@ -2015,140 +1765,6 @@ func ParseGetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDK
 			return nil, err
 		}
 		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest externalRef0.InternalServerErrorResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetApiV1RegionsResponse parses an HTTP response from a GetApiV1RegionsWithResponse call
-func ParseGetApiV1RegionsResponse(rsp *http.Response) (*GetApiV1RegionsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetApiV1RegionsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest RegionsResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest externalRef0.UnauthorizedResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest externalRef0.InternalServerErrorResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetApiV1RegionsRegionIDFlavorsResponse parses an HTTP response from a GetApiV1RegionsRegionIDFlavorsWithResponse call
-func ParseGetApiV1RegionsRegionIDFlavorsResponse(rsp *http.Response) (*GetApiV1RegionsRegionIDFlavorsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetApiV1RegionsRegionIDFlavorsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest FlavorsResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest externalRef0.BadRequestResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest externalRef0.UnauthorizedResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest externalRef0.InternalServerErrorResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetApiV1RegionsRegionIDImagesResponse parses an HTTP response from a GetApiV1RegionsRegionIDImagesWithResponse call
-func ParseGetApiV1RegionsRegionIDImagesResponse(rsp *http.Response) (*GetApiV1RegionsRegionIDImagesResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetApiV1RegionsRegionIDImagesResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ImagesResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest externalRef0.BadRequestResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest externalRef0.UnauthorizedResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest externalRef0.InternalServerErrorResponse

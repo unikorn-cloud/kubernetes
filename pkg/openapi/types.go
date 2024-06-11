@@ -4,8 +4,6 @@
 package openapi
 
 import (
-	"time"
-
 	externalRef0 "github.com/unikorn-cloud/core/pkg/openapi"
 )
 
@@ -90,62 +88,6 @@ type ClusterManagerWrite struct {
 // ClusterManagers A list of cluster managers.
 type ClusterManagers = []ClusterManagerRead
 
-// Flavor A flavor.
-type Flavor struct {
-	// Cpus The number of CPUs.
-	Cpus int `json:"cpus"`
-
-	// Disk The amount of ephemeral disk in GB.
-	Disk int `json:"disk"`
-
-	// Gpus The number of GPUs, if not set there are none.
-	Gpus *int `json:"gpus,omitempty"`
-
-	// Id The unique flavor ID.
-	Id string `json:"id"`
-
-	// Memory The amount of memory in GiB.
-	Memory int `json:"memory"`
-
-	// Name The flavor name.
-	Name string `json:"name"`
-}
-
-// Flavors A list of flavors.
-type Flavors = []Flavor
-
-// Image An image.
-type Image struct {
-	// Created Time when the image was created. Images with a newer creation time should
-	// be favoured over older images as they will contain updates and fewer vulnerabilities.
-	Created time.Time `json:"created"`
-
-	// Id The unique image ID.
-	Id string `json:"id"`
-
-	// Modified Time when the image was last modified.
-	Modified time.Time `json:"modified"`
-
-	// Name The image name.
-	Name string `json:"name"`
-
-	// Versions Image version metadata.
-	Versions ImageVersions `json:"versions"`
-}
-
-// ImageVersions Image version metadata.
-type ImageVersions struct {
-	// Kubernetes The kubernetes semantic version.  This should be used directly when specifying
-	// Kubernetes cluster managers and workload pools in a cluster specification.
-	Kubernetes string `json:"kubernetes"`
-
-	// NvidiaDriver The nvidia driver version.
-	NvidiaDriver string `json:"nvidiaDriver"`
-}
-
-// Images A list of images that are compatible with this platform.
-type Images = []Image
-
 // KubernetesClusterAutoscaling A Kubernetes cluster workload pool autoscaling configuration. Cluster autoscaling
 // must also be enabled in the cluster features.
 type KubernetesClusterAutoscaling struct {
@@ -167,8 +109,8 @@ type KubernetesClusterSpec struct {
 	// the system will create one for you.
 	ClusterManager *string `json:"clusterManager,omitempty"`
 
-	// Region The region to provision the cluster in.
-	Region string `json:"region"`
+	// RegionId The region to provision the cluster in.
+	RegionId string `json:"regionId"`
 
 	// Version The Kuebernetes version.  This should be derived from image metadata.
 	Version string `json:"version"`
@@ -216,21 +158,12 @@ type MachinePool struct {
 	// Disk A volume.
 	Disk *Volume `json:"disk,omitempty"`
 
-	// FlavorName Flavor name.
-	FlavorName *string `json:"flavorName,omitempty"`
+	// FlavorId Flavor ID.
+	FlavorId *string `json:"flavorId,omitempty"`
 
 	// Replicas Number of machines for a statically sized pool or the maximum for an auto-scaled pool.
 	Replicas *int `json:"replicas,omitempty"`
 }
-
-// RegionRead A region.
-type RegionRead struct {
-	// Metadata Resource metadata valid for all reads.
-	Metadata externalRef0.ResourceReadMetadata `json:"metadata"`
-}
-
-// Regions A list of regions.
-type Regions = []RegionRead
 
 // Volume A volume.
 type Volume struct {
@@ -250,26 +183,14 @@ type OrganizationIDParameter = KubernetesNameParameter
 // ProjectIDParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type ProjectIDParameter = KubernetesNameParameter
 
-// RegionIDParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
-type RegionIDParameter = KubernetesNameParameter
-
 // ApplicationResponse A list of appications.
 type ApplicationResponse = Applications
 
 // ClusterManagersResponse A list of cluster managers.
 type ClusterManagersResponse = ClusterManagers
 
-// FlavorsResponse A list of flavors.
-type FlavorsResponse = Flavors
-
-// ImagesResponse A list of images that are compatible with this platform.
-type ImagesResponse = Images
-
 // KubernetesClustersResponse A list of Kubernetes clusters.
 type KubernetesClustersResponse = KubernetesClusters
-
-// RegionsResponse A list of regions.
-type RegionsResponse = Regions
 
 // CreateControlPlaneRequest A cluster manager.
 type CreateControlPlaneRequest = ClusterManagerWrite

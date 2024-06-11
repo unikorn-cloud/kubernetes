@@ -36,21 +36,11 @@ rules:
   verbs:
   - list
   - watch
-# Get secrets, ugh, for kubeconfigs.
 - apiGroups:
   - ""
   resources:
   - secrets
   - services
   verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - get
   - list
   - watch

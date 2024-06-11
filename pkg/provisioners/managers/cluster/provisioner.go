@@ -34,7 +34,6 @@ import (
 	provisionersutil "github.com/unikorn-cloud/core/pkg/provisioners/util"
 	"github.com/unikorn-cloud/core/pkg/util"
 	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/unikorn/pkg/providers"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/cilium"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusterautoscaler"
 	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusterautoscaleropenstack"
@@ -249,12 +248,14 @@ func (p *Provisioner) Deprovision(ctx context.Context) error {
 	}
 
 	// This event is used to trigger cleanup operations in the provider.
-	recorder := manager.FromContext(ctx).GetEventRecorderFor("cluster")
+	recorder := manager.FromContext(ctx).GetEventRecorderFor("kubernetescluster")
 
-	annotations := providers.GetAnnotations(&p.cluster)
-	annotations[constants.RegionAnnotation] = p.cluster.Spec.Region
+	annotations := map[string]string{
+		constants.RegionAnnotation:        p.cluster.Spec.RegionID,
+		constants.CloudIdentityAnnotation: p.cluster.Annotations[constants.CloudIdentityAnnotation],
+	}
 
-	recorder.AnnotatedEventf(&p.cluster, annotations, "Normal", "ClusterDeleted", "cluster has been deleted successfully")
+	recorder.AnnotatedEventf(&p.cluster, annotations, "Normal", constants.IdentityCleanupReadyEventReason, "kubetnetes cluster has been deleted successfully")
 
 	return nil
 }
