@@ -28,10 +28,10 @@ import (
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util"
+	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
+	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/applicationbundle"
 	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
-	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/unikorn/pkg/openapi"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/applicationbundle"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"

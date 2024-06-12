@@ -23,8 +23,8 @@ import (
 
 	"github.com/spf13/pflag"
 
-	upgradecluster "github.com/unikorn-cloud/unikorn/pkg/monitor/upgrade/cluster"
-	upgradeclustermanager "github.com/unikorn-cloud/unikorn/pkg/monitor/upgrade/clustermanager"
+	upgradecluster "github.com/unikorn-cloud/kubernetes/pkg/monitor/upgrade/cluster"
+	upgradeclustermanager "github.com/unikorn-cloud/kubernetes/pkg/monitor/upgrade/clustermanager"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"

@@ -22,7 +22,7 @@ import (
 	"crypto/sha256"
 	"time"
 
-	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )

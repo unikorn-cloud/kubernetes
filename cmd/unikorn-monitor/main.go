@@ -27,9 +27,9 @@ import (
 	"github.com/spf13/pflag"
 
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
-	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/unikorn/pkg/constants"
-	"github.com/unikorn-cloud/unikorn/pkg/monitor"
+	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/kubernetes/pkg/constants"
+	"github.com/unikorn-cloud/kubernetes/pkg/monitor"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"

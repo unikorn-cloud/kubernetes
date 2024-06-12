@@ -1,4 +1,4 @@
-module github.com/unikorn-cloud/unikorn
+module github.com/unikorn-cloud/kubernetes
 
 go 1.22.1
 

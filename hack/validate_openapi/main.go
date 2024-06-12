@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/unikorn-cloud/unikorn/pkg/openapi"
+	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 )
 
 //nolint:gochecknoglobals

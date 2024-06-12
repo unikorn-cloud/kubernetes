@@ -21,8 +21,8 @@ import (
 	"context"
 
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
-	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/unikorn/pkg/provisioners/helmapplications/clusteropenstack"
+	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/clusteropenstack"
 )
 
 // Provisioner encapsulates provisioning.

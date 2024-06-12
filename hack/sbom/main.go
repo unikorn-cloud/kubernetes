@@ -32,7 +32,7 @@ import (
 	spdx "github.com/spdx/tools-golang/spdx/v2/v2_3"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
-	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 
 	"sigs.k8s.io/yaml"
 )

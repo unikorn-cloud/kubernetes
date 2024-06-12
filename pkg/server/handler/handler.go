@@ -27,12 +27,12 @@ import (
 	"github.com/unikorn-cloud/core/pkg/authorization/userinfo"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/server/middleware/openapi/oidc"
-	"github.com/unikorn-cloud/unikorn/pkg/clients/region"
-	"github.com/unikorn-cloud/unikorn/pkg/openapi"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/application"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/cluster"
-	"github.com/unikorn-cloud/unikorn/pkg/server/handler/clustermanager"
-	"github.com/unikorn-cloud/unikorn/pkg/server/util"
+	"github.com/unikorn-cloud/kubernetes/pkg/clients/region"
+	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
+	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/application"
+	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/cluster"
+	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/clustermanager"
+	"github.com/unikorn-cloud/kubernetes/pkg/server/util"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
