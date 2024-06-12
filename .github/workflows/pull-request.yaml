@@ -46,7 +46,7 @@ jobs:
     - name: Golang CI/Helm Lint
       run: make lint
     - name: Build Images
-      run: make charts/unikorn/crds images
+      run: make charts/kubernetes/crds images
     - name: Build Generated Code
       run: make generate
     - name: Generated Code Checked In

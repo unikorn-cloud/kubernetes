@@ -21,7 +21,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 )
 
 const (

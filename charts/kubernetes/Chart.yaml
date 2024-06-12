@@ -1,0 +1,10 @@
+apiVersion: v2
+name: unikorn-kubernetes
+description: A Helm chart for deploying Unikorn Kubernetes Service
+
+type: application
+
+version: v0.2.11
+appVersion: v0.2.11
+
+icon: https://raw.githubusercontent.com/unikorn-cloud/kubernetes/main/icons/default.png

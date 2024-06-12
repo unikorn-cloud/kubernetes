@@ -24,9 +24,9 @@ import (
 	"time"
 
 	"github.com/unikorn-cloud/core/pkg/constants"
-	unikornv1 "github.com/unikorn-cloud/unikorn/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/unikorn/pkg/monitor/upgrade/errors"
-	"github.com/unikorn-cloud/unikorn/pkg/monitor/upgrade/util"
+	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/kubernetes/pkg/monitor/upgrade/errors"
+	"github.com/unikorn-cloud/kubernetes/pkg/monitor/upgrade/util"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"

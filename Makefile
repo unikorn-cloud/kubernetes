@@ -39,7 +39,7 @@ BINDIR = bin
 CMDDIR = cmd
 SRCDIR = src
 GENDIR = generated
-CRDDIR = charts/unikorn/crds
+CRDDIR = charts/kubernetes/crds
 
 # Where to install things.
 PREFIX = $(HOME)/bin
@@ -84,7 +84,7 @@ MOCKGEN_VERSION=v0.3.0
 
 # This is the base directory to generate kubernetes API primitives from e.g.
 # clients and CRDs.
-GENAPIBASE = github.com/unikorn-cloud/unikorn/pkg/apis
+GENAPIBASE = github.com/unikorn-cloud/kubernetes/pkg/apis
 
 # This is the list of APIs to generate clients for.
 GENAPIS = $(GENAPIBASE)/unikorn/v1alpha1
@@ -189,7 +189,7 @@ touch:
 lint: $(GENDIR)
 	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(LINT_VERSION)
 	$(GOBIN)/golangci-lint run ./...
-	helm lint --strict charts/unikorn
+	helm lint --strict charts/kubernetes
 
 # Validate the server OpenAPI schema is legit.
 .PHONY: validate

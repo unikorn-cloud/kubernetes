@@ -25,7 +25,7 @@ import (
 	coreopenapi "github.com/unikorn-cloud/core/pkg/openapi"
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
-	"github.com/unikorn-cloud/unikorn/pkg/openapi"
+	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
