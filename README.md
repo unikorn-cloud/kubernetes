@@ -1,4 +1,4 @@
-# Unikorn
+# Unikorn Kubernetes Service
 
 ![Unikorn Logo](https://raw.githubusercontent.com/unikorn-cloud/assets/main/images/logos/light-on-dark/logo.svg#gh-dark-mode-only)
 ![Unikorn Logo](https://raw.githubusercontent.com/unikorn-cloud/assets/main/images/logos/dark-on-light/logo.svg#gh-light-mode-only)
@@ -7,38 +7,34 @@
 
 ### Resources
 
-Unikorn abstracts away installation of Cluster API.
+Unikorn Kubernetes service abstracts away installation of Cluster API.
 
-There are four resource types:
+There are two resource types:
 
-* Organizations, that are analogous to organizations defined for [Unikorn Identity](https://github.com/unikorn-cloud/identity), but in this component merely provide a namespace for projects.
-* Projects, that are a container for higher level abstractions.
-* ControlPlanes, that basically are instances of Cluster API that live in Projects.
-* Clusters, are Kubernetes clusters, and managed by control planes.
+* Cluster Managers, that basically are instances of Cluster API that live in Projects provided by Unikorn Identity.
+* Clusters, are Kubernetes clusters, and managed by cluster managers.
 
-Control planes are actually contained themselves in virtual clusters, this allows horizontal scaling and multi-tenant separation.
-
-Projects allow multiple control planes to be contained within them.
-These are useful for providing a boundary for billing etc.
-
-Unsurprisingly, as we are dealing with custom resources, we are managing the lifecycles as Kubernetes controllers ("operator pattern" to those drinking the CoreOS Koolaid).
+Cluster managers are actually contained themselves in virtual clusters, this allows horizontal scaling and multi-tenant separation.
 
 ### Services
 
 Unikorn is split up into domain specific micro-services:
 
-* Project, control plane and cluster controllers.
+* Cluster manager and cluster controllers.
   These are reactive services that watch for resource changes, then reconcile reality against the requested state.
 * Server is a RESTful interface that manages Unikorn resource types.
-  It additionally exposes a limited, and opinionated, set of OpenStack interfaces that provide resources that are used to populate required fields in Unikorn resources.
   As it's intended as a public API e.g. for Terraform or a user interface, it integrates authn/authz functionality too.
-* UI is a user interface, and provides a seamless and intuitive UX on top of server.
-  This adds even more opinionation on top of the REST interface.
-  This is hosted in a separate repository.
 * Monitor is a daemon that periodically polls Unikorn resource types, and provides functionality that cannot be triggered by reactive controllers.
   Most notably, this includes automatic upgrades.
 
 ## Installation
+
+### Unikorn Prerequisites
+
+The use the Kubernetes service you first need to install:
+
+* [The identity service](https://github.com/unikorn-cloud/identity) to provide API authentication and authorization.
+* [The region service](https://github.com/unikorn-cloud/region) to provide provider agnostic cloud services (e.g. images, flavors and identity management).
 
 ### Installing the Service
 
@@ -49,7 +45,7 @@ As this is a private repository, we're keeping the charts private for now also, 
 
 ArgoCD is a **required** to use Unikorn.
 
-Deploy argo using Helm (the release name is _hard coded_, don't change it yet please):
+Deploy Argo using Helm (the release name is _hard coded_, don't change it yet please):
 
 ```
 helm repo add argo https://argoproj.github.io/argo-helm
@@ -74,8 +70,8 @@ You'll need to install:
 helm repo add jetstack https://charts.jetstack.io
 helm repo add nginx https://helm.nginx.com/stable
 helm repo update
-helm install cert-manager jetstack/cert-manager -v v1.10.1 -n cert-manager --create-namespace
-helm install nginx-ingress nginx/nginx-ingress -v 0.16.1 -n nginx-ingress --create-namespace --set controller.ingressClassResource.default=true
+helm install cert-manager jetstack/cert-manager -n cert-manager --create-namespace
+helm install nginx-ingress nginx/nginx-ingress -n nginx-ingress --create-namespace --set controller.ingressClassResource.default=true
 ```
 </details>
 
@@ -137,10 +133,7 @@ spec:
 ```
 </details>
 
-#### Installing Unikorn
-
-Unikorn Server uses OIDC (oauth2) to authenticate API requests.
-You must deploy [Unikorn Identity](https://github.com/unikorn-cloud/identity) first in order to use it.
+#### Installing the Kubernetes Service
 
 <details>
 <summary>Helm</summary>
@@ -198,12 +191,6 @@ spec:
 See the [monitoring & logging](docs/monitoring.md) documentation from more information on configuring those services in the first instance..
 
 ## Documentation
-
-### Region Providers
-
-These actually provide access to cloud resources and abstract away vendor specifics:
-
-* [OpenStack](pkg/providers/openstack/README.md)
 
 ### API (Unikorn Server)
 
