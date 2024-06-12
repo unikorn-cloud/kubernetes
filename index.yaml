@@ -276,4 +276,16 @@ entries:
     urls:
     - https://github.com/unikorn-cloud/unikorn/releases/download/v0.1.1/unikorn-v0.1.1.tgz
     version: v0.1.1
-generated: "2024-06-12T09:50:01.09942121Z"
+  unikorn-kubernetes:
+  - apiVersion: v2
+    appVersion: v0.2.11
+    created: "2024-06-12T10:29:58.404893236Z"
+    description: A Helm chart for deploying Unikorn Kubernetes Service
+    digest: 6421bb836fb1b2079cfc831cbf25642ff967b9197625c1a8865ba4fee51f4ace
+    icon: https://raw.githubusercontent.com/unikorn-cloud/kubernetes/main/icons/default.png
+    name: unikorn-kubernetes
+    type: application
+    urls:
+    - https://github.com/unikorn-cloud/kubernetes/releases/download/v0.2.11/unikorn-kubernetes-v0.2.11.tgz
+    version: v0.2.11
+generated: "2024-06-12T10:29:58.40493295Z"
