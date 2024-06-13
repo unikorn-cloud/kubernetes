@@ -18,6 +18,7 @@ spec:
       - name: unikorn-server
         image: {{ include "unikorn.serverImage" . }}
         args:
+        - --namespace={{ .Release.Namespace }}
         {{- with $cors := .Values.server.cors }}
           {{- range $origin := $cors.allowOrigin }}
             {{ printf "- --cors-allow-origin=%s" $origin | nindent 8 }}
@@ -26,18 +27,24 @@ spec:
             {{ printf "- --cors-max-age=%s" $cors.maxAge | nindent 8 }}
           {{- end }}
         {{- end }}
-        {{- with $oidc := .Values.server.oidc }}
-        - --oidc-issuer={{ $oidc.issuer }}
-          {{- if $oidc.issuerCA }}
-            {{ printf "- --oidc-issuer-ca=%s" $oidc.issuerCA | nindent 8 }}
+        {{- with $identity := .Values.server.identity }}
+        - --identity-host={{ $identity.host }}
+          {{- if $identity.caSecretNamespace }}
+            {{ printf "- --identity-ca-secret-namespace=%s" $identity.caSecretNamespace | nindent 8 }}
+          {{- end }}
+          {{- if $identity.caSecretName }}
+            {{ printf "- --identity-ca-secret-name=%s" $identity.caSecretName | nindent 8 }}
           {{- end }}
         {{- end }}
         {{- with $region := .Values.server.region }}
           {{- if $region.host }}
             {{ printf "- --region-host=%s" $region.host | nindent 8 }}
           {{- end }}
-          {{- if $region.ca }}
-            {{ printf "- --region-ca=%s" $region.ca | nindent 8 }}
+          {{- if $region.caSecretNamespace }}
+            {{ printf "- --region-ca-secret-namespace=%s" $region.caSecretNamespace | nindent 8 }}
+          {{- end }}
+          {{- if $region.caSecretName }}
+            {{ printf "- --region-ca-secret-name=%s" $region.caSecretName | nindent 8 }}
           {{- end }}
         {{- end }}
         {{- if .Values.server.otlpEndpoint }}

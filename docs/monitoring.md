@@ -17,13 +17,7 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
 ```
 
-This will pretty much work out of the box.
-See [`manifests/prometheus.yaml`](https://github.com/unikorn-cloud/unikorn/blob/main/manifests/prometheus.yaml) for an example of use, using the wonderful Prometheus Operator.
-
-### Installing Unikorn Dashboard
-
-There's a rudimentary Grafana dashboard for the Unikorn controller componenets available in tree.
-Run [`dashboards/install`](https://github.com/unikorn-cloud/unikorn/blob/main/grafana/install) with a default `kube-prometheus-stack` to automagically have it appear.
+This will pretty much work out of the box when installed with Helm and prometheus support enabled.
 
 ## Metrics Server
 

@@ -23,16 +23,16 @@ import (
 	"net/http"
 
 	"github.com/unikorn-cloud/core/pkg/authorization/constants"
-	"github.com/unikorn-cloud/core/pkg/authorization/rbac"
 	"github.com/unikorn-cloud/core/pkg/authorization/userinfo"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
-	"github.com/unikorn-cloud/core/pkg/server/middleware/openapi/oidc"
-	"github.com/unikorn-cloud/kubernetes/pkg/clients/region"
+	identityclient "github.com/unikorn-cloud/identity/pkg/client"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/application"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/cluster"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/clustermanager"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/util"
+	"github.com/unikorn-cloud/rbac/pkg/authorization"
+	regionclient "github.com/unikorn-cloud/region/pkg/client"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -41,22 +41,26 @@ type Handler struct {
 	// client gives cached access to Kubernetes.
 	client client.Client
 
+	// namespace is where the controller is running.
+	namespace string
+
 	// options allows behaviour to be defined on the CLI.
 	options *Options
 
-	// authorizerOptions allows access to the identity service for RBAC callbacks.
-	authorizerOptions *oidc.Options
+	// identity is a client to access the identity service.
+	identity *identityclient.Client
 
-	// regionOptions are for the region controller.
-	regionOptions *region.Options
+	// region is a client to access regions.
+	region *regionclient.Client
 }
 
-func New(client client.Client, options *Options, authorizerOptions *oidc.Options, regionOptions *region.Options) (*Handler, error) {
+func New(client client.Client, namespace string, options *Options, identity *identityclient.Client, region *regionclient.Client) (*Handler, error) {
 	h := &Handler{
-		client:            client,
-		options:           options,
-		authorizerOptions: authorizerOptions,
-		regionOptions:     regionOptions,
+		client:    client,
+		namespace: namespace,
+		options:   options,
+		identity:  identity,
+		region:    region,
 	}
 
 	return h, nil
@@ -75,7 +79,12 @@ func (h *Handler) setUncacheable(w http.ResponseWriter) {
 
 //nolint:unparam
 func (h *Handler) checkRBAC(ctx context.Context, organizationID, scope string, permission constants.Permission) error {
-	aclGetter := rbac.NewIdentityACLGetter(h.authorizerOptions.Issuer, organizationID).WithCA(h.authorizerOptions.IssuerCA)
+	identity, err := h.identity.Client(ctx)
+	if err != nil {
+		return err
+	}
+
+	aclGetter := authorization.NewIdentityACLGetter(identity, organizationID)
 
 	authorizer, err := userinfo.NewAuthorizer(ctx, aclGetter)
 	if err != nil {
@@ -170,7 +179,13 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDClusters(w http.ResponseWri
 		return
 	}
 
-	result, err := cluster.NewClient(h.client, &h.options.Cluster, h.regionOptions).List(r.Context(), organizationID)
+	region, err := h.region.Client(r.Context())
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	result, err := cluster.NewClient(h.client, h.namespace, &h.options.Cluster, region).List(r.Context(), organizationID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -193,7 +208,13 @@ func (h *Handler) PostApiV1OrganizationsOrganizationIDProjectsProjectIDClusters(
 		return
 	}
 
-	if err := cluster.NewClient(h.client, &h.options.Cluster, h.regionOptions).Create(r.Context(), organizationID, projectID, request); err != nil {
+	region, err := h.region.Client(r.Context())
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := cluster.NewClient(h.client, h.namespace, &h.options.Cluster, region).Create(r.Context(), organizationID, projectID, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -208,7 +229,13 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDCluster
 		return
 	}
 
-	if err := cluster.NewClient(h.client, &h.options.Cluster, h.regionOptions).Delete(r.Context(), organizationID, projectID, clusterID); err != nil {
+	region, err := h.region.Client(r.Context())
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := cluster.NewClient(h.client, h.namespace, &h.options.Cluster, region).Delete(r.Context(), organizationID, projectID, clusterID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -230,7 +257,13 @@ func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersCl
 		return
 	}
 
-	if err := cluster.NewClient(h.client, &h.options.Cluster, h.regionOptions).Update(r.Context(), organizationID, projectID, clusterID, request); err != nil {
+	region, err := h.region.Client(r.Context())
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := cluster.NewClient(h.client, h.namespace, &h.options.Cluster, region).Update(r.Context(), organizationID, projectID, clusterID, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -245,7 +278,13 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersCl
 		return
 	}
 
-	result, err := cluster.NewClient(h.client, &h.options.Cluster, h.regionOptions).GetKubeconfig(r.Context(), organizationID, projectID, clusterID)
+	region, err := h.region.Client(r.Context())
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	result, err := cluster.NewClient(h.client, h.namespace, &h.options.Cluster, region).GetKubeconfig(r.Context(), organizationID, projectID, clusterID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

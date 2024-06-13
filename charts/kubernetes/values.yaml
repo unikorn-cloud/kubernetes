@@ -34,51 +34,6 @@ monitor:
   # Allows override of the global default image.
   image:
 
-# Region discovery information.
-# regions:
-# - # The name of the region, must be a unique DNS label.
-#   name: uk-manchester
-#   # Provider type, must be one of "openstack".
-#   provider: openstack
-#   # Openstack specific configuration.
-#   openstack:
-#     # Keystone endpoint.
-#     endpoint: https://keystone.my.cloud:5000
-#     # Keystone credentials.
-#     serviceAccountSecret:
-#       namespace: default
-#       name: openstack-admin-secret
-#     # Identity service configuration.
-#     identity:
-#       # Roles to be assigned to application credentials that are used for
-#       # cluster provisioning and life-cycle management.
-#       clusterRoles:
-#       - member
-#       - load-balancer_member
-#     # Compute service configuration.
-#     compute:
-#       # Kubernetes control plane scheduling policy.
-#       serverGroupPolicy: soft-anti-affinity
-#       # Flavors containing any of the specified extra specs will be discarded.
-#       flavorExtraSpecsExclude:
-#       - resources:CUSTOM_BAREMETAL
-#       # Define properties on flavors and how to extract the number of GPUs from them.
-#       gpuDescriptors:
-#       - property: resources:PGPU
-#         expression: ^(\d+)$
-#       - property: resources:VGPU
-#         expression: ^(\d+)$
-#     # Image service configuration.
-#     image:
-#       # Images must contain all the following properties to be exposed.
-#       propertiesInclude:
-#       - k8s
-#       # If specified the image signing key defines a base64 PEM encoded ECDSA
-#       # public key used to trust images.  Images must have the "digest" property
-#       # defined, and its value must be the ECDSA signature of the SHA256 hash of
-#       # the image ID.
-#       signingKey: ~
-
 # REST server specific configuration.
 server:
   # Allows override of the global default image.
@@ -96,7 +51,7 @@ server:
     issuer: ~
 
     # clusterIssuer to use.
-    clusterIssuer: ~
+    clusterIssuer: unikorn-issuer
 
     # If true, will add the external DNS hostname annotation.
     externalDns: false
@@ -108,20 +63,22 @@ server:
   #   # How long to cache the CORS preflight for, mostly useless as browsers override this.
   #   maxAge: 86400
 
-  oidc:
+  identity:
     # OIDC issuer used to discover OIDC configuration and verify access tokens.
-    issuer: https://identity.unikorn-cloud.org
+    host: https://identity.unikorn-cloud.org
 
     # CA certificate to use to verify connections to the issuer, used in development only.
-    # This is a base64 encoded PEM file.
-    # issuerCA:
+    # caSecretNamespace: ~
+    # caSecretName: ~
 
   region:
     # Region controller URL.
     host: https://region.unikorn-cloud.org
+
     # CA file if using self signed/private certificates.
-    # This is a base64 encoded PEM file.
-    # ca: 
+    # caSecretNamespace: ~
+    # caSecretName: ~
+
   # Sets the OTLP endpoint for shipping spans.
   # otlpEndpoint: jaeger-collector.default:4318
 
