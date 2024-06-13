@@ -32,7 +32,6 @@ import (
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/kubernetes/pkg/clients/region"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/clusteropenstack"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/vcluster"
@@ -73,19 +72,23 @@ type Client struct {
 	// client allows Kubernetes API access.
 	client client.Client
 
+	// namespace the controller runs in.
+	namespace string
+
 	// options control various defaults and the like.
 	options *Options
 
-	// regionOptions are for the region controller.
-	regionOptions *region.Options
+	// region is a client to access regions.
+	region regionapi.ClientWithResponsesInterface
 }
 
 // NewClient returns a new client with required parameters.
-func NewClient(client client.Client, options *Options, regionOptions *region.Options) *Client {
+func NewClient(client client.Client, namespace string, options *Options, region regionapi.ClientWithResponsesInterface) *Client {
 	return &Client{
-		client:        client,
-		options:       options,
-		regionOptions: regionOptions,
+		client:    client,
+		namespace: namespace,
+		options:   options,
+		region:    region,
 	}
 }
 
@@ -209,14 +212,14 @@ func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Open
 }
 */
 
-func createIdentity(ctx context.Context, region regionapi.ClientWithResponsesInterface, regionID, organizationID, projectID, clusterID string) (*regionapi.IdentityRead, error) {
+func (c *Client) createIdentity(ctx context.Context, regionID, organizationID, projectID, clusterID string) (*regionapi.IdentityRead, error) {
 	request := regionapi.PostApiV1RegionsRegionIDIdentitiesJSONRequestBody{
 		OrganizationId: organizationID,
 		ProjectId:      projectID,
 		ClusterId:      clusterID,
 	}
 
-	resp, err := region.PostApiV1RegionsRegionIDIdentitiesWithResponse(ctx, regionID, request)
+	resp, err := c.region.PostApiV1RegionsRegionIDIdentitiesWithResponse(ctx, regionID, request)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("unable to create identity").WithError(err)
 	}
@@ -228,8 +231,8 @@ func createIdentity(ctx context.Context, region regionapi.ClientWithResponsesInt
 	return resp.JSON201, nil
 }
 
-func getExternalNetworks(ctx context.Context, region regionapi.ClientWithResponsesInterface, regionID string) (regionapi.ExternalNetworks, error) {
-	resp, err := region.GetApiV1RegionsRegionIDExternalnetworksWithResponse(ctx, regionID)
+func (c *Client) getExternalNetworks(ctx context.Context, regionID string) (regionapi.ExternalNetworks, error) {
+	resp, err := c.region.GetApiV1RegionsRegionIDExternalnetworksWithResponse(ctx, regionID)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("unable to get external networks").WithError(err)
 	}
@@ -241,7 +244,7 @@ func getExternalNetworks(ctx context.Context, region regionapi.ClientWithRespons
 	return *resp.JSON200, nil
 }
 
-func applyCloudSpecificConfiguration(ctx context.Context, region regionapi.ClientWithResponsesInterface, regionID string, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
+func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, regionID string, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
 	// Save the identity ID for later cleanup.
 	if cluster.Annotations == nil {
 		cluster.Annotations = map[string]string{}
@@ -252,7 +255,7 @@ func applyCloudSpecificConfiguration(ctx context.Context, region regionapi.Clien
 	// Setup the provider specific stuff, this should be as minial as possible!
 	switch identity.Spec.Type {
 	case regionapi.Openstack:
-		externalNetworks, err := getExternalNetworks(ctx, region, regionID)
+		externalNetworks, err := c.getExternalNetworks(ctx, regionID)
 		if err != nil {
 			return err
 		}
@@ -295,22 +298,17 @@ func (c *Client) Create(ctx context.Context, organizationID, projectID string, r
 		request.Spec.ClusterManager = util.ToPointer(clusterManager.Name)
 	}
 
-	region, err := region.New(c.regionOptions)
+	cluster, err := c.generate(ctx, namespace, organizationID, projectID, request)
 	if err != nil {
 		return err
 	}
 
-	cluster, err := c.generate(ctx, region, namespace, organizationID, projectID, request)
+	identity, err := c.createIdentity(ctx, request.Spec.RegionId, organizationID, projectID, cluster.Name)
 	if err != nil {
 		return err
 	}
 
-	identity, err := createIdentity(ctx, region, request.Spec.RegionId, organizationID, projectID, cluster.Name)
-	if err != nil {
-		return err
-	}
-
-	if err := applyCloudSpecificConfiguration(ctx, region, request.Spec.RegionId, identity, cluster); err != nil {
+	if err := c.applyCloudSpecificConfiguration(ctx, request.Spec.RegionId, identity, cluster); err != nil {
 		return err
 	}
 
@@ -371,7 +369,7 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 		return err
 	}
 
-	required, err := c.generate(ctx, nil, namespace, organizationID, projectID, request)
+	required, err := c.generate(ctx, namespace, organizationID, projectID, request)
 	if err != nil {
 		return err
 	}

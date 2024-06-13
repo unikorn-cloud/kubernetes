@@ -25,6 +25,8 @@ import (
 
 // Options allows server options to be overridden.
 type Options struct {
+	Namespace string
+
 	// ListenAddress tells the server what to listen on, you shouldn't
 	// need to change this, its already non-privileged and the default
 	// should be modified to avoid clashes with other services e.g prometheus.
@@ -55,6 +57,7 @@ type Options struct {
 
 // addFlags allows server options to be modified.
 func (o *Options) AddFlags(f *pflag.FlagSet) {
+	f.StringVar(&o.Namespace, "namespace", "", "The namespace the service is running in.")
 	f.StringVar(&o.ListenAddress, "server-listen-address", ":6080", "API listener address.")
 	f.DurationVar(&o.ReadTimeout, "server-read-timeout", time.Second, "How long to wait for the client to send the request body.")
 	f.DurationVar(&o.ReadHeaderTimeout, "server-read-header-timeout", time.Second, "How long to wait for the client to send headers.")

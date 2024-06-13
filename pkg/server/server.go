@@ -36,10 +36,11 @@ import (
 	"github.com/unikorn-cloud/core/pkg/server/middleware/openapi/oidc"
 	"github.com/unikorn-cloud/core/pkg/server/middleware/opentelemetry"
 	"github.com/unikorn-cloud/core/pkg/server/middleware/timeout"
-	"github.com/unikorn-cloud/kubernetes/pkg/clients/region"
+	identityclient "github.com/unikorn-cloud/identity/pkg/client"
 	"github.com/unikorn-cloud/kubernetes/pkg/constants"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler"
+	regionclient "github.com/unikorn-cloud/region/pkg/client"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -56,14 +57,14 @@ type Server struct {
 	// HandlerOptions sets options for the HTTP handler.
 	HandlerOptions handler.Options
 
-	// AuthorizerOptions allow configuration of the OIDC backend.
-	AuthorizerOptions oidc.Options
-
 	// CORSOptions are for remote resource sharing.
 	CORSOptions cors.Options
 
-	// RegionOptions are for the region controller.
-	RegionOptions region.Options
+	// IdentityOptions are for a shared identity client.
+	IdentityOptions identityclient.Options
+
+	// RegionOptions are for a shared region client.
+	RegionOptions regionclient.Options
 }
 
 func (s *Server) AddFlags(goflags *flag.FlagSet, flags *pflag.FlagSet) {
@@ -71,8 +72,8 @@ func (s *Server) AddFlags(goflags *flag.FlagSet, flags *pflag.FlagSet) {
 
 	s.Options.AddFlags(flags)
 	s.HandlerOptions.AddFlags(flags)
-	s.AuthorizerOptions.AddFlags(flags)
 	s.CORSOptions.AddFlags(flags)
+	s.IdentityOptions.AddFlags(flags)
 	s.RegionOptions.AddFlags(flags)
 }
 
@@ -145,8 +146,15 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 	router.NotFound(http.HandlerFunc(handler.NotFound))
 	router.MethodNotAllowed(http.HandlerFunc(handler.MethodNotAllowed))
 
-	// Setup middleware.
-	authorizer := oidc.NewAuthorizer(&s.AuthorizerOptions)
+	// TODO: this is a slight hack due to dependencies, but it means only a single
+	// CLI flag.
+	authorizerOptions := &oidc.Options{
+		Issuer:                  s.IdentityOptions.Host,
+		IssuerCASecretNamespace: s.IdentityOptions.CASecretNamespace,
+		IssuerCASecretName:      s.IdentityOptions.CASecretName,
+	}
+
+	authorizer := oidc.NewAuthorizer(client, s.Options.Namespace, authorizerOptions)
 
 	// Middleware specified here is applied to all requests post-routing.
 	// NOTE: these are applied in reverse order!!
@@ -158,7 +166,10 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 		},
 	}
 
-	handlerInterface, err := handler.New(client, &s.HandlerOptions, &s.AuthorizerOptions, &s.RegionOptions)
+	identity := identityclient.New(client, s.Options.Namespace, &s.IdentityOptions)
+	region := regionclient.New(client, s.Options.Namespace, &s.RegionOptions)
+
+	handlerInterface, err := handler.New(client, s.Options.Namespace, &s.HandlerOptions, identity, region)
 	if err != nil {
 		return nil, err
 	}
