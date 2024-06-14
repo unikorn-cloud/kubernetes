@@ -212,14 +212,12 @@ func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Open
 }
 */
 
-func (c *Client) createIdentity(ctx context.Context, regionID, organizationID, projectID, clusterID string) (*regionapi.IdentityRead, error) {
-	request := regionapi.PostApiV1RegionsRegionIDIdentitiesJSONRequestBody{
-		OrganizationId: organizationID,
-		ProjectId:      projectID,
-		ClusterId:      clusterID,
+func (c *Client) createIdentity(ctx context.Context, organizationID, projectID, regionID, clusterID string) (*regionapi.IdentityRead, error) {
+	request := regionapi.PostApiV1OrganizationsOrganizationIDProjectsProjectIDRegionsRegionIDIdentitiesJSONRequestBody{
+		ClusterId: clusterID,
 	}
 
-	resp, err := c.region.PostApiV1RegionsRegionIDIdentitiesWithResponse(ctx, regionID, request)
+	resp, err := c.region.PostApiV1OrganizationsOrganizationIDProjectsProjectIDRegionsRegionIDIdentitiesWithResponse(ctx, organizationID, projectID, regionID, request)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("unable to create identity").WithError(err)
 	}
@@ -231,8 +229,8 @@ func (c *Client) createIdentity(ctx context.Context, regionID, organizationID, p
 	return resp.JSON201, nil
 }
 
-func (c *Client) getExternalNetworks(ctx context.Context, regionID string) (regionapi.ExternalNetworks, error) {
-	resp, err := c.region.GetApiV1RegionsRegionIDExternalnetworksWithResponse(ctx, regionID)
+func (c *Client) getExternalNetworks(ctx context.Context, organizationID, projectID, regionID string) (regionapi.ExternalNetworks, error) {
+	resp, err := c.region.GetApiV1OrganizationsOrganizationIDProjectsProjectIDRegionsRegionIDExternalnetworksWithResponse(ctx, organizationID, projectID, regionID)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("unable to get external networks").WithError(err)
 	}
@@ -244,7 +242,7 @@ func (c *Client) getExternalNetworks(ctx context.Context, regionID string) (regi
 	return *resp.JSON200, nil
 }
 
-func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, regionID string, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
+func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizationID, projectID, regionID string, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
 	// Save the identity ID for later cleanup.
 	if cluster.Annotations == nil {
 		cluster.Annotations = map[string]string{}
@@ -255,7 +253,7 @@ func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, regionID s
 	// Setup the provider specific stuff, this should be as minial as possible!
 	switch identity.Spec.Type {
 	case regionapi.Openstack:
-		externalNetworks, err := c.getExternalNetworks(ctx, regionID)
+		externalNetworks, err := c.getExternalNetworks(ctx, organizationID, projectID, regionID)
 		if err != nil {
 			return err
 		}
@@ -303,12 +301,12 @@ func (c *Client) Create(ctx context.Context, organizationID, projectID string, r
 		return err
 	}
 
-	identity, err := c.createIdentity(ctx, request.Spec.RegionId, organizationID, projectID, cluster.Name)
+	identity, err := c.createIdentity(ctx, organizationID, projectID, request.Spec.RegionId, cluster.Name)
 	if err != nil {
 		return err
 	}
 
-	if err := c.applyCloudSpecificConfiguration(ctx, request.Spec.RegionId, identity, cluster); err != nil {
+	if err := c.applyCloudSpecificConfiguration(ctx, organizationID, projectID, request.Spec.RegionId, identity, cluster); err != nil {
 		return err
 	}
 
