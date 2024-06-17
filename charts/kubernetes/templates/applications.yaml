@@ -3,6 +3,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "cert-manager" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: cert-manager
   annotations:
     unikorn-cloud.org/description: |-
@@ -36,6 +37,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "cert-manager-issuers" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: cert-manager-issuers
   annotations:
     unikorn-cloud.org/description: |-
@@ -61,6 +63,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "vcluster" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: vcluster
   annotations:
     unikorn-cloud.org/description: |-
@@ -87,6 +90,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "cluster-api" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: cluster-api
   annotations:
     unikorn-cloud.org/description: |-
@@ -112,6 +116,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "cilium" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: cilium
   annotations:
     unikorn-cloud.org/description: |-
@@ -143,6 +148,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "cluster-openstack" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: cluster-openstack
   annotations:
     unikorn-cloud.org/description: |-
@@ -166,6 +172,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "openstack-cloud-provider" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: openstack-cloud-provider
   annotations:
     unikorn-cloud.org/description: |-
@@ -189,6 +196,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "openstack-plugin-cinder-csi" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: openstack-plugin-cinder-csi
   annotations:
     unikorn-cloud.org/description: |-
@@ -221,6 +229,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "metrics-server" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: metrics-server
   annotations:
     unikorn-cloud.org/description: |-
@@ -246,6 +255,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "nvidia-gpu-operator" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: nvidia-gpu-operator
   annotations:
     unikorn-cloud.org/description: |-
@@ -287,6 +297,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "cluster-autoscaler" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: cluster-autoscaler
   annotations:
     unikorn-cloud.org/description: |-
@@ -323,6 +334,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "cluster-autoscaler-openstack" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: cluster-autoscaler-openstack
   annotations:
     unikorn-cloud.org/description: |-
@@ -344,6 +356,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "ingress-nginx" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: ingress-nginx
   annotations:
     unikorn-cloud.org/description: |-
@@ -373,6 +386,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "kubernetes-dashboard" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: kubernetes-dashboard
   annotations:
     unikorn-cloud.org/description: |-
@@ -400,6 +414,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "longhorn" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: longhorn
   annotations:
     unikorn-cloud.org/description: |-
@@ -432,6 +447,7 @@ kind: HelmApplication
 metadata:
   name: {{ include "resource.id" "prometheus" }}
   labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
     unikorn-cloud.org/name: prometheus
   annotations:
     unikorn-cloud.org/description: |-
