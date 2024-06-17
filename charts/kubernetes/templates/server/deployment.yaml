@@ -27,14 +27,14 @@ spec:
             {{ printf "- --cors-max-age=%s" $cors.maxAge | nindent 8 }}
           {{- end }}
         {{- end }}
-        - --identity-host={{ include "unikorn.identity.host" .}}
+        - --identity-host=https://{{ include "unikorn.identity.host" .}}
         {{- with $caSecretNamespace := ( include "unikorn.identity.ca.secretNamespace" . ) -}}
           {{ printf "- --identity-ca-secret-namespace=%s" $caSecretNamespace | nindent 8 }}
         {{- end }}
         {{- with $caSecretName := ( include "unikorn.identity.ca.secretName" . ) -}}
           {{ printf "- --identity-ca-secret-name=%s" $caSecretName | nindent 8 }}
         {{- end }}
-        - --region-host={{ include "unikorn.region.host" . }}
+        - --region-host=https://{{ include "unikorn.region.host" . }}
         {{- with $caSecretNamespace := ( include "unikorn.region.ca.secretNamespace" . ) -}}
           {{ printf "- --region-ca-secret-namespace=%s" $caSecretNamespace | nindent 8 }}
         {{- end }}

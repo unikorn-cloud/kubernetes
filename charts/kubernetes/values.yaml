@@ -65,7 +65,7 @@ ingress:
 
 identity:
   # OIDC issuer used to discover OIDC configuration and verify access tokens.
-  host: https://identity.unikorn-cloud.org
+  host: identity.unikorn-cloud.org
 
   # CA certificate to use to verify connections to the issuer, used in development only.
   # caSecretNamespace: ~
@@ -73,7 +73,7 @@ identity:
 
 region:
   # Region controller URL.
-  host: https://region.unikorn-cloud.org
+  host: region.unikorn-cloud.org
 
   # CA file if using self signed/private certificates.
   # caSecretNamespace: ~
