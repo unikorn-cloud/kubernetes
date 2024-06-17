@@ -2,6 +2,8 @@ apiVersion: unikorn-cloud.org/v1alpha1
 kind: KubernetesClusterApplicationBundle
 metadata:
   name: kubernetes-cluster-1.0.0
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
 spec:
   version: 1.0.0
   applications:
