@@ -126,3 +126,70 @@ group 3 starts with "4" (UUIDv4 aka "random") and group 4 with "8"
 {{- $sum := sha256sum . -}}
 {{ printf "f%s-%s-4%s-8%s-%s" (substr 1 8 $sum) (substr 8 12 $sum) (substr 13 16 $sum) (substr 17 20 $sum) (substr 20 32 $sum) }}
 {{- end }}
+
+{{/*
+Abstractions to allow an all-in-one chart
+*/}}
+{{- define "unikorn.identity.host" -}}
+{{- if (and .Values.global .Values.global.identity .Values.global.identity.host) -}}
+{{- .Values.global.identity.host }}
+{{- else }}
+{{- .Values.identity.host }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.region.host" -}}
+{{- if (and .Values.global .Values.global.region .Values.global.region.host) -}}
+{{- .Values.global.region.host }}
+{{- else }}
+{{- .Values.region.host }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.kubernetes.host" -}}
+{{- if (and .Values.global .Values.global.kubernetes .Values.global.kubernetes.host) -}}
+{{- .Values.global.kubernetes.host }}
+{{- else }}
+{{- .Values.host }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.ingress.clusterIssuer" -}}
+{{- if (and .Values.global .Values.global.ingress .Values.global.ingress.clusterIssuer) -}}
+{{- .Values.global.ingress.clusterIssuer }}
+{{- else if .Values.ingress.clusterIssuer }}
+{{- .Values.ingress.clusterIssuer }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.identity.ca.secretNamespace" -}}
+{{- if (and .Values.global .Values.global.ca .Values.global.ca .Values.global.ca.secretNamespace) -}}
+{{- .Values.global.ca.secretNamespace }}
+{{- else if .Values.identity.caSecretNamespace }}
+{{- .Values.identity.caSecretNamespace }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.identity.ca.secretName" -}}
+{{- if (and .Values.global .Values.global.ca .Values.global.ca .Values.global.ca.secretName) -}}
+{{- .Values.global.ca.secretName }}
+{{- else if .Values.identity.caSecretName }}
+{{- .Values.identity.caSecretName }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.region.ca.secretNamespace" -}}
+{{- if (and .Values.global .Values.global.ca .Values.global.ca .Values.global.ca.secretNamespace) -}}
+{{- .Values.global.ca.secretNamespace }}
+{{- else if .Values.region.caSecretNamespace }}
+{{- .Values.region.caSecretNamespace }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.region.ca.secretName" -}}
+{{- if (and .Values.global .Values.global.ca .Values.global.ca .Values.global.ca.secretName) -}}
+{{- .Values.global.ca.secretName }}
+{{- else if .Values.region.caSecretName }}
+{{- .Values.region.caSecretName }}
+{{- end }}
+{{- end }}
