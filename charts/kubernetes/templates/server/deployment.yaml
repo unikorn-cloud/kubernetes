@@ -19,7 +19,7 @@ spec:
         image: {{ include "unikorn.serverImage" . }}
         args:
         - --namespace={{ .Release.Namespace }}
-        {{- with $cors := .Values.server.cors }}
+        {{- with $cors := .Values.cors -}}
           {{- range $origin := $cors.allowOrigin }}
             {{ printf "- --cors-allow-origin=%s" $origin | nindent 8 }}
           {{- end }}
@@ -27,28 +27,22 @@ spec:
             {{ printf "- --cors-max-age=%s" $cors.maxAge | nindent 8 }}
           {{- end }}
         {{- end }}
-        {{- with $identity := .Values.server.identity }}
-        - --identity-host={{ $identity.host }}
-          {{- if $identity.caSecretNamespace }}
-            {{ printf "- --identity-ca-secret-namespace=%s" $identity.caSecretNamespace | nindent 8 }}
-          {{- end }}
-          {{- if $identity.caSecretName }}
-            {{ printf "- --identity-ca-secret-name=%s" $identity.caSecretName | nindent 8 }}
-          {{- end }}
+        - --identity-host={{ include "unikorn.identity.host" .}}
+        {{- with $caSecretNamespace := ( include "unikorn.identity.ca.secretNamespace" . ) -}}
+          {{ printf "- --identity-ca-secret-namespace=%s" $caSecretNamespace | nindent 8 }}
         {{- end }}
-        {{- with $region := .Values.server.region }}
-          {{- if $region.host }}
-            {{ printf "- --region-host=%s" $region.host | nindent 8 }}
-          {{- end }}
-          {{- if $region.caSecretNamespace }}
-            {{ printf "- --region-ca-secret-namespace=%s" $region.caSecretNamespace | nindent 8 }}
-          {{- end }}
-          {{- if $region.caSecretName }}
-            {{ printf "- --region-ca-secret-name=%s" $region.caSecretName | nindent 8 }}
-          {{- end }}
+        {{- with $caSecretName := ( include "unikorn.identity.ca.secretName" . ) -}}
+          {{ printf "- --identity-ca-secret-name=%s" $caSecretName | nindent 8 }}
         {{- end }}
-        {{- if .Values.server.otlpEndpoint }}
-          {{ printf "- --otlp-endpoint=%s" .Values.server.otlpEndpoint | nindent 8 }}
+        - --region-host={{ include "unikorn.region.host" . }}
+        {{- with $caSecretNamespace := ( include "unikorn.region.ca.secretNamespace" . ) -}}
+          {{ printf "- --region-ca-secret-namespace=%s" $caSecretNamespace | nindent 8 }}
+        {{- end }}
+        {{- with $caSecretName := ( include "unikorn.region.ca.secretName" . ) -}}
+          {{ printf "- --region-ca-secret-name=%s" $caSecretName | nindent 8 }}
+        {{- end }}
+        {{- if .Values.otlpEndpoint -}}
+          {{ printf "- --otlp-endpoint=%s" .Values.otlpEndpoint | nindent 8 }}
         {{- end }}
         ports:
         - name: http

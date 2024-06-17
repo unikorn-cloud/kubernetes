@@ -5,18 +5,19 @@ metadata:
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
   annotations:
-  {{- if .Values.server.ingress.clusterIssuer }}
-    cert-manager.io/cluster-issuer: {{ .Values.server.ingress.clusterIssuer | indent 2 }}
-  {{- else if .Values.server.ingress.issuer }}
-    cert-manager.io/issuer: {{ .Values.server.ingress.issuer }}
-  {{- end }}
-  {{- with $ingress := .Values.server.ingress }}
-  {{- if $ingress.externalDns }}
-    external-dns.alpha.kubernetes.io/hostname: {{ .ingress.host }}
-  {{- end }}
+  {{- with $clusterIssuer := ( include "unikorn.ingress.clusterIssuer" . ) }}
+    cert-manager.io/cluster-issuer: {{ $clusterIssuer | indent 2 }}
+  {{- end }} 
+  {{- with $ingress := .Values.ingress }}
+    {{- if $ingress.issuer }}
+    cert-manager.io/issuer: {{ $ingress.issuer }}
+    {{- end }}
+    {{- if $ingress.externalDns }}
+    external-dns.alpha.kubernetes.io/hostname: {{ include "unikorn.kubernetes.host" . }}
+    {{- end }}
   {{- end }}
 spec:
-  {{- with $ingress := .Values.server.ingress }}
+  {{- with $ingress := .Values.ingress }}
   {{- if $ingress.class }}
   ingressClassName: {{ $ingress.class }}
   {{- end }}
@@ -25,13 +26,13 @@ spec:
   # endpoint address.
   tls:
   - hosts:
-    - {{ .Values.server.ingress.host }}
+    - {{ include "unikorn.kubernetes.host" . }}
     secretName: unikorn-server-ingress-tls
   rules:
   # The the UI is written as a JAMstack application, so the API is accessed via
   # the same host to avoid CORS, and therefore uses routing to hit the correct
   # service.
-  - host: {{ .Values.server.ingress.host }}
+  - host: {{ include "unikorn.kubernetes.host" . }}
     http:
       paths:
       - path: /
