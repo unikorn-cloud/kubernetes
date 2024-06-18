@@ -43,6 +43,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Touch
       run: make touch
+    - name: Build Helm Chart
+      run: helm dependency update charts/kubernetes
     - name: Golang CI/Helm Lint
       run: make lint
     - name: Build Images
