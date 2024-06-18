@@ -4,7 +4,6 @@ metadata:
   name: unikorn-cluster-manager-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
-    {{- include "unikorn.prometheusLabels" (dict "job" "unikorn-cluster-manager-controller") | nindent 4 }}
 spec:
   selector:
     app: unikorn-cluster-manager-controller

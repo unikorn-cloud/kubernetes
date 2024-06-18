@@ -4,7 +4,6 @@ metadata:
   name: unikorn-server
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
-    {{- include "unikorn.prometheusLabels" (dict "job" "unikorn-server") | nindent 4 }}
 spec:
   selector:
     app: unikorn-server
