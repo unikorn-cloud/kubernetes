@@ -23,6 +23,7 @@ import (
 	"slices"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/core/pkg/constants"
 	coreopenapi "github.com/unikorn-cloud/core/pkg/openapi"
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
@@ -37,6 +38,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -71,6 +73,26 @@ var (
 // CreateImplicit is called when a cluster creation call is made and a control plane is not specified.
 func (c *Client) CreateImplicit(ctx context.Context, organizationID, projectID string) (*unikornv1.ClusterManager, error) {
 	log := log.FromContext(ctx)
+
+	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationID, projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	var existing unikornv1.ClusterManagerList
+
+	options := &client.ListOptions{
+		Namespace:     namespace.Name,
+		LabelSelector: labels.SelectorFromSet(labels.Set{constants.NameLabel: "default"}),
+	}
+
+	if err := c.client.List(ctx, &existing, options); err != nil {
+		return nil, err
+	}
+
+	if len(existing.Items) != 0 {
+		return &existing.Items[0], nil
+	}
 
 	log.Info("creating implicit control plane")
 

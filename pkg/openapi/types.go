@@ -105,9 +105,9 @@ type KubernetesClusterRead struct {
 
 // KubernetesClusterSpec Kubernetes cluster creation parameters.
 type KubernetesClusterSpec struct {
-	// ClusterManager The name of the cluster manager to use, if one is not specified
+	// ClusterManagerId The name of the cluster manager to use, if one is not specified
 	// the system will create one for you.
-	ClusterManager *string `json:"clusterManager,omitempty"`
+	ClusterManagerId *string `json:"clusterManagerId,omitempty"`
 
 	// RegionId The region to provision the cluster in.
 	RegionId string `json:"regionId"`

@@ -287,13 +287,13 @@ func (c *Client) Create(ctx context.Context, organizationID, projectID string, r
 	}
 
 	// Implicitly create the controller manager.
-	if request.Spec.ClusterManager == nil {
+	if request.Spec.ClusterManagerId == nil {
 		clusterManager, err := clustermanager.NewClient(c.client).CreateImplicit(ctx, organizationID, projectID)
 		if err != nil {
 			return err
 		}
 
-		request.Spec.ClusterManager = util.ToPointer(clusterManager.Name)
+		request.Spec.ClusterManagerId = util.ToPointer(clusterManager.Name)
 	}
 
 	cluster, err := c.generate(ctx, namespace, organizationID, projectID, request)

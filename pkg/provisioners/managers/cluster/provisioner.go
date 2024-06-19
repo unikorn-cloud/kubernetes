@@ -149,7 +149,7 @@ func (p *Provisioner) getClusterManager(ctx context.Context) (*unikornv1.Cluster
 
 	key := client.ObjectKey{
 		Namespace: projectNamespace.Name,
-		Name:      p.cluster.Spec.ClusterManager,
+		Name:      p.cluster.Spec.ClusterManagerID,
 	}
 
 	if err := coreclient.StaticClientFromContext(ctx).Get(ctx, key, &clusterManager); err != nil {
