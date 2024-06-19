@@ -5,14 +5,10 @@ metadata:
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
   annotations:
-  {{- with $clusterIssuer := ( include "unikorn.ingress.clusterIssuer" . ) }}
-    cert-manager.io/cluster-issuer: {{ $clusterIssuer }}
-  {{- end }} 
-  {{- with $ingress := .Values.ingress }}
-    {{- if $ingress.externalDns }}
+    {{- include "unikorn.ingress.clusterIssuer.annotations" . | nindent 4 }}
+    {{- if (include "unikorn.ingress.externalDNS" .) }}
     external-dns.alpha.kubernetes.io/hostname: {{ include "unikorn.kubernetes.host" . }}
     {{- end }}
-  {{- end }}
 spec:
   {{- with $ingress := .Values.ingress }}
   {{- if $ingress.class }}
