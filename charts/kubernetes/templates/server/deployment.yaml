@@ -30,14 +30,12 @@ spec:
           containerPort: 8080
         - name: pprof
           containerPort: 6060
-        # Note, this is quite CPU intensive, especially when going wide!
-        # TODO: profile me.
         resources:
           requests:
-            cpu: "1"
+            cpu: "50m"
             memory: 50Mi
           limits:
-            cpu: "2"
+            cpu: "100m"
             memory: 100Mi
         securityContext:
           readOnlyRootFilesystem: true
