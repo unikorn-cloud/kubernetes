@@ -264,7 +264,7 @@ spec:
                         type: object
                     type: object
                 type: object
-              clusterManager:
+              clusterManagerId:
                 description: ClusterManager that provides lifecycle management for
                   the cluster.
                 type: string
@@ -562,7 +562,7 @@ spec:
                 type: object
             required:
             - applicationBundle
-            - clusterManager
+            - clusterManagerId
             - controlPlane
             - network
             - openstack
