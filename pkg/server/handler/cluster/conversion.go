@@ -99,10 +99,10 @@ func (c *Client) convert(in *unikornv1.KubernetesCluster) *openapi.KubernetesClu
 	out := &openapi.KubernetesClusterRead{
 		Metadata: conversion.ProjectScopedResourceReadMetadata(in, provisioningStatus),
 		Spec: openapi.KubernetesClusterSpec{
-			RegionId:       in.Spec.RegionID,
-			ClusterManager: &in.Spec.ClusterManager,
-			Version:        string(*in.Spec.Version),
-			WorkloadPools:  convertWorkloadPools(in),
+			RegionId:         in.Spec.RegionID,
+			ClusterManagerId: &in.Spec.ClusterManagerID,
+			Version:          string(*in.Spec.Version),
+			WorkloadPools:    convertWorkloadPools(in),
 		},
 	}
 
@@ -401,7 +401,7 @@ func (c *Client) generate(ctx context.Context, namespace *corev1.Namespace, orga
 		ObjectMeta: conversion.ProjectScopedObjectMetadata(&request.Metadata, namespace.Name, organizationID, projectID),
 		Spec: unikornv1.KubernetesClusterSpec{
 			RegionID:                     request.Spec.RegionId,
-			ClusterManager:               *request.Spec.ClusterManager,
+			ClusterManagerID:             *request.Spec.ClusterManagerId,
 			Version:                      util.ToPointer(unikornv1.SemanticVersion(request.Spec.Version)),
 			ApplicationBundle:            &applicationBundle.Name,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},

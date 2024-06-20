@@ -449,7 +449,7 @@ components:
         regionId:
           description: The region to provision the cluster in.
           type: string
-        clusterManager:
+        clusterManagerId:
           description: |-
             The name of the cluster manager to use, if one is not specified
             the system will create one for you.
@@ -616,7 +616,9 @@ components:
               id: c7568e2d-f9ab-453d-9a3a-51375f78426b
               name: default 
               organizationId: d4600d6e-e965-4b44-a808-84fb2fa36702
+              organizationName: acme-corp
               projectId: cae219d7-10e5-4601-8c2c-ee7e066b93ce
+              projectName: top-secret
               creationTime: 2023-07-31T10:45:45Z
               provisioningStatus: provisioned
     clusterManagersResponse:
@@ -630,7 +632,9 @@ components:
               id: c7568e2d-f9ab-453d-9a3a-51375f78426b
               name: default
               organizationId: d4600d6e-e965-4b44-a808-84fb2fa36702
+              organizationName: acme-corp
               projectId: cae219d7-10e5-4601-8c2c-ee7e066b93ce
+              projectName: top-secret
               creationTime: 2023-07-31T10:45:45Z
               provisioningStatus: provisioned
     kubernetesClusterKubeconfigResponse:
@@ -654,7 +658,7 @@ components:
             spec:
               regionId: b059b3e6-9ae5-42b7-94b4-f42fb7a6baee
               version: v1.27.2
-              clusterManager: b85525fc-40ca-482b-ac07-eca8b01b09c2
+              clusterManagerId: b85525fc-40ca-482b-ac07-eca8b01b09c2
               workloadPools:
               - name: default
                 machine:

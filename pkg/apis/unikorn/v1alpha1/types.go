@@ -434,7 +434,7 @@ type KubernetesClusterSpec struct {
 	// Region to provision the cluster in.
 	RegionID string `json:"regionId"`
 	// ClusterManager that provides lifecycle management for the cluster.
-	ClusterManager string `json:"clusterManager"`
+	ClusterManagerID string `json:"clusterManagerId"`
 	// Version is the Kubernetes version to install.  For performance
 	// reasons this should match what is already pre-installed on the
 	// provided image.

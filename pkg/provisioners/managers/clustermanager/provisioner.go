@@ -172,7 +172,7 @@ func (p *Provisioner) Deprovision(ctx context.Context) error {
 	}
 
 	clusters.Items = slices.DeleteFunc(clusters.Items, func(cluster unikornv1.KubernetesCluster) bool {
-		return cluster.Spec.ClusterManager != p.clusterManager.Name
+		return cluster.Spec.ClusterManagerID != p.clusterManager.Name
 	})
 
 	if len(clusters.Items) != 0 {
