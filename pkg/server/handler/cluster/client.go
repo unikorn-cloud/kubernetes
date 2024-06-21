@@ -366,6 +366,9 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 		return err
 	}
 
+	// Copy over things we provide.
+	required.Spec.Openstack = current.Spec.Openstack
+
 	// Experience has taught me that modifying caches by accident is a bad thing
 	// so be extra safe and deep copy the existing resource.
 	updated := current.DeepCopy()
