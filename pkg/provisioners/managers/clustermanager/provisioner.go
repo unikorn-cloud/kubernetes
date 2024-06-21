@@ -26,7 +26,6 @@ import (
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	"github.com/unikorn-cloud/core/pkg/provisioners"
-	"github.com/unikorn-cloud/core/pkg/provisioners/concurrent"
 	"github.com/unikorn-cloud/core/pkg/provisioners/remotecluster"
 	"github.com/unikorn-cloud/core/pkg/provisioners/serial"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
@@ -122,7 +121,9 @@ func (p *Provisioner) getClusterManagerProvisioner() provisioners.Provisioner {
 
 	remoteClusterManager := remotecluster.New(vcluster.NewRemoteCluster(p.clusterManager.Namespace, p.clusterManager.Name, &p.clusterManager), true)
 
-	clusterAPIProvisioner := concurrent.New("cluster-api",
+	// **** sake https://github.com/argoproj/argo-cd/issues/18041
+	// This should be a concurrent provision, but alas no.
+	clusterAPIProvisioner := serial.New("cluster-api",
 		certmanager.New(apps.certManager),
 		clusterapi.New(apps.clusterAPI),
 	)

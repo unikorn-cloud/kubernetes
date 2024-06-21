@@ -28,7 +28,6 @@ import (
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util"
-	"github.com/unikorn-cloud/core/pkg/util/retry"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/applicationbundle"
@@ -56,19 +55,6 @@ func NewClient(client client.Client) *Client {
 		client: client,
 	}
 }
-
-var (
-	// ErrResourceDeleting is raised when the resource is being deleted.
-	ErrResourceDeleting = goerrors.New("resource is being deleted")
-
-	// ErrNamespaceUnset is raised when the namespace hasn't been created
-	// yet.
-	ErrNamespaceUnset = goerrors.New("resource namespace is unset")
-
-	// ErrApplicationBundle is raised when no suitable application
-	// bundle is found.
-	ErrApplicationBundle = goerrors.New("no application bundle found")
-)
 
 // CreateImplicit is called when a cluster creation call is made and a control plane is not specified.
 func (c *Client) CreateImplicit(ctx context.Context, organizationID, projectID string) (*unikornv1.ClusterManager, error) {
@@ -105,31 +91,6 @@ func (c *Client) CreateImplicit(ctx context.Context, organizationID, projectID s
 
 	resource, err := c.Create(ctx, organizationID, projectID, request)
 	if err != nil {
-		return nil, err
-	}
-
-	waitCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	// Allow a grace period for the project to become active to avoid client
-	// errors and retries.  The namespace creation should be ostensibly instant
-	// and likewise show up due to non-blocking yields.
-	callback := func() error {
-		if _, err := c.get(waitCtx, resource.Namespace, resource.Name); err != nil {
-			// Short cut deleting errors.
-			if goerrors.Is(err, ErrResourceDeleting) {
-				cancel()
-
-				return nil
-			}
-
-			return err
-		}
-
-		return nil
-	}
-
-	if err := retry.Forever().DoWithContext(waitCtx, callback); err != nil {
 		return nil, err
 	}
 
