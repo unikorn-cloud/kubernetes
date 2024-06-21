@@ -18,6 +18,8 @@ limitations under the License.
 package vcluster
 
 import (
+	"context"
+
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
@@ -43,7 +45,13 @@ func init() {
 	metrics.Registry.MustRegister(durationMetric)
 }
 
+type Provisioner struct{}
+
+func (*Provisioner) ReleaseName(ctx context.Context) string {
+	return releaseName(application.FromContext(ctx).GetName())
+}
+
 // New returns a new initialized provisioner object.
 func New(getApplication application.GetterFunc, name string) *application.Provisioner {
-	return application.New(getApplication)
+	return application.New(getApplication).WithGenerator(&Provisioner{})
 }

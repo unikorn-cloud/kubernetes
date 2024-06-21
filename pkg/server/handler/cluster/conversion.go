@@ -208,7 +208,7 @@ func (c *Client) generateNetwork() *unikornv1.KubernetesClusterNetworkSpec {
 }
 
 // generateMachineGeneric generates a generic machine part of the cluster.
-func (c *Client) generateMachineGeneric(ctx context.Context, organizationID, projectID string, options *openapi.KubernetesClusterSpec, m *openapi.MachinePool, flavorName string) (*unikornv1.MachineGeneric, error) {
+func (c *Client) generateMachineGeneric(ctx context.Context, organizationID, projectID string, options *openapi.KubernetesClusterSpec, m *openapi.MachinePool, flavor *regionapi.Flavor) (*unikornv1.MachineGeneric, error) {
 	if m.Replicas == nil {
 		m.Replicas = util.ToPointer(3)
 	}
@@ -222,7 +222,8 @@ func (c *Client) generateMachineGeneric(ctx context.Context, organizationID, pro
 		Replicas: m.Replicas,
 		ImageID:  util.ToPointer(image.Metadata.Id),
 		// TODO: this is a hack because CAPO is "broken".
-		FlavorID: &flavorName,
+		FlavorID:   &flavor.Metadata.Id,
+		FlavorName: &flavor.Metadata.Name,
 	}
 
 	if m.Disk != nil {
@@ -249,7 +250,7 @@ func (c *Client) generateControlPlane(ctx context.Context, organizationID, proje
 		FlavorId: &resource.Metadata.Id,
 	}
 
-	machine, err := c.generateMachineGeneric(ctx, organizationID, projectID, options, machineOptions, resource.Metadata.Name)
+	machine, err := c.generateMachineGeneric(ctx, organizationID, projectID, options, machineOptions, resource)
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +274,7 @@ func (c *Client) generateWorkloadPools(ctx context.Context, organizationID, proj
 			return nil, err
 		}
 
-		machine, err := c.generateMachineGeneric(ctx, organizationID, projectID, options, &pool.Machine, flavor.Metadata.Name)
+		machine, err := c.generateMachineGeneric(ctx, organizationID, projectID, options, &pool.Machine, flavor)
 		if err != nil {
 			return nil, err
 		}

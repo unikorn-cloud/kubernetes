@@ -142,13 +142,18 @@ func (c *Client) GetKubeconfig(ctx context.Context, organizationID, projectID, c
 		return nil, err
 	}
 
+	cluster, err := c.get(ctx, project.Name, clusterID)
+	if err != nil {
+		return nil, err
+	}
+
 	// TODO: propagate the client like we do in the controllers, then code sharing
 	// becomes a lot easier!
 	ctx = coreclient.NewContextWithDynamicClient(ctx, c.client)
 
 	vc := vcluster.NewControllerRuntimeClient()
 
-	vclusterConfig, err := vc.RESTConfig(ctx, project.Name, false)
+	vclusterConfig, err := vc.RESTConfig(ctx, project.Name, cluster.Spec.ClusterManagerID, false)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed to get control plane rest config").WithError(err)
 	}
@@ -156,17 +161,6 @@ func (c *Client) GetKubeconfig(ctx context.Context, organizationID, projectID, c
 	vclusterClient, err := client.New(vclusterConfig, client.Options{})
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed to get control plane client").WithError(err)
-	}
-
-	clusterObjectKey := client.ObjectKey{
-		Namespace: project.Name,
-		Name:      clusterID,
-	}
-
-	cluster := &unikornv1.KubernetesCluster{}
-
-	if err := c.client.Get(ctx, clusterObjectKey, cluster); err != nil {
-		return nil, errors.HTTPNotFound().WithError(err)
 	}
 
 	objectKey := client.ObjectKey{

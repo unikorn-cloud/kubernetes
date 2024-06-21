@@ -283,6 +283,11 @@ spec:
                   flavorId:
                     description: Flavor is the OpenStack Nova flavor to deploy with.
                     type: string
+                  flavorName:
+                    description: |-
+                      FlavorName is the name of the flavor.
+                      CAPO is broken and doesn't accept an ID, so we need to use this.
+                    type: string
                   imageId:
                     description: Image is the OpenStack Glance image to deploy with.
                     type: string
@@ -303,6 +308,7 @@ spec:
                     type: string
                 required:
                 - flavorId
+                - flavorName
                 - imageId
                 type: object
               features:
@@ -524,6 +530,11 @@ spec:
                           description: Flavor is the OpenStack Nova flavor to deploy
                             with.
                           type: string
+                        flavorName:
+                          description: |-
+                            FlavorName is the name of the flavor.
+                            CAPO is broken and doesn't accept an ID, so we need to use this.
+                          type: string
                         imageId:
                           description: Image is the OpenStack Glance image to deploy
                             with.
@@ -555,6 +566,7 @@ spec:
                           type: string
                       required:
                       - flavorId
+                      - flavorName
                       - imageId
                       - name
                       type: object

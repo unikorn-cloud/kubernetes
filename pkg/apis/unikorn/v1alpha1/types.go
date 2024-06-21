@@ -206,6 +206,9 @@ type MachineGeneric struct {
 	ImageID *string `json:"imageId"`
 	// Flavor is the OpenStack Nova flavor to deploy with.
 	FlavorID *string `json:"flavorId"`
+	// FlavorName is the name of the flavor.
+	// CAPO is broken and doesn't accept an ID, so we need to use this.
+	FlavorName *string `json:"flavorName"`
 	// DiskSize is the persistent root disk size to deploy with.  This
 	// overrides the default ephemeral disk size defined in the flavor.
 	DiskSize *resource.Quantity `json:"diskSize,omitempty"`

@@ -53,7 +53,7 @@ var _ application.PostProvisionHook = &Provisioner{}
 func (p *Provisioner) generateMachineHelmValues(machine *unikornv1.MachineGeneric, failureDomain *string) map[string]interface{} {
 	object := map[string]interface{}{
 		"imageID":  *machine.ImageID,
-		"flavorID": *machine.FlavorID,
+		"flavorID": *machine.FlavorName,
 	}
 
 	if failureDomain != nil {
