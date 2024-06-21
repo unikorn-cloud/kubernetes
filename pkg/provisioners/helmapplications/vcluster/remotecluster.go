@@ -76,5 +76,5 @@ func (g *RemoteCluster) ID() *cd.ResourceIdentifier {
 
 // Config implements the remotecluster.Generator interface.
 func (g *RemoteCluster) Config(ctx context.Context) (*clientcmdapi.Config, error) {
-	return NewControllerRuntimeClient().ClientConfig(ctx, g.namespace, false)
+	return NewControllerRuntimeClient().ClientConfig(ctx, g.namespace, g.name, false)
 }

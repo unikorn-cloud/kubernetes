@@ -888,6 +888,11 @@ func (in *MachineGeneric) DeepCopyInto(out *MachineGeneric) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.FlavorName != nil {
+		in, out := &in.FlavorName, &out.FlavorName
+		*out = new(string)
+		**out = **in
+	}
 	if in.DiskSize != nil {
 		in, out := &in.DiskSize, &out.DiskSize
 		x := (*in).DeepCopy()
