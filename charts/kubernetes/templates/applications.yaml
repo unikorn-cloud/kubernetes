@@ -84,6 +84,11 @@ spec:
     parameters:
     - name: hostpathMapper.enabled
       value: 'true'
+    - name: autoDeletePersistentVolumeClaims
+      value: 'true'
+    # This will be valid from v0.20 onward
+    #- name: controlPlane.statefulSet.persistence.volumeClaim.retentionPolicy
+    #  value: Delete
 ---
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: HelmApplication

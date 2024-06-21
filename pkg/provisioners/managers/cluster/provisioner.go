@@ -218,8 +218,40 @@ func (p *Provisioner) getProvisioner(ctx context.Context) (provisioners.Provisio
 	return provisioner, nil
 }
 
+// managerReady gates cluster creation on the manager being up and ready.
+// Due to https://github.com/argoproj/argo-cd/issues/18041 Argo will break
+// quite spectacularly if you try to install an application when the requisite
+// CRDs are not present yet.  As a result we need to provision the implicit
+// manager serially, and that takes a long time.  So long the request times
+// out, so we essentially have to defer cluster creation until we know the
+// manager is working and Argo isn't going to fail.
+func (p *Provisioner) managerReady(ctx context.Context) error {
+	cli := coreclient.StaticClientFromContext(ctx)
+
+	manager := &unikornv1.ClusterManager{}
+
+	if err := cli.Get(ctx, client.ObjectKey{Namespace: p.cluster.Namespace, Name: p.cluster.Spec.ClusterManagerID}, manager); err != nil {
+		return err
+	}
+
+	condition, err := manager.StatusConditionRead(unikornv1core.ConditionAvailable)
+	if err != nil {
+		return err
+	}
+
+	if condition.Reason != unikornv1core.ConditionReasonProvisioned {
+		return provisioners.ErrYield
+	}
+
+	return nil
+}
+
 // Provision implements the Provision interface.
 func (p *Provisioner) Provision(ctx context.Context) error {
+	if err := p.managerReady(ctx); err != nil {
+		return err
+	}
+
 	provisioner, err := p.getProvisioner(ctx)
 	if err != nil {
 		return err
