@@ -24,6 +24,7 @@ import (
 	"slices"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
+	"github.com/unikorn-cloud/core/pkg/authorization/userinfo"
 	coreopenapi "github.com/unikorn-cloud/core/pkg/openapi"
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
@@ -383,6 +384,8 @@ func installClusterAutoscaler(cluster *unikornv1.KubernetesCluster) {
 // TODO: there are a lot of parameters being passed about, we should make this
 // a struct and pass them as a single blob.
 func (c *Client) generate(ctx context.Context, namespace *corev1.Namespace, organizationID, projectID string, request *openapi.KubernetesClusterWrite) (*unikornv1.KubernetesCluster, error) {
+	userinfo := userinfo.FromContext(ctx)
+
 	kubernetesControlPlane, err := c.generateControlPlane(ctx, organizationID, projectID, &request.Spec)
 	if err != nil {
 		return nil, err
@@ -399,7 +402,7 @@ func (c *Client) generate(ctx context.Context, namespace *corev1.Namespace, orga
 	}
 
 	cluster := &unikornv1.KubernetesCluster{
-		ObjectMeta: conversion.ProjectScopedObjectMetadata(&request.Metadata, namespace.Name, organizationID, projectID),
+		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, namespace.Name).WithOrganization(organizationID).WithProject(projectID).WithUser(userinfo.Subject).Get(),
 		Spec: unikornv1.KubernetesClusterSpec{
 			RegionID:                     request.Spec.RegionId,
 			ClusterManagerID:             *request.Spec.ClusterManagerId,
