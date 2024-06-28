@@ -149,6 +149,8 @@ func (p *Provisioner) Values(ctx context.Context, _ *string) (interface{}, error
 		// See https://github.com/kubernetes/cloud-provider-openstack/issues/2049 for
 		// more details, and no-one doing anything about it.
 		"controllerExtraArgs": `{{list "--use-service-account-credentials=false" | toYaml}}`,
+		// See https://github.com/kubernetes/cloud-provider-openstack/issues/2611
+		"dnsPolicy": "Default",
 	}
 
 	return values, nil
