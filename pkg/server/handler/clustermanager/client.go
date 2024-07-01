@@ -23,7 +23,6 @@ import (
 	"slices"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
-	"github.com/unikorn-cloud/core/pkg/authorization/userinfo"
 	"github.com/unikorn-cloud/core/pkg/constants"
 	coreopenapi "github.com/unikorn-cloud/core/pkg/openapi"
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
@@ -195,15 +194,13 @@ func (c *Client) defaultApplicationBundle(ctx context.Context) (*unikornv1.Clust
 
 // generate is a common function to create a Kubernetes type from an API one.
 func (c *Client) generate(ctx context.Context, namespace *corev1.Namespace, organizationID, projectID string, request *openapi.ClusterManagerWrite) (*unikornv1.ClusterManager, error) {
-	userinfo := userinfo.FromContext(ctx)
-
 	applicationBundle, err := c.defaultApplicationBundle(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	out := &unikornv1.ClusterManager{
-		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, namespace.Name).WithOrganization(organizationID).WithProject(projectID).WithUser(userinfo.Subject).Get(),
+		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, namespace.Name).WithOrganization(organizationID).WithProject(projectID).Get(ctx),
 		Spec: unikornv1.ClusterManagerSpec{
 			ApplicationBundle:            &applicationBundle.Name,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},

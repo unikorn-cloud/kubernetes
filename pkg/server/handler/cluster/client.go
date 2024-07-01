@@ -29,6 +29,7 @@ import (
 
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	"github.com/unikorn-cloud/core/pkg/constants"
+	coreapi "github.com/unikorn-cloud/core/pkg/openapi"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
@@ -207,8 +208,21 @@ func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Open
 */
 
 func (c *Client) createIdentity(ctx context.Context, organizationID, projectID, regionID, clusterID string) (*regionapi.IdentityRead, error) {
+	tags := regionapi.TagList{
+		{
+			Name:  constants.KubernetesClusterLabel,
+			Value: clusterID,
+		},
+	}
+
 	request := regionapi.PostApiV1OrganizationsOrganizationIDProjectsProjectIDRegionsRegionIDIdentitiesJSONRequestBody{
-		ClusterId: clusterID,
+		Metadata: coreapi.ResourceWriteMetadata{
+			Name:        "kubernetes-cluster-" + clusterID,
+			Description: util.ToPointer("Identity for Kubernetes cluster " + clusterID),
+		},
+		Spec: regionapi.IdentityWriteSpec{
+			Tags: &tags,
+		},
 	}
 
 	resp, err := c.region.PostApiV1OrganizationsOrganizationIDProjectsProjectIDRegionsRegionIDIdentitiesWithResponse(ctx, organizationID, projectID, regionID, request)
