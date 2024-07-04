@@ -283,7 +283,6 @@ func (p *Provisioner) Deprovision(ctx context.Context) error {
 	recorder := manager.FromContext(ctx).GetEventRecorderFor("kubernetescluster")
 
 	annotations := map[string]string{
-		constants.RegionAnnotation:        p.cluster.Spec.RegionID,
 		constants.CloudIdentityAnnotation: p.cluster.Annotations[constants.CloudIdentityAnnotation],
 	}
 

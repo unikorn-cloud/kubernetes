@@ -3,22 +3,11 @@ run:
 linters:
   enable-all: true
   disable:
-  - exhaustivestruct
   - exhaustruct
   - lll
   - gofumpt
-  - deadcode
-  - nosnakecase
-  - scopelint
-  - golint
-  - ifshort
-  - maligned
-  - structcheck
-  - varcheck
-  - interfacer
   - rowserrcheck
   - sqlclosecheck
-  - structcheck
   - wastedassign
   - forbidigo
   - wrapcheck
@@ -31,6 +20,7 @@ linters:
   - depguard
   - goconst
   - perfsprint
+  - mnd
 linters-settings:
   gci:
     sections:

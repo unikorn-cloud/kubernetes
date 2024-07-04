@@ -62,7 +62,7 @@ GOBIN := $(if $(shell go env GOBIN),$(shell go env GOBIN),$(GOPATH)/bin)
 FLAGS=-trimpath -ldflags '-X $(MODULE)/pkg/constants.Version=$(VERSION) -X $(MODULE)/pkg/constants.Revision=$(REVISION)'
 
 # Defines the linter version.
-LINT_VERSION=v1.57.1
+LINT_VERSION=v1.59.1
 
 # Defines the version of the CRD generation tools to use.
 CONTROLLER_TOOLS_VERSION=v0.14.0
