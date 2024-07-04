@@ -20,7 +20,6 @@ package cluster
 import (
 	"context"
 	"encoding/base64"
-	goerrors "errors"
 	"net"
 	"net/http"
 	"slices"
@@ -38,12 +37,13 @@ import (
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/vcluster"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/clustermanager"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/common"
-	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/scoping"
 	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
 
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -95,25 +95,22 @@ func NewClient(client client.Client, namespace string, options *Options, region 
 
 // List returns all clusters owned by the implicit control plane.
 func (c *Client) List(ctx context.Context, organizationID string) (openapi.KubernetesClusters, error) {
-	scoper := scoping.New(ctx, c.client, organizationID)
+	result := &unikornv1.KubernetesClusterList{}
 
-	selector, err := scoper.GetSelector(ctx)
+	requirement, err := labels.NewRequirement(constants.OrganizationLabel, selection.Equals, []string{organizationID})
 	if err != nil {
-		if goerrors.Is(err, scoping.ErrNoScope) {
-			return openapi.KubernetesClusters{}, nil
-		}
-
-		return nil, errors.OAuth2ServerError("failed to apply scoping rules").WithError(err)
+		return nil, errors.OAuth2ServerError("failed to build label selector").WithError(err)
 	}
+
+	selector := labels.NewSelector()
+	selector = selector.Add(*requirement)
 
 	options := &client.ListOptions{
 		LabelSelector: selector,
 	}
 
-	result := &unikornv1.KubernetesClusterList{}
-
 	if err := c.client.List(ctx, result, options); err != nil {
-		return nil, errors.OAuth2ServerError("failed to list control planes").WithError(err)
+		return nil, errors.OAuth2ServerError("failed to list clusters").WithError(err)
 	}
 
 	slices.SortStableFunc(result.Items, unikornv1.CompareKubernetesCluster)

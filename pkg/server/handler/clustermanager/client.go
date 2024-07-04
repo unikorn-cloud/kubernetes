@@ -19,7 +19,6 @@ package clustermanager
 
 import (
 	"context"
-	goerrors "errors"
 	"slices"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
@@ -32,12 +31,12 @@ import (
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/applicationbundle"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/common"
-	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/scoping"
 
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -125,22 +124,19 @@ func (c *Client) convertList(in *unikornv1.ClusterManagerList) openapi.ClusterMa
 
 // List returns all control planes.
 func (c *Client) List(ctx context.Context, organizationID string) (openapi.ClusterManagers, error) {
-	scoper := scoping.New(ctx, c.client, organizationID)
+	result := &unikornv1.ClusterManagerList{}
 
-	selector, err := scoper.GetSelector(ctx)
+	requirement, err := labels.NewRequirement(constants.OrganizationLabel, selection.Equals, []string{organizationID})
 	if err != nil {
-		if goerrors.Is(err, scoping.ErrNoScope) {
-			return openapi.ClusterManagers{}, nil
-		}
-
-		return nil, errors.OAuth2ServerError("failed to apply scoping rules").WithError(err)
+		return nil, errors.OAuth2ServerError("failed to build label selector").WithError(err)
 	}
+
+	selector := labels.NewSelector()
+	selector = selector.Add(*requirement)
 
 	options := &client.ListOptions{
 		LabelSelector: selector,
 	}
-
-	result := &unikornv1.ClusterManagerList{}
 
 	if err := c.client.List(ctx, result, options); err != nil {
 		return nil, errors.OAuth2ServerError("failed to list control planes").WithError(err)

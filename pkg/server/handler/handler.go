@@ -19,19 +19,18 @@ limitations under the License.
 package handler
 
 import (
-	"context"
 	"net/http"
+	"slices"
 
-	"github.com/unikorn-cloud/core/pkg/authorization/constants"
-	"github.com/unikorn-cloud/core/pkg/authorization/userinfo"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	identityclient "github.com/unikorn-cloud/identity/pkg/client"
+	identityapi "github.com/unikorn-cloud/identity/pkg/openapi"
+	"github.com/unikorn-cloud/identity/pkg/rbac"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/application"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/cluster"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/clustermanager"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/util"
-	"github.com/unikorn-cloud/rbac/pkg/authorization"
 	regionclient "github.com/unikorn-cloud/region/pkg/client"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -77,45 +76,23 @@ func (h *Handler) setUncacheable(w http.ResponseWriter) {
 	w.Header().Add("Cache-Control", "no-cache")
 }
 
-//nolint:unparam
-func (h *Handler) checkRBAC(ctx context.Context, organizationID, scope string, permission constants.Permission) error {
-	identity, err := h.identity.Client(ctx)
-	if err != nil {
-		return err
-	}
-
-	aclGetter := authorization.NewIdentityACLGetter(identity, organizationID)
-
-	authorizer, err := userinfo.NewAuthorizer(ctx, aclGetter)
-	if err != nil {
-		return errors.HTTPForbidden("operation is not allowed by rbac").WithError(err)
-	}
-
-	if err := authorizer.Allow(ctx, scope, permission); err != nil {
-		return errors.HTTPForbidden("operation is not allowed by rbac").WithError(err)
-	}
-
-	return nil
-}
-
 func (h *Handler) GetApiV1OrganizationsOrganizationIDClustermanagers(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter) {
-	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Read); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
 	result, err := clustermanager.NewClient(h.client).List(r.Context(), organizationID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
+	result = slices.DeleteFunc(result, func(resource openapi.ClusterManagerRead) bool {
+		return rbac.AllowProjectScope(r.Context(), "kubernetesclustermanagers", identityapi.Read, organizationID, resource.Metadata.ProjectId) != nil
+	})
+
 	h.setUncacheable(w)
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
 func (h *Handler) PostApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagers(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter) {
-	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Create); err != nil {
+	if err := rbac.AllowProjectScope(r.Context(), "kubernetesclustermanagers", identityapi.Create, organizationID, projectID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -137,7 +114,7 @@ func (h *Handler) PostApiV1OrganizationsOrganizationIDProjectsProjectIDClusterma
 }
 
 func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersClusterManagerID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterManagerID openapi.ClusterManagerIDParameter) {
-	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Delete); err != nil {
+	if err := rbac.AllowProjectScope(r.Context(), "kubernetesclustermanagers", identityapi.Delete, organizationID, projectID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -152,7 +129,7 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDCluster
 }
 
 func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersClusterManagerID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterManagerID openapi.ClusterManagerIDParameter) {
-	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Update); err != nil {
+	if err := rbac.AllowProjectScope(r.Context(), "kubernetesclustermanagers", identityapi.Update, organizationID, projectID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -174,11 +151,6 @@ func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClusterman
 }
 
 func (h *Handler) GetApiV1OrganizationsOrganizationIDClusters(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter) {
-	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Read); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
 	region, err := h.region.Client(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
@@ -191,12 +163,16 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDClusters(w http.ResponseWri
 		return
 	}
 
+	result = slices.DeleteFunc(result, func(resource openapi.KubernetesClusterRead) bool {
+		return rbac.AllowProjectScope(r.Context(), "kubernetesclusters", identityapi.Read, organizationID, resource.Metadata.ProjectId) != nil
+	})
+
 	h.setUncacheable(w)
 	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
 func (h *Handler) PostApiV1OrganizationsOrganizationIDProjectsProjectIDClusters(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter) {
-	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Create); err != nil {
+	if err := rbac.AllowProjectScope(r.Context(), "kubernetesclusters", identityapi.Create, organizationID, projectID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -224,7 +200,7 @@ func (h *Handler) PostApiV1OrganizationsOrganizationIDProjectsProjectIDClusters(
 }
 
 func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterID openapi.ClusterIDParameter) {
-	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Delete); err != nil {
+	if err := rbac.AllowProjectScope(r.Context(), "kubernetesclusters", identityapi.Delete, organizationID, projectID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -245,7 +221,7 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDCluster
 }
 
 func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterID openapi.ClusterIDParameter) {
-	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Update); err != nil {
+	if err := rbac.AllowProjectScope(r.Context(), "kubernetesclusters", identityapi.Update, organizationID, projectID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -273,7 +249,7 @@ func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersCl
 }
 
 func (h *Handler) GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfig(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterID openapi.ClusterIDParameter) {
-	if err := h.checkRBAC(r.Context(), organizationID, "infrastructure", constants.Read); err != nil {
+	if err := rbac.AllowProjectScope(r.Context(), "kubernetesclusters", identityapi.Read, organizationID, projectID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
