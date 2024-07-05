@@ -90,8 +90,8 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// GetApiV1Applications request
-	GetApiV1Applications(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetApiV1OrganizationsOrganizationIDApplications request
+	GetApiV1OrganizationsOrganizationIDApplications(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetApiV1OrganizationsOrganizationIDClustermanagers request
 	GetApiV1OrganizationsOrganizationIDClustermanagers(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -129,8 +129,8 @@ type ClientInterface interface {
 	GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfig(ctx context.Context, organizationID OrganizationIDParameter, projectID ProjectIDParameter, clusterID ClusterIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) GetApiV1Applications(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1ApplicationsRequest(c.Server)
+func (c *Client) GetApiV1OrganizationsOrganizationIDApplications(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiV1OrganizationsOrganizationIDApplicationsRequest(c.Server, organizationID)
 	if err != nil {
 		return nil, err
 	}
@@ -297,16 +297,23 @@ func (c *Client) GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClu
 	return c.Client.Do(req)
 }
 
-// NewGetApiV1ApplicationsRequest generates requests for GetApiV1Applications
-func NewGetApiV1ApplicationsRequest(server string) (*http.Request, error) {
+// NewGetApiV1OrganizationsOrganizationIDApplicationsRequest generates requests for GetApiV1OrganizationsOrganizationIDApplications
+func NewGetApiV1OrganizationsOrganizationIDApplicationsRequest(server string, organizationID OrganizationIDParameter) (*http.Request, error) {
 	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationID", runtime.ParamLocationPath, organizationID)
+	if err != nil {
+		return nil, err
+	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/api/v1/applications")
+	operationPath := fmt.Sprintf("/api/v1/organizations/%s/applications", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -809,8 +816,8 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// GetApiV1ApplicationsWithResponse request
-	GetApiV1ApplicationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ApplicationsResponse, error)
+	// GetApiV1OrganizationsOrganizationIDApplicationsWithResponse request
+	GetApiV1OrganizationsOrganizationIDApplicationsWithResponse(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1OrganizationsOrganizationIDApplicationsResponse, error)
 
 	// GetApiV1OrganizationsOrganizationIDClustermanagersWithResponse request
 	GetApiV1OrganizationsOrganizationIDClustermanagersWithResponse(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1OrganizationsOrganizationIDClustermanagersResponse, error)
@@ -848,7 +855,7 @@ type ClientWithResponsesInterface interface {
 	GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfigWithResponse(ctx context.Context, organizationID OrganizationIDParameter, projectID ProjectIDParameter, clusterID ClusterIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfigResponse, error)
 }
 
-type GetApiV1ApplicationsResponse struct {
+type GetApiV1OrganizationsOrganizationIDApplicationsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ApplicationResponse
@@ -858,7 +865,7 @@ type GetApiV1ApplicationsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetApiV1ApplicationsResponse) Status() string {
+func (r GetApiV1OrganizationsOrganizationIDApplicationsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -866,7 +873,7 @@ func (r GetApiV1ApplicationsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1ApplicationsResponse) StatusCode() int {
+func (r GetApiV1OrganizationsOrganizationIDApplicationsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1109,13 +1116,13 @@ func (r GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKub
 	return 0
 }
 
-// GetApiV1ApplicationsWithResponse request returning *GetApiV1ApplicationsResponse
-func (c *ClientWithResponses) GetApiV1ApplicationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1ApplicationsResponse, error) {
-	rsp, err := c.GetApiV1Applications(ctx, reqEditors...)
+// GetApiV1OrganizationsOrganizationIDApplicationsWithResponse request returning *GetApiV1OrganizationsOrganizationIDApplicationsResponse
+func (c *ClientWithResponses) GetApiV1OrganizationsOrganizationIDApplicationsWithResponse(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1OrganizationsOrganizationIDApplicationsResponse, error) {
+	rsp, err := c.GetApiV1OrganizationsOrganizationIDApplications(ctx, organizationID, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetApiV1ApplicationsResponse(rsp)
+	return ParseGetApiV1OrganizationsOrganizationIDApplicationsResponse(rsp)
 }
 
 // GetApiV1OrganizationsOrganizationIDClustermanagersWithResponse request returning *GetApiV1OrganizationsOrganizationIDClustermanagersResponse
@@ -1231,15 +1238,15 @@ func (c *ClientWithResponses) GetApiV1OrganizationsOrganizationIDProjectsProject
 	return ParseGetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfigResponse(rsp)
 }
 
-// ParseGetApiV1ApplicationsResponse parses an HTTP response from a GetApiV1ApplicationsWithResponse call
-func ParseGetApiV1ApplicationsResponse(rsp *http.Response) (*GetApiV1ApplicationsResponse, error) {
+// ParseGetApiV1OrganizationsOrganizationIDApplicationsResponse parses an HTTP response from a GetApiV1OrganizationsOrganizationIDApplicationsWithResponse call
+func ParseGetApiV1OrganizationsOrganizationIDApplicationsResponse(rsp *http.Response) (*GetApiV1OrganizationsOrganizationIDApplicationsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetApiV1ApplicationsResponse{
+	response := &GetApiV1OrganizationsOrganizationIDApplicationsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

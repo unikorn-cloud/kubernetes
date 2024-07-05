@@ -270,7 +270,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersCl
 	util.WriteOctetStreamResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) GetApiV1Applications(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetApiV1OrganizationsOrganizationIDApplications(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter) {
 	result, err := application.NewClient(h.client).List(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
