@@ -256,9 +256,11 @@ paths:
           $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/notFoundResponse'
         '500':
           $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
-  /api/v1/applications:
+  /api/v1/organizations/{organizationID}/applications:
     x-documentation-group: main
     description: Cluster application services.
+    parameters:
+    - $ref: '#/components/parameters/organizationIDParameter'
     get:
       description: |-
         Lists applications available to be installed on clusters.
