@@ -7,7 +7,7 @@ on:
     - reopened
     - ready_for_review
 env:
-  GO_VERSION: 1.22.1
+  GO_VERSION: 1.22.5
 jobs:
   Static:
     runs-on: ubuntu-latest

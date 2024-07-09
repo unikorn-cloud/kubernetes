@@ -32,6 +32,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace"
 
 	coreapi "github.com/unikorn-cloud/core/pkg/openapi"
+	"github.com/unikorn-cloud/core/pkg/server/middleware/audit"
 	"github.com/unikorn-cloud/core/pkg/server/middleware/cors"
 	"github.com/unikorn-cloud/core/pkg/server/middleware/opentelemetry"
 	"github.com/unikorn-cloud/core/pkg/server/middleware/timeout"
@@ -155,6 +156,7 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 		BaseRouter:       router,
 		ErrorHandlerFunc: handler.HandleError,
 		Middlewares: []openapi.MiddlewareFunc{
+			audit.Middleware(schema, constants.Application, constants.Version),
 			openapimiddleware.Middleware(authorizer, schema),
 		},
 	}
