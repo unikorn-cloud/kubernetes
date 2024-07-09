@@ -52,7 +52,7 @@ func (*Factory) Reconciler(options *options.Options, manager manager.Manager) re
 // RegisterWatches adds any watches that would trigger a reconcile.
 func (*Factory) RegisterWatches(manager manager.Manager, controller controller.Controller) error {
 	// Any changes to the cluster spec, trigger a reconcile.
-	if err := controller.Watch(source.Kind(manager.GetCache(), &unikornv1.KubernetesCluster{}), &handler.EnqueueRequestForObject{}, &predicate.GenerationChangedPredicate{}); err != nil {
+	if err := controller.Watch(source.Kind(manager.GetCache(), &unikornv1.KubernetesCluster{}, &handler.TypedEnqueueRequestForObject[*unikornv1.KubernetesCluster]{}, &predicate.TypedGenerationChangedPredicate[*unikornv1.KubernetesCluster]{})); err != nil {
 		return err
 	}
 
