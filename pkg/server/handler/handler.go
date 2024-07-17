@@ -104,13 +104,14 @@ func (h *Handler) PostApiV1OrganizationsOrganizationIDProjectsProjectIDClusterma
 		return
 	}
 
-	if _, err := clustermanager.NewClient(h.client).Create(r.Context(), organizationID, projectID, request); err != nil {
+	result, err := clustermanager.NewClient(h.client).Create(r.Context(), organizationID, projectID, request)
+	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
 	h.setUncacheable(w)
-	w.WriteHeader(http.StatusAccepted)
+	util.WriteJSONResponse(w, r, http.StatusAccepted, result)
 }
 
 func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersClusterManagerID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterManagerID openapi.ClusterManagerIDParameter) {
@@ -190,13 +191,14 @@ func (h *Handler) PostApiV1OrganizationsOrganizationIDProjectsProjectIDClusters(
 		return
 	}
 
-	if err := cluster.NewClient(h.client, h.namespace, &h.options.Cluster, region).Create(r.Context(), organizationID, projectID, request); err != nil {
+	result, err := cluster.NewClient(h.client, h.namespace, &h.options.Cluster, region).Create(r.Context(), organizationID, projectID, request)
+	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
 	h.setUncacheable(w)
-	w.WriteHeader(http.StatusAccepted)
+	util.WriteJSONResponse(w, r, http.StatusAccepted, result)
 }
 
 func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterID openapi.ClusterIDParameter) {

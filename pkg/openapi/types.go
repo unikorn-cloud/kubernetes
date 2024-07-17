@@ -186,8 +186,14 @@ type ProjectIDParameter = KubernetesNameParameter
 // ApplicationResponse A list of appications.
 type ApplicationResponse = Applications
 
+// ClusterManagerResponse A cluster manager.
+type ClusterManagerResponse = ClusterManagerRead
+
 // ClusterManagersResponse A list of cluster managers.
 type ClusterManagersResponse = ClusterManagers
+
+// KubernetesClusterResponse Kubernetes cluster read.
+type KubernetesClusterResponse = KubernetesClusterRead
 
 // KubernetesClustersResponse A list of Kubernetes clusters.
 type KubernetesClustersResponse = KubernetesClusters

@@ -12,9 +12,9 @@ require (
 	github.com/prometheus/client_golang v1.19.1
 	github.com/spdx/tools-golang v0.5.5
 	github.com/spf13/pflag v1.0.5
-	github.com/unikorn-cloud/core v0.1.59
-	github.com/unikorn-cloud/identity v0.2.25
-	github.com/unikorn-cloud/region v0.1.20
+	github.com/unikorn-cloud/core v0.1.62
+	github.com/unikorn-cloud/identity v0.2.28
+	github.com/unikorn-cloud/region v0.1.22
 	go.opentelemetry.io/otel v1.28.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.28.0
 	go.opentelemetry.io/otel/sdk v1.28.0

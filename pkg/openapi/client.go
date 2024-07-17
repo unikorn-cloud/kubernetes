@@ -937,6 +937,7 @@ func (r GetApiV1OrganizationsOrganizationIDClustersResponse) StatusCode() int {
 type PostApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON202      *ClusterManagerResponse
 	JSON400      *externalRef0.BadRequestResponse
 	JSON401      *externalRef0.UnauthorizedResponse
 	JSON403      *externalRef0.ForbiddenResponse
@@ -1015,6 +1016,7 @@ func (r PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersClust
 type PostApiV1OrganizationsOrganizationIDProjectsProjectIDClustersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON202      *KubernetesClusterResponse
 	JSON400      *externalRef0.BadRequestResponse
 	JSON401      *externalRef0.UnauthorizedResponse
 	JSON403      *externalRef0.ForbiddenResponse
@@ -1421,6 +1423,13 @@ func ParsePostApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersRe
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest ClusterManagerResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -1583,6 +1592,13 @@ func ParsePostApiV1OrganizationsOrganizationIDProjectsProjectIDClustersResponse(
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest KubernetesClusterResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest externalRef0.BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
