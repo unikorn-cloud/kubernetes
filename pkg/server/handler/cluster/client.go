@@ -115,7 +115,7 @@ func (c *Client) List(ctx context.Context, organizationID string) (openapi.Kuber
 
 	slices.SortStableFunc(result.Items, unikornv1.CompareKubernetesCluster)
 
-	return c.convertList(result), nil
+	return convertList(result), nil
 }
 
 // get returns the cluster.
@@ -212,17 +212,18 @@ func (c *Client) createIdentity(ctx context.Context, organizationID, projectID, 
 		},
 	}
 
-	request := regionapi.PostApiV1OrganizationsOrganizationIDProjectsProjectIDRegionsRegionIDIdentitiesJSONRequestBody{
+	request := regionapi.PostApiV1OrganizationsOrganizationIDProjectsProjectIDIdentitiesJSONRequestBody{
 		Metadata: coreapi.ResourceWriteMetadata{
 			Name:        "kubernetes-cluster-" + clusterID,
 			Description: util.ToPointer("Identity for Kubernetes cluster " + clusterID),
 		},
 		Spec: regionapi.IdentityWriteSpec{
-			Tags: &tags,
+			RegionId: regionID,
+			Tags:     &tags,
 		},
 	}
 
-	resp, err := c.region.PostApiV1OrganizationsOrganizationIDProjectsProjectIDRegionsRegionIDIdentitiesWithResponse(ctx, organizationID, projectID, regionID, request)
+	resp, err := c.region.PostApiV1OrganizationsOrganizationIDProjectsProjectIDIdentitiesWithResponse(ctx, organizationID, projectID, request)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("unable to create identity").WithError(err)
 	}
@@ -234,8 +235,8 @@ func (c *Client) createIdentity(ctx context.Context, organizationID, projectID, 
 	return resp.JSON201, nil
 }
 
-func (c *Client) getExternalNetworks(ctx context.Context, organizationID, projectID, regionID string) (regionapi.ExternalNetworks, error) {
-	resp, err := c.region.GetApiV1OrganizationsOrganizationIDProjectsProjectIDRegionsRegionIDExternalnetworksWithResponse(ctx, organizationID, projectID, regionID)
+func (c *Client) getExternalNetworks(ctx context.Context, organizationID, regionID string) (regionapi.ExternalNetworks, error) {
+	resp, err := c.region.GetApiV1OrganizationsOrganizationIDRegionsRegionIDExternalnetworksWithResponse(ctx, organizationID, regionID)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("unable to get external networks").WithError(err)
 	}
@@ -247,7 +248,7 @@ func (c *Client) getExternalNetworks(ctx context.Context, organizationID, projec
 	return *resp.JSON200, nil
 }
 
-func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizationID, projectID, regionID string, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
+func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizationID, regionID string, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
 	// Save the identity ID for later cleanup.
 	if cluster.Annotations == nil {
 		cluster.Annotations = map[string]string{}
@@ -258,7 +259,7 @@ func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizati
 	// Setup the provider specific stuff, this should be as minial as possible!
 	switch identity.Spec.Type {
 	case regionapi.Openstack:
-		externalNetworks, err := c.getExternalNetworks(ctx, organizationID, projectID, regionID)
+		externalNetworks, err := c.getExternalNetworks(ctx, organizationID, regionID)
 		if err != nil {
 			return err
 		}
@@ -267,13 +268,13 @@ func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizati
 			return errors.OAuth2ServerError("no external networks present")
 		}
 
-		cloudConfig, err := base64.URLEncoding.DecodeString(identity.Spec.Openstack.CloudConfig)
+		cloudConfig, err := base64.URLEncoding.DecodeString(*identity.Spec.Openstack.CloudConfig)
 		if err != nil {
 			return errors.OAuth2ServerError("failed to decode cloud config").WithError(err)
 		}
 
 		cluster.Spec.Openstack = &unikornv1.KubernetesClusterOpenstackSpec{
-			Cloud:             &identity.Spec.Openstack.Cloud,
+			Cloud:             identity.Spec.Openstack.Cloud,
 			CloudConfig:       &cloudConfig,
 			ExternalNetworkID: &externalNetworks[0].Id,
 		}
@@ -285,46 +286,41 @@ func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizati
 }
 
 // Create creates the implicit cluster indentified by the JTW claims.
-func (c *Client) Create(ctx context.Context, organizationID, projectID string, request *openapi.KubernetesClusterWrite) error {
+func (c *Client) Create(ctx context.Context, organizationID, projectID string, request *openapi.KubernetesClusterWrite) (*openapi.KubernetesClusterRead, error) {
 	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationID, projectID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Implicitly create the controller manager.
 	if request.Spec.ClusterManagerId == nil {
 		clusterManager, err := clustermanager.NewClient(c.client).CreateImplicit(ctx, organizationID, projectID)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		request.Spec.ClusterManagerId = util.ToPointer(clusterManager.Name)
 	}
 
-	cluster, err := c.generate(ctx, namespace, organizationID, projectID, request)
+	cluster, err := newGenerator(c.client, c.options, c.region, namespace.Name, organizationID, projectID).generate(ctx, request)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	identity, err := c.createIdentity(ctx, organizationID, projectID, request.Spec.RegionId, cluster.Name)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if err := c.applyCloudSpecificConfiguration(ctx, organizationID, projectID, request.Spec.RegionId, identity, cluster); err != nil {
-		return err
+	if err := c.applyCloudSpecificConfiguration(ctx, organizationID, request.Spec.RegionId, identity, cluster); err != nil {
+		return nil, err
 	}
 
 	if err := c.client.Create(ctx, cluster); err != nil {
-		// TODO: we can do a cached lookup to save the API traffic.
-		if kerrors.IsAlreadyExists(err) {
-			return errors.HTTPConflict()
-		}
-
-		return errors.OAuth2ServerError("failed to create cluster").WithError(err)
+		return nil, errors.OAuth2ServerError("failed to create cluster").WithError(err)
 	}
 
-	return nil
+	return convert(cluster), nil
 }
 
 // Delete deletes the implicit cluster indentified by the JTW claims.
@@ -372,7 +368,7 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 		return err
 	}
 
-	required, err := c.generate(ctx, namespace, organizationID, projectID, request)
+	required, err := newGenerator(c.client, c.options, c.region, namespace.Name, organizationID, projectID).generate(ctx, request)
 	if err != nil {
 		return err
 	}

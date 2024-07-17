@@ -88,7 +88,7 @@ func (c *Client) CreateImplicit(ctx context.Context, organizationID, projectID s
 		},
 	}
 
-	resource, err := c.Create(ctx, organizationID, projectID, request)
+	resource, err := c.create(ctx, organizationID, projectID, request)
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +207,7 @@ func (c *Client) generate(ctx context.Context, namespace *corev1.Namespace, orga
 }
 
 // Create creates a control plane.
-func (c *Client) Create(ctx context.Context, organizationID, projectID string, request *openapi.ClusterManagerWrite) (*unikornv1.ClusterManager, error) {
+func (c *Client) create(ctx context.Context, organizationID, projectID string, request *openapi.ClusterManagerWrite) (*unikornv1.ClusterManager, error) {
 	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationID, projectID)
 	if err != nil {
 		return nil, err
@@ -232,6 +232,15 @@ func (c *Client) Create(ctx context.Context, organizationID, projectID string, r
 	}
 
 	return resource, nil
+}
+
+func (c *Client) Create(ctx context.Context, organizationID, projectID string, request *openapi.ClusterManagerWrite) (*openapi.ClusterManagerRead, error) {
+	result, err := c.create(ctx, organizationID, projectID, request)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.convert(result), nil
 }
 
 // Delete deletes the control plane.
