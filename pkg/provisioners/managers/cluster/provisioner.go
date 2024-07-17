@@ -51,6 +51,8 @@ import (
 
 var (
 	ErrClusterManager = errors.New("cluster manager lookup failed")
+
+	ErrAnnotation = errors.New("required annotation missing")
 )
 
 type ApplicationReferenceGetter struct {
@@ -282,8 +284,17 @@ func (p *Provisioner) Deprovision(ctx context.Context) error {
 	// This event is used to trigger cleanup operations in the provider.
 	recorder := manager.FromContext(ctx).GetEventRecorderFor("kubernetescluster")
 
+	if len(p.cluster.Annotations) == 0 {
+		return fmt.Errorf("%w: no annotations present", ErrAnnotation)
+	}
+
+	identityID, ok := p.cluster.Annotations[constants.CloudIdentityAnnotation]
+	if !ok {
+		return fmt.Errorf("%w: identity annotation missing", ErrAnnotation)
+	}
+
 	annotations := map[string]string{
-		constants.CloudIdentityAnnotation: p.cluster.Annotations[constants.CloudIdentityAnnotation],
+		constants.CloudIdentityAnnotation: identityID,
 	}
 
 	recorder.AnnotatedEventf(&p.cluster, annotations, "Normal", constants.IdentityCleanupReadyEventReason, "kubetnetes cluster has been deleted successfully")
