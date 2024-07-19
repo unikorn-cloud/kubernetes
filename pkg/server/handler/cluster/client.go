@@ -29,6 +29,7 @@ import (
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	"github.com/unikorn-cloud/core/pkg/constants"
 	coreapi "github.com/unikorn-cloud/core/pkg/openapi"
+	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
@@ -352,34 +353,6 @@ func (c *Client) Delete(ctx context.Context, organizationID, projectID, clusterI
 	return nil
 }
 
-// restorePreservedConfiguration copies things that are added on cluster creation,
-// but not user specified, that need to be preserved during an update.
-func restorePreservedConfiguration(current, required *unikornv1.KubernetesCluster) error {
-	// Currently annotations are required.
-	if required.Annotations == nil {
-		required.Annotations = map[string]string{}
-	}
-
-	if current.Annotations == nil {
-		return errors.OAuth2ServerError("resource annotations corrupted")
-	}
-
-	// Copy the identity ID so we can clean this up via events.
-	// TODO: would this not make sense to live in the OpenStack spec?
-	identityID, ok := current.Annotations[constants.CloudIdentityAnnotation]
-	if !ok {
-		return errors.OAuth2ServerError("resource identity annotation missing")
-	}
-
-	required.Annotations[constants.CloudIdentityAnnotation] = identityID
-
-	// Copy over the cloud configuration so we can continue to talk to the
-	// cloud instance.
-	required.Spec.Openstack = current.Spec.Openstack
-
-	return nil
-}
-
 // Update implements read/modify/write for the cluster.
 func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterID string, request *openapi.KubernetesClusterWrite) error {
 	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationID, projectID)
@@ -401,10 +374,12 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 		return err
 	}
 
-	// Copy over things we provide.
-	if err := restorePreservedConfiguration(current, required); err != nil {
-		return err
+	if err := conversion.UpdateObjectMetadata(required, current, constants.CloudIdentityAnnotation); err != nil {
+		return errors.OAuth2ServerError("failed to merge metadata").WithError(err)
 	}
+
+	// Copy over things we provide.
+	required.Spec.Openstack = current.Spec.Openstack
 
 	// Experience has taught me that modifying caches by accident is a bad thing
 	// so be extra safe and deep copy the existing resource.
