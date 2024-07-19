@@ -88,7 +88,6 @@ func (p *Provisioner) generateWorkloadPoolHelmValues(cluster *unikornv1.Kubernet
 		workloadPool := &cluster.Spec.WorkloadPools.Pools[i]
 
 		object := map[string]interface{}{
-			"version":  string(*cluster.Spec.Version),
 			"replicas": *workloadPool.Replicas,
 			"machine":  p.generateMachineHelmValues(&workloadPool.MachineGeneric, workloadPool.FailureDomain),
 		}
@@ -213,14 +212,20 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 		return nil, err
 	}
 
+	// These must have parity with what's defined by the API to make
+	// cross referencing between unikorn and openstack logging easier.
+	// TODO: clusterID is not going to cut it moving forward, especially
+	// when baremetal clusters are a thing and we'll need to differentiate
+	// between them.
 	serverMetadata := map[string]interface{}{
-		"cluster":      cluster.Name,
-		"project":      labels[constants.ProjectLabel],
-		"organization": labels[constants.OrganizationLabel],
+		"clusterID":      cluster.Name,
+		"projectID":      labels[constants.ProjectLabel],
+		"organizationID": labels[constants.OrganizationLabel],
 	}
 
 	// TODO: generate types from the Helm values schema.
 	values := map[string]interface{}{
+		"version":   string(*cluster.Spec.Version),
 		"openstack": openstackValues,
 		"cluster": map[string]interface{}{
 			"taints": []interface{}{
@@ -238,7 +243,6 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 			"serverMetadata": serverMetadata,
 		},
 		"controlPlane": map[string]interface{}{
-			"version":  string(*cluster.Spec.Version),
 			"replicas": *cluster.Spec.ControlPlane.Replicas,
 			"machine":  p.generateMachineHelmValues(&cluster.Spec.ControlPlane.MachineGeneric, nil),
 		},
