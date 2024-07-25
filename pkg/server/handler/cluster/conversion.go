@@ -21,6 +21,7 @@ import (
 	"context"
 	goerrors "errors"
 	"fmt"
+	"net/http"
 	"slices"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
@@ -185,6 +186,10 @@ func (g *generator) defaultControlPlaneFlavor(ctx context.Context, request *open
 		return nil, err
 	}
 
+	if resp.StatusCode() != http.StatusOK {
+		return nil, errors.OAuth2ServerError("failed to list flavors")
+	}
+
 	flavors := *resp.JSON200
 
 	flavors = slices.DeleteFunc(flavors, func(x regionapi.Flavor) bool { return x.Spec.Gpu != nil })
@@ -202,6 +207,10 @@ func (g *generator) defaultImage(ctx context.Context, request *openapi.Kubernete
 	resp, err := g.region.GetApiV1OrganizationsOrganizationIDRegionsRegionIDImagesWithResponse(ctx, g.organizationID, request.Spec.RegionId)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return nil, errors.OAuth2ServerError("failed to list images")
 	}
 
 	images := *resp.JSON200
