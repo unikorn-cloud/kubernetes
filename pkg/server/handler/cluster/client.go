@@ -180,31 +180,6 @@ func (c *Client) GetKubeconfig(ctx context.Context, organizationID, projectID, c
 	return secret.Data["value"], nil
 }
 
-/*
-// createServerGroup creates an OpenStack server group.
-func (c *Client) createServerGroup(ctx context.Context, provider *openstack.Openstack, project *project.Meta, name, kind string) (string, error) {
-	// Name is fully qualified to avoid namespace clashes with control planes sharing
-	// the same project.
-	serverGroupName := project.Name + "-" + name + "-" + kind
-
-	// Reuse the server group if it exists, otherwise create a new one.
-	sg, err := provider.GetServerGroup(ctx, serverGroupName)
-	if err != nil {
-		if !errors.IsHTTPNotFound(err) {
-			return "", err
-		}
-	}
-
-	if sg == nil {
-		if sg, err = provider.CreateServerGroup(ctx, serverGroupName); err != nil {
-			return "", err
-		}
-	}
-
-	return sg.ID, nil
-}
-*/
-
 func (c *Client) createIdentity(ctx context.Context, organizationID, projectID, regionID, clusterID string) (*regionapi.IdentityRead, error) {
 	tags := regionapi.TagList{
 		{
@@ -269,16 +244,18 @@ func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizati
 			return errors.OAuth2ServerError("no external networks present")
 		}
 
-		cloudConfig, err := base64.URLEncoding.DecodeString(*identity.Spec.Openstack.CloudConfig)
+		cloudConfig, err := base64.URLEncoding.DecodeString(identity.Spec.Openstack.CloudConfig)
 		if err != nil {
 			return errors.OAuth2ServerError("failed to decode cloud config").WithError(err)
 		}
 
 		cluster.Spec.Openstack = &unikornv1.KubernetesClusterOpenstackSpec{
-			Cloud:             identity.Spec.Openstack.Cloud,
+			Cloud:             &identity.Spec.Openstack.Cloud,
 			CloudConfig:       &cloudConfig,
 			ExternalNetworkID: &externalNetworks[0].Id,
 		}
+
+		cluster.Spec.ControlPlane.ServerGroupID = identity.Spec.Openstack.ServerGroupId
 	default:
 		return errors.OAuth2ServerError("unhandled provider type")
 	}
@@ -380,6 +357,7 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 
 	// Copy over things we provide.
 	required.Spec.Openstack = current.Spec.Openstack
+	required.Spec.ControlPlane.ServerGroupID = current.Spec.ControlPlane.ServerGroupID
 
 	// Experience has taught me that modifying caches by accident is a bad thing
 	// so be extra safe and deep copy the existing resource.
@@ -387,10 +365,6 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 	updated.Labels = required.Labels
 	updated.Annotations = required.Annotations
 	updated.Spec = required.Spec
-
-	/*
-		temp.Spec.ControlPlane.ServerGroupID = resource.Spec.ControlPlane.ServerGroupID
-	*/
 
 	if err := c.client.Patch(ctx, updated, client.MergeFrom(current)); err != nil {
 		return errors.OAuth2ServerError("failed to patch cluster").WithError(err)

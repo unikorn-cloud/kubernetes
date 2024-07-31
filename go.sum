@@ -185,8 +185,8 @@ github.com/unikorn-cloud/core v0.1.63 h1:Jl/xuoGRKESMXhS1+apcaS/1I776agTyT75BGz9
 github.com/unikorn-cloud/core v0.1.63/go.mod h1:JcUIQW3+oiZPUQmOlENw3OCi35IBxPKa+J4MbP3TO7k=
 github.com/unikorn-cloud/identity v0.2.29 h1:kKEJmh6tjjdvZWYdZhyRewG3aHf9wmWwG5C/kb+Rm9A=
 github.com/unikorn-cloud/identity v0.2.29/go.mod h1:ujrL+6kRUrPIk4Z0Yc12A+FDy6L4b2Hgzz6oGZlKfGI=
-github.com/unikorn-cloud/region v0.1.24 h1:95pxAPSV9XO2EIhoUyigrqaouq/16b9A2S7j1T1iJOA=
-github.com/unikorn-cloud/region v0.1.24/go.mod h1:S2rwlo55WfPCbuBxWj8cCg8cQ/qSi3xt3kpgoFkJqNc=
+github.com/unikorn-cloud/region v0.1.30 h1:r5fTsmU9ub1VpYk3cZBUFZjNDaYW8OOtIGPbvxbN++s=
+github.com/unikorn-cloud/region v0.1.30/go.mod h1:S2rwlo55WfPCbuBxWj8cCg8cQ/qSi3xt3kpgoFkJqNc=
 github.com/xlab/treeprint v1.2.0 h1:HzHnuAF1plUN2zGlAFHbSQP2qJ0ZAD3XF5XD7OesXRQ=
 github.com/xlab/treeprint v1.2.0/go.mod h1:gj5Gd3gPdKtR1ikdDK6fnFLdmIS0X30kTTuNd/WEJu0=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
