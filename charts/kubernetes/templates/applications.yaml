@@ -132,7 +132,7 @@ spec:
   - networking
   - security
   versions:
-  - version: 1.15.5
+  - version: 1.16.0
     repo: https://helm.cilium.io
     chart: cilium
     parameters:
@@ -141,6 +141,8 @@ spec:
     - name: hubble.ui.enabled
       value: 'true'
     - name: operator.setNodeTaints
+      value: 'false'
+    - name: envoy.enabled
       value: 'false'
     interface: 1.0.0
 ---
