@@ -44,9 +44,14 @@ func (*Factory) Metadata() (string, string, string) {
 	return constants.Application, constants.Version, constants.Revision
 }
 
+// Options returns any options to be added to the CLI flags and passed to the reconciler.
+func (*Factory) Options() coremanager.ControllerOptions {
+	return nil
+}
+
 // Reconciler returns a new reconciler instance.
-func (*Factory) Reconciler(options *options.Options, manager manager.Manager) reconcile.Reconciler {
-	return coremanager.NewReconciler(options, manager, clustermanager.New)
+func (*Factory) Reconciler(options *options.Options, controllerOptions coremanager.ControllerOptions, manager manager.Manager) reconcile.Reconciler {
+	return coremanager.NewReconciler(options, controllerOptions, manager, clustermanager.New)
 }
 
 // RegisterWatches adds any watches that would trigger a reconcile.

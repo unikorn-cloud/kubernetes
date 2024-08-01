@@ -6,6 +6,7 @@ metadata:
     {{- include "unikorn.labels" . | nindent 4 }}
   annotations:
     {{- include "unikorn.ingress.clusterIssuer.annotations" . | nindent 4 }}
+    {{- include "unikorn.ingress.mtls.annotations" . | nindent 4 }}
     {{- if (include "unikorn.ingress.externalDNS" .) }}
     external-dns.alpha.kubernetes.io/hostname: {{ include "unikorn.kubernetes.host" . }}
     {{- end }}

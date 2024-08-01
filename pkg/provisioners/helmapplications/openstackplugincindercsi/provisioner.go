@@ -25,7 +25,7 @@ import (
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 	"github.com/unikorn-cloud/core/pkg/provisioners/util"
-	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
+	kubernetesprovisioners "github.com/unikorn-cloud/kubernetes/pkg/provisioners"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/openstackcloudprovider"
 
 	corev1 "k8s.io/api/core/v1"
@@ -37,11 +37,15 @@ import (
 )
 
 // Provisioner provides helm configuration interfaces.
-type Provisioner struct{}
+type Provisioner struct {
+	options *kubernetesprovisioners.ClusterOpenstackOptions
+}
 
 // New returns a new initialized provisioner object.
-func New(getApplication application.GetterFunc) *application.Provisioner {
-	provisioner := &Provisioner{}
+func New(getApplication application.GetterFunc, options *kubernetesprovisioners.ClusterOpenstackOptions) *application.Provisioner {
+	provisioner := &Provisioner{
+		options: options,
+	}
 
 	return application.New(getApplication).WithGenerator(provisioner).InNamespace("ocp-system")
 }
@@ -49,7 +53,7 @@ func New(getApplication application.GetterFunc) *application.Provisioner {
 // Ensure the Provisioner interface is implemented.
 var _ application.ValuesGenerator = &Provisioner{}
 
-func (p *Provisioner) generateStorageClass(cluster *unikornv1.KubernetesCluster, name string, reclaimPolicy corev1.PersistentVolumeReclaimPolicy, volumeBindingMode storagev1.VolumeBindingMode, isDefault, volumeExpansion bool) *storagev1.StorageClass {
+func (p *Provisioner) generateStorageClass(name string, reclaimPolicy corev1.PersistentVolumeReclaimPolicy, volumeBindingMode storagev1.VolumeBindingMode, isDefault, volumeExpansion bool) *storagev1.StorageClass {
 	class := &storagev1.StorageClass{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -61,10 +65,6 @@ func (p *Provisioner) generateStorageClass(cluster *unikornv1.KubernetesCluster,
 		VolumeBindingMode:    &volumeBindingMode,
 	}
 
-	if cluster.Spec.Openstack.VolumeFailureDomain != nil {
-		class.Parameters["availability"] = *cluster.Spec.Openstack.VolumeFailureDomain
-	}
-
 	if isDefault {
 		class.Annotations = map[string]string{
 			"storageclass.kubernetes.io/is-default-class": "true",
@@ -74,23 +74,20 @@ func (p *Provisioner) generateStorageClass(cluster *unikornv1.KubernetesCluster,
 	return class
 }
 
-func (p *Provisioner) generateStorageClasses(cluster *unikornv1.KubernetesCluster) []*storagev1.StorageClass {
+func (p *Provisioner) generateStorageClasses() []*storagev1.StorageClass {
 	return []*storagev1.StorageClass{
-		p.generateStorageClass(cluster, "cinder", corev1.PersistentVolumeReclaimDelete, storagev1.VolumeBindingWaitForFirstConsumer, true, true),
+		p.generateStorageClass("cinder", corev1.PersistentVolumeReclaimDelete, storagev1.VolumeBindingWaitForFirstConsumer, true, true),
 	}
 }
 
 // Generate implements the application.ValuesGenerator interface.
 func (p *Provisioner) Values(ctx context.Context, version *string) (interface{}, error) {
-	//nolint:forcetypeassert
-	cluster := application.FromContext(ctx).(*unikornv1.KubernetesCluster)
-
 	client, err := coreclient.ProvisionerClientFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	storageClasses := p.generateStorageClasses(cluster)
+	storageClasses := p.generateStorageClasses()
 
 	yamls := make([]string, len(storageClasses))
 
@@ -111,7 +108,7 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 		yamls[i] = string(y)
 	}
 
-	cloudConfig, err := openstackcloudprovider.GenerateCloudConfig(cluster)
+	cloudConfig, err := openstackcloudprovider.GenerateCloudConfig(p.options)
 	if err != nil {
 		return nil, err
 	}

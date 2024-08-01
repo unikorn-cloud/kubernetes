@@ -32,10 +32,6 @@ import (
 )
 
 var (
-	// ErrStatusunikornv1core.ConditionLookup is raised when a condition is not found in
-	// the resource status.
-	ErrStatusConditionLookup = errors.New("status condition not found")
-
 	// ErrMissingLabel is raised when an expected label is not present on
 	// a resource.
 	ErrMissingLabel = errors.New("expected label is missing")

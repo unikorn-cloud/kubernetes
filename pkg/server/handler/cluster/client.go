@@ -19,7 +19,6 @@ package cluster
 
 import (
 	"context"
-	"encoding/base64"
 	"net"
 	"net/http"
 	"slices"
@@ -186,7 +185,7 @@ func (c *Client) GetKubeconfig(ctx context.Context, organizationID, projectID, c
 
 func (c *Client) createIdentity(ctx context.Context, organizationID, projectID, regionID, clusterID string) (*regionapi.IdentityRead, error) {
 	tags := regionapi.TagList{
-		{
+		regionapi.Tag{
 			Name:  constants.KubernetesClusterLabel,
 			Value: clusterID,
 		},
@@ -215,53 +214,94 @@ func (c *Client) createIdentity(ctx context.Context, organizationID, projectID, 
 	return resp.JSON201, nil
 }
 
-func (c *Client) getExternalNetworks(ctx context.Context, organizationID, regionID string) (regionapi.ExternalNetworks, error) {
-	resp, err := c.region.GetApiV1OrganizationsOrganizationIDRegionsRegionIDExternalnetworksWithResponse(ctx, organizationID, regionID)
+func (c *Client) createPhysicalNetworkOpenstack(ctx context.Context, organizationID, projectID string, cluster *unikornv1.KubernetesCluster, identity *regionapi.IdentityRead) (*regionapi.PhysicalNetworkRead, error) {
+	tags := regionapi.TagList{
+		regionapi.Tag{
+			Name:  constants.KubernetesClusterLabel,
+			Value: cluster.Name,
+		},
+	}
+
+	dnsNameservers := make([]string, len(cluster.Spec.Network.DNSNameservers))
+
+	for i, ip := range cluster.Spec.Network.DNSNameservers {
+		dnsNameservers[i] = ip.String()
+	}
+
+	request := regionapi.PhysicalNetworkWrite{
+		Metadata: coreapi.ResourceWriteMetadata{
+			Name:        "kubernetes-cluster-" + cluster.Name,
+			Description: util.ToPointer("Physical network for cluster " + cluster.Name),
+		},
+		Spec: &regionapi.PhysicalNetworkWriteSpec{
+			Tags:           &tags,
+			Prefix:         cluster.Spec.Network.NodeNetwork.String(),
+			DnsNameservers: dnsNameservers,
+		},
+	}
+
+	resp, err := c.region.PostApiV1OrganizationsOrganizationIDProjectsProjectIDIdentitiesIdentityIDPhysicalnetworksWithResponse(ctx, organizationID, projectID, identity.Metadata.Id, request)
 	if err != nil {
-		return nil, errors.OAuth2ServerError("unable to get external networks").WithError(err)
+		return nil, errors.OAuth2ServerError("unable to physical network").WithError(err)
+	}
+
+	if resp.StatusCode() != http.StatusCreated {
+		return nil, errors.OAuth2ServerError("unable to create physical network")
+	}
+
+	return resp.JSON201, nil
+}
+
+func (c *Client) getRegion(ctx context.Context, organizationID, regionID string) (*regionapi.RegionRead, error) {
+	// TODO: Need a straight get interface rather than a list.
+	resp, err := c.region.GetApiV1OrganizationsOrganizationIDRegionsWithResponse(ctx, organizationID)
+	if err != nil {
+		return nil, errors.OAuth2ServerError("unable to get region").WithError(err)
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		return nil, errors.OAuth2ServerError("unable to get external networks")
+		return nil, errors.OAuth2ServerError("unable to get region")
 	}
 
-	return *resp.JSON200, nil
+	results := *resp.JSON200
+
+	index := slices.IndexFunc(results, func(region regionapi.RegionRead) bool {
+		return region.Metadata.Id == regionID
+	})
+
+	if index < 0 {
+		return nil, errors.OAuth2ServerError("unable to get region")
+	}
+
+	return &results[index], nil
 }
 
-func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizationID, regionID string, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
+func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizationID, projectID, regionID string, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
 	// Save the identity ID for later cleanup.
 	if cluster.Annotations == nil {
 		cluster.Annotations = map[string]string{}
 	}
 
-	cluster.Annotations[constants.CloudIdentityAnnotation] = identity.Metadata.Id
+	cluster.Annotations[constants.IdentityAnnotation] = identity.Metadata.Id
 
-	// Setup the provider specific stuff, this should be as minimal as possible!
-	switch identity.Spec.Type {
-	case regionapi.Openstack:
-		externalNetworks, err := c.getExternalNetworks(ctx, organizationID, regionID)
+	// Apply any region specific configuration based on feature flags.
+	region, err := c.getRegion(ctx, organizationID, regionID)
+	if err != nil {
+		return err
+	}
+
+	// Provision a vlan physical network for bare-metal nodes to attach to.
+	// For now, do this for everything, given you may start with a VM only cluster
+	// and suddely want some baremetal nodes.  CAPO won't allow you to change
+	// networks, so play it safe.  Please note that the cluster controller will
+	// automatically discover the physical network, so we don't need an annotation.
+	if region.Spec.Features.PhysicalNetworks {
+		physicalNetwork, err := c.createPhysicalNetworkOpenstack(ctx, organizationID, projectID, cluster, identity)
 		if err != nil {
-			return err
+			return errors.OAuth2ServerError("failed to create physical network").WithError(err)
 		}
 
-		if len(externalNetworks) == 0 {
-			return errors.OAuth2ServerError("no external networks present")
-		}
-
-		cloudConfig, err := base64.URLEncoding.DecodeString(identity.Spec.Openstack.CloudConfig)
-		if err != nil {
-			return errors.OAuth2ServerError("failed to decode cloud config").WithError(err)
-		}
-
-		cluster.Spec.Openstack = &unikornv1.KubernetesClusterOpenstackSpec{
-			Cloud:             &identity.Spec.Openstack.Cloud,
-			CloudConfig:       &cloudConfig,
-			ExternalNetworkID: &externalNetworks[0].Id,
-		}
-
-		cluster.Spec.ControlPlane.ServerGroupID = identity.Spec.Openstack.ServerGroupId
-	default:
-		return errors.OAuth2ServerError("unhandled provider type")
+		cluster.Annotations[constants.PhysicalNetworkAnnotation] = physicalNetwork.Metadata.Id
 	}
 
 	return nil
@@ -294,7 +334,7 @@ func (c *Client) Create(ctx context.Context, organizationID, projectID string, r
 		return nil, err
 	}
 
-	if err := c.applyCloudSpecificConfiguration(ctx, organizationID, request.Spec.RegionId, identity, cluster); err != nil {
+	if err := c.applyCloudSpecificConfiguration(ctx, organizationID, projectID, request.Spec.RegionId, identity, cluster); err != nil {
 		return nil, err
 	}
 
@@ -355,13 +395,9 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 		return err
 	}
 
-	if err := conversion.UpdateObjectMetadata(required, current, constants.CloudIdentityAnnotation); err != nil {
+	if err := conversion.UpdateObjectMetadata(required, current, []string{constants.IdentityAnnotation}, []string{constants.PhysicalNetworkAnnotation}); err != nil {
 		return errors.OAuth2ServerError("failed to merge metadata").WithError(err)
 	}
-
-	// Copy over things we provide.
-	required.Spec.Openstack = current.Spec.Openstack
-	required.Spec.ControlPlane.ServerGroupID = current.Spec.ControlPlane.ServerGroupID
 
 	// Experience has taught me that modifying caches by accident is a bad thing
 	// so be extra safe and deep copy the existing resource.
