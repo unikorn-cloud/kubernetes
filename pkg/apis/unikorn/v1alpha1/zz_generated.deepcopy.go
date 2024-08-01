@@ -697,6 +697,11 @@ func (in *KubernetesClusterOpenstackSpec) DeepCopyInto(out *KubernetesClusterOpe
 		*out = new(string)
 		**out = **in
 	}
+	if in.NetworkID != nil {
+		in, out := &in.NetworkID, &out.NetworkID
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

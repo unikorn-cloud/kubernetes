@@ -378,6 +378,9 @@ type KubernetesClusterOpenstackSpec struct {
 	VolumeFailureDomain *string `json:"volumeFailureDomain,omitempty"`
 	// ExternalNetworkID is the Openstack external network ID.
 	ExternalNetworkID *string `json:"externalNetworkId,omitempty"`
+	// NetworkID is the network to use for provisioning the cluster on.
+	// This is typically used to pass in bare-metal provider networks.
+	NetworkID *string `json:"networkId,omitempty"`
 }
 
 type KubernetesClusterAPISpec struct {
