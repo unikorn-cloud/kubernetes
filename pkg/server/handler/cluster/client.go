@@ -232,7 +232,7 @@ func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizati
 
 	cluster.Annotations[constants.CloudIdentityAnnotation] = identity.Metadata.Id
 
-	// Setup the provider specific stuff, this should be as minial as possible!
+	// Setup the provider specific stuff, this should be as minimal as possible!
 	switch identity.Spec.Type {
 	case regionapi.Openstack:
 		externalNetworks, err := c.getExternalNetworks(ctx, organizationID, regionID)
