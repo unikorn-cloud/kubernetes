@@ -99,8 +99,13 @@ func (c *ControllerRuntimeClient) RESTConfig(ctx context.Context, namespace, nam
 func (c *ControllerRuntimeClient) GetSecret(ctx context.Context, namespace, name string) (*corev1.Secret, error) {
 	log := log.FromContext(ctx)
 
+	clusterContext, err := coreclient.ClusterFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	secret := &corev1.Secret{}
-	if err := coreclient.DynamicClientFromContext(ctx).Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, secret); err != nil {
+	if err := clusterContext.Client.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, secret); err != nil {
 		if kerrors.IsNotFound(err) {
 			log.Info("vitual cluster kubeconfig does not exist, yielding")
 

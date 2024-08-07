@@ -67,7 +67,10 @@ func newApplicationReferenceGetter(clusterManager *unikornv1.ClusterManager) *Ap
 }
 
 func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name string) (*unikornv1core.ApplicationReference, error) {
-	cli := coreclient.StaticClientFromContext(ctx)
+	cli, err := coreclient.ProvisionerClientFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	key := client.ObjectKey{
 		Name: *a.clusterManager.Spec.ApplicationBundle,
@@ -128,14 +131,11 @@ func (p *Provisioner) getClusterManagerProvisioner() provisioners.Provisioner {
 		clusterapi.New(apps.clusterAPI),
 	)
 
-	// Set up deletion semantics.
-	clusterAPIProvisioner.BackgroundDeletion()
-
 	// Provision the vitual cluster, setup the remote cluster then
 	// install cert manager and cluster API into it.
 	return serial.New("control plane",
 		vcluster.New(apps.vCluster, p.clusterManager.Name).InNamespace(p.clusterManager.Namespace),
-		remoteClusterManager.ProvisionOn(clusterAPIProvisioner),
+		remoteClusterManager.ProvisionOn(clusterAPIProvisioner, remotecluster.BackgroundDeletion),
 	)
 }
 
@@ -164,7 +164,10 @@ func (p *Provisioner) Deprovision(ctx context.Context) error {
 	// When deleting a manager, you need to also delete any managed clusters
 	// first to free up compute resources from the provider, so block until
 	// this is done.
-	cli := coreclient.StaticClientFromContext(ctx)
+	cli, err := coreclient.ProvisionerClientFromContext(ctx)
+	if err != nil {
+		return err
+	}
 
 	var clusters unikornv1.KubernetesClusterList
 

@@ -85,7 +85,10 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 	//nolint:forcetypeassert
 	cluster := application.FromContext(ctx).(*unikornv1.KubernetesCluster)
 
-	client := coreclient.DynamicClientFromContext(ctx)
+	client, err := coreclient.ProvisionerClientFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	storageClasses := p.generateStorageClasses(cluster)
 

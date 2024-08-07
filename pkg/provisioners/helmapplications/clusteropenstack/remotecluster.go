@@ -112,8 +112,13 @@ func (g *RemoteCluster) Config(ctx context.Context) (*clientcmdapi.Config, error
 		Name:      KubeconfigSecretName(g.cluster),
 	}
 
+	clusterContext, err := coreclient.ClusterFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	// Retry getting the secret until it exists.
-	if err := coreclient.DynamicClientFromContext(ctx).Get(ctx, secretKey, secret); err != nil {
+	if err := clusterContext.Client.Get(ctx, secretKey, secret); err != nil {
 		if errors.IsNotFound(err) {
 			log.Info("kubernetes cluster kubeconfig does not exist, yielding")
 
