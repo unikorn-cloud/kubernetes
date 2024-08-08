@@ -223,6 +223,21 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 		"organizationID": labels[constants.OrganizationLabel],
 	}
 
+	networkValues := map[string]interface{}{
+		"nodeCIDR": cluster.Spec.Network.NodeNetwork.IPNet.String(),
+		"serviceCIDRs": []interface{}{
+			cluster.Spec.Network.ServiceNetwork.IPNet.String(),
+		},
+		"podCIDRs": []interface{}{
+			cluster.Spec.Network.PodNetwork.IPNet.String(),
+		},
+		"dnsNameservers": nameservers,
+	}
+
+	if cluster.Spec.Openstack.NetworkID != nil {
+		networkValues["networkID"] = *cluster.Spec.Openstack.NetworkID
+	}
+
 	// TODO: generate types from the Helm values schema.
 	values := map[string]interface{}{
 		"version":   string(*cluster.Spec.Version),
@@ -247,16 +262,7 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 			"machine":  p.generateMachineHelmValues(&cluster.Spec.ControlPlane.MachineGeneric, nil),
 		},
 		"workloadPools": workloadPools,
-		"network": map[string]interface{}{
-			"nodeCIDR": cluster.Spec.Network.NodeNetwork.IPNet.String(),
-			"serviceCIDRs": []interface{}{
-				cluster.Spec.Network.ServiceNetwork.IPNet.String(),
-			},
-			"podCIDRs": []interface{}{
-				cluster.Spec.Network.PodNetwork.IPNet.String(),
-			},
-			"dnsNameservers": nameservers,
-		},
+		"network":       networkValues,
 	}
 
 	if cluster.Spec.API != nil {

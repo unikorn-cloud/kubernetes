@@ -228,7 +228,61 @@ func (c *Client) getExternalNetworks(ctx context.Context, organizationID, region
 	return *resp.JSON200, nil
 }
 
-func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizationID, regionID string, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
+func (c *Client) createPhysicalNetworkOpenstack(ctx context.Context, organizationID, projectID, clusterID string, identity *regionapi.IdentityRead) (*regionapi.PhysicalNetworkRead, error) {
+	tags := regionapi.TagList{
+		{
+			Name:  constants.KubernetesClusterLabel,
+			Value: clusterID,
+		},
+	}
+
+	request := regionapi.PhysicalNetworkWrite{
+		Metadata: coreapi.ResourceWriteMetadata{
+			Name:        "kubernetes-cluster-" + clusterID,
+			Description: util.ToPointer("Physical network for cluster " + clusterID),
+		},
+		Spec: &regionapi.PhysicalNetworkSpec{
+			Tags: &tags,
+		},
+	}
+
+	resp, err := c.region.PostApiV1OrganizationsOrganizationIDProjectsProjectIDIdentitiesIdentityIDPhysicalNetworksWithResponse(ctx, organizationID, projectID, identity.Metadata.Id, request)
+	if err != nil {
+		return nil, errors.OAuth2ServerError("unable to physical network").WithError(err)
+	}
+
+	if resp.StatusCode() != http.StatusCreated {
+		return nil, errors.OAuth2ServerError("unable to create physical network")
+	}
+
+	return resp.JSON201, nil
+}
+
+func (c *Client) getRegion(ctx context.Context, organizationID, regionID string) (*regionapi.RegionRead, error) {
+	// TODO: Need a straight get interface rather than a list.
+	resp, err := c.region.GetApiV1OrganizationsOrganizationIDRegionsWithResponse(ctx, organizationID)
+	if err != nil {
+		return nil, errors.OAuth2ServerError("unable to get region").WithError(err)
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return nil, errors.OAuth2ServerError("unable to get region")
+	}
+
+	results := *resp.JSON200
+
+	index := slices.IndexFunc(results, func(region regionapi.RegionRead) bool {
+		return region.Metadata.Id == regionID
+	})
+
+	if index < 0 {
+		return nil, errors.OAuth2ServerError("unable to get region")
+	}
+
+	return &results[index], nil
+}
+
+func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizationID, projectID, regionID string, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
 	// Save the identity ID for later cleanup.
 	if cluster.Annotations == nil {
 		cluster.Annotations = map[string]string{}
@@ -260,6 +314,25 @@ func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizati
 		}
 
 		cluster.Spec.ControlPlane.ServerGroupID = identity.Spec.Openstack.ServerGroupId
+
+		// Apply any region specific configuration based on feature flags.
+		region, err := c.getRegion(ctx, organizationID, regionID)
+		if err != nil {
+			return err
+		}
+
+		// Provision a vlan physical network for bare-metal nodes to attach to.
+		// For now, do this for everything, given you may start with a VM only cluster
+		// and suddely want some baremetal nodes.  CAPO won't allow you to change
+		// networks, so play it safe.
+		if region.Spec.Features.PhysicalNetworks {
+			physicalNetwork, err := c.createPhysicalNetworkOpenstack(ctx, organizationID, projectID, cluster.Name, identity)
+			if err != nil {
+				return errors.OAuth2ServerError("failed to create physical network").WithError(err)
+			}
+
+			cluster.Spec.Openstack.NetworkID = &physicalNetwork.Metadata.Id
+		}
 	default:
 		return errors.OAuth2ServerError("unhandled provider type")
 	}
@@ -294,7 +367,7 @@ func (c *Client) Create(ctx context.Context, organizationID, projectID string, r
 		return nil, err
 	}
 
-	if err := c.applyCloudSpecificConfiguration(ctx, organizationID, request.Spec.RegionId, identity, cluster); err != nil {
+	if err := c.applyCloudSpecificConfiguration(ctx, organizationID, projectID, request.Spec.RegionId, identity, cluster); err != nil {
 		return nil, err
 	}
 

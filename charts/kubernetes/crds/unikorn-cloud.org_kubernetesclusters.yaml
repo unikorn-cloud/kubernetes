@@ -387,6 +387,11 @@ spec:
                       will always be deployed in this region.  Individual worload pools will
                       default to this, but can override it.
                     type: string
+                  networkId:
+                    description: |-
+                      NetworkID is the network to use for provisioning the cluster on.
+                      This is typically used to pass in bare-metal provider networks.
+                    type: string
                   sshKeyName:
                     description: SSHKeyName is the SSH key name to use to provide
                       access to the VMs.
