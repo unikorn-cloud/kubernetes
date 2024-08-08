@@ -31,7 +31,6 @@ import (
 	"github.com/unikorn-cloud/core/pkg/provisioners/conditional"
 	"github.com/unikorn-cloud/core/pkg/provisioners/remotecluster"
 	"github.com/unikorn-cloud/core/pkg/provisioners/serial"
-	provisionersutil "github.com/unikorn-cloud/core/pkg/provisioners/util"
 	"github.com/unikorn-cloud/core/pkg/util"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/cilium"
@@ -43,8 +42,6 @@ import (
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/openstackcloudprovider"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/openstackplugincindercsi"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/vcluster"
-
-	"k8s.io/apimachinery/pkg/labels"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -67,7 +64,10 @@ func newApplicationReferenceGetter(cluster *unikornv1.KubernetesCluster) *Applic
 
 func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name string) (*unikornv1core.ApplicationReference, error) {
 	// TODO: we could cache this, it's from a cache anyway, so quite cheap...
-	cli := coreclient.StaticClientFromContext(ctx)
+	cli, err := coreclient.ProvisionerClientFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	key := client.ObjectKey{
 		Name: *a.cluster.Spec.ApplicationBundle,
@@ -136,25 +136,19 @@ func (p *Provisioner) Object() unikornv1core.ManagableResourceInterface {
 
 // getClusterManager gets the control plane object that owns this cluster.
 func (p *Provisioner) getClusterManager(ctx context.Context) (*unikornv1.ClusterManager, error) {
-	// TODO: error checking.
-	projectLabels := labels.Set{
-		constants.KindLabel:    constants.KindLabelValueProject,
-		constants.ProjectLabel: p.cluster.Labels[constants.ProjectLabel],
-	}
-
-	projectNamespace, err := provisionersutil.GetResourceNamespace(ctx, projectLabels)
+	cli, err := coreclient.ProvisionerClientFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var clusterManager unikornv1.ClusterManager
-
 	key := client.ObjectKey{
-		Namespace: projectNamespace.Name,
+		Namespace: p.cluster.Namespace,
 		Name:      p.cluster.Spec.ClusterManagerID,
 	}
 
-	if err := coreclient.StaticClientFromContext(ctx).Get(ctx, key, &clusterManager); err != nil {
+	var clusterManager unikornv1.ClusterManager
+
+	if err := cli.Get(ctx, key, &clusterManager); err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrClusterManager, err.Error())
 	}
 
@@ -228,15 +222,12 @@ func (p *Provisioner) getProvisioner(ctx context.Context) (provisioners.Provisio
 // out, so we essentially have to defer cluster creation until we know the
 // manager is working and Argo isn't going to fail.
 func (p *Provisioner) managerReady(ctx context.Context) error {
-	cli := coreclient.StaticClientFromContext(ctx)
-
-	manager := &unikornv1.ClusterManager{}
-
-	if err := cli.Get(ctx, client.ObjectKey{Namespace: p.cluster.Namespace, Name: p.cluster.Spec.ClusterManagerID}, manager); err != nil {
+	clusterManager, err := p.getClusterManager(ctx)
+	if err != nil {
 		return err
 	}
 
-	condition, err := manager.StatusConditionRead(unikornv1core.ConditionAvailable)
+	condition, err := clusterManager.StatusConditionRead(unikornv1core.ConditionAvailable)
 	if err != nil {
 		return err
 	}

@@ -148,7 +148,11 @@ func (c *Client) GetKubeconfig(ctx context.Context, organizationID, projectID, c
 
 	// TODO: propagate the client like we do in the controllers, then code sharing
 	// becomes a lot easier!
-	ctx = coreclient.NewContextWithDynamicClient(ctx, c.client)
+	clusterContext := &coreclient.ClusterContext{
+		Client: c.client,
+	}
+
+	ctx = coreclient.NewContextWithCluster(ctx, clusterContext)
 
 	vc := vcluster.NewControllerRuntimeClient()
 

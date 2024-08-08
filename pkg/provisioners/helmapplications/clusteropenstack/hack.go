@@ -221,7 +221,12 @@ func (p *Provisioner) deleteOrphanedMachineDeployments(ctx context.Context) erro
 	//nolint:forcetypeassert
 	cluster := application.FromContext(ctx).(*unikornv1.KubernetesCluster)
 
-	client := coreclient.DynamicClientFromContext(ctx)
+	clusterContext, err := coreclient.ClusterFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	client := clusterContext.Client
 
 	deployments, err := p.getMachineDeployments(ctx, client)
 	if err != nil {
