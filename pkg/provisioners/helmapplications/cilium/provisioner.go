@@ -19,7 +19,10 @@ package cilium
 
 import (
 	"context"
+	"fmt"
 
+	coreclient "github.com/unikorn-cloud/core/pkg/client"
+	coreerrors "github.com/unikorn-cloud/core/pkg/errors"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 	"github.com/unikorn-cloud/core/pkg/provisioners/util"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
@@ -51,9 +54,26 @@ func (p *Provisioner) Values(ctx context.Context, _ *string) (interface{}, error
 	if *cluster.Spec.ControlPlane.Replicas == 1 {
 		operatorValues["replicas"] = cluster.Spec.ControlPlane.Replicas
 	}
+	// We run in sans-kube-proxy mode, as it's faster and doesn't involve
+	// iptables ;-), for that we need to specify the Kubernetes API endpoint
+	// as per https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free.
+	// This information is propagated as part of the cluster metadata in the
+	// context.  Raise an error if not set, as this should only be used in
+	// the context of a remote cluster.
+	clusterContext, err := coreclient.ClusterFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if clusterContext.Host == "" || clusterContext.Port == "" {
+		return nil, fmt.Errorf("%w: missing cluster host:port", coreerrors.ErrInvalidContext)
+	}
 
 	values := map[string]interface{}{
-		"operator": operatorValues,
+		"operator":             operatorValues,
+		"kubeProxyReplacement": "true",
+		"k8sServiceHost":       clusterContext.Host,
+		"k8sServicePort":       clusterContext.Port,
 		"hubble": map[string]interface{}{
 			"relay": map[string]interface{}{
 				"nodeSelector": util.ControlPlaneNodeSelector(),

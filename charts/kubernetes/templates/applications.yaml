@@ -155,7 +155,7 @@ metadata:
     unikorn-cloud.org/name: cluster-openstack
   annotations:
     unikorn-cloud.org/description: |-
-      Provides an opinionated Kuberenetes cluster deployment for Cluster API's
+      Provides an opinionated Kubernetes cluster deployment for Cluster API's
       OpenStack plugin.
 spec:
   documentation: https://github.com/unikorn-cloud/helm-cluster-api/
@@ -169,6 +169,9 @@ spec:
     chart: cluster-api-cluster-openstack
     createNamespace: true
     interface: 1.0.0
+    parameters:
+      - name: controlPlane.kubeadmSkipPhases[0]
+        value: addon/kube-proxy
 ---
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: HelmApplication
