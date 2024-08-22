@@ -27,6 +27,7 @@ import (
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/util"
+	"github.com/unikorn-cloud/identity/pkg/middleware/authorization"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/applicationbundle"
@@ -195,8 +196,13 @@ func (c *Client) generate(ctx context.Context, namespace *corev1.Namespace, orga
 		return nil, err
 	}
 
+	userinfo, err := authorization.UserinfoFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	out := &unikornv1.ClusterManager{
-		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, namespace.Name).WithOrganization(organizationID).WithProject(projectID).Get(ctx),
+		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, namespace.Name, userinfo.Sub).WithOrganization(organizationID).WithProject(projectID).Get(),
 		Spec: unikornv1.ClusterManagerSpec{
 			ApplicationBundle:            &applicationBundle.Name,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
@@ -293,7 +299,13 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterM
 		return err
 	}
 
+	if err := conversion.UpdateObjectMetadata(required, current, nil, nil); err != nil {
+		return errors.OAuth2ServerError("failed to merge metadata").WithError(err)
+	}
+
 	updated := current.DeepCopy()
+	updated.Labels = required.Labels
+	updated.Annotations = required.Annotations
 	updated.Spec = required.Spec
 
 	if err := c.client.Patch(ctx, updated, client.MergeFrom(current)); err != nil {

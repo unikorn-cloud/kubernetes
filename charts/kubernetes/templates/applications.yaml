@@ -164,7 +164,7 @@ spec:
   tags:
   - infrastructure
   versions:
-  - version: v0.5.1
+  - version: v0.5.3
     repo: https://unikorn-cloud.github.io/helm-cluster-api
     chart: cluster-api-cluster-openstack
     createNamespace: true

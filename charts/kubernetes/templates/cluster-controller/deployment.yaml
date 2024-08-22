@@ -17,6 +17,12 @@ spec:
       containers:
       - name: unikorn-cluster-controller
         image: {{ include "unikorn.clusterControllerImage" . }}
+        args:
+        {{- include "unikorn.identity.flags" . | nindent 8 }}
+        {{- include "unikorn.region.flags" . | nindent 8 }}
+        {{- include "unikorn.otlp.flags" . | nindent 8 }}
+        - --client-certificate-namespace={{ .Release.Namespace }}
+        - --client-certificate-name=unikorn-kubernetes-client-certificate
         ports:
         - name: prometheus
           containerPort: 8080

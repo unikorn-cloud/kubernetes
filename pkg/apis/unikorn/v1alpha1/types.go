@@ -212,16 +212,10 @@ type MachineGeneric struct {
 	// DiskSize is the persistent root disk size to deploy with.  This
 	// overrides the default ephemeral disk size defined in the flavor.
 	DiskSize *resource.Quantity `json:"diskSize,omitempty"`
-	// VolumeFailureDomain allows the volume failure domain to be set
-	// on a per machine deployment basis.
-	VolumeFailureDomain *string `json:"volumeFailureDomain,omitempty"`
 	// Replicas is the initial pool size to deploy.
 	// +kubebuilder:validation:Minimum=0
 	// +kubebuilder:default=3
 	Replicas *int `json:"replicas,omitempty"`
-	// ServerGroupID sets the server group of the cluster manager in
-	// order to maintain anti-affinity rules.
-	ServerGroupID *string `json:"serverGroupId,omitempty"`
 }
 
 // File is a file that can be deployed to a cluster node on creation.
@@ -281,8 +275,6 @@ type KubernetesWorkloadPoolSpec struct {
 	MachineGeneric `json:",inline"`
 	// Name is the name of the pool.
 	Name string `json:"name"`
-	// FailureDomain is the failure domain to use for the pool.
-	FailureDomain *string `json:"failureDomain,omitempty"`
 	// Labels is the set of node labels to apply to the pool on
 	// initialisation/join.
 	Labels map[string]string `json:"labels,omitempty"`
@@ -334,8 +326,6 @@ type KubernetesClusterSpec struct {
 	// reasons this should match what is already pre-installed on the
 	// provided image.
 	Version *SemanticVersion `json:"version"`
-	// Openstack defines global Openstack related configuration.
-	Openstack *KubernetesClusterOpenstackSpec `json:"openstack"`
 	// Network defines the Kubernetes networking.
 	Network *KubernetesClusterNetworkSpec `json:"network"`
 	// API defines Kubernetes API specific options.
@@ -355,29 +345,6 @@ type KubernetesClusterSpec struct {
 	// (Mon-Fri) and before working hours (00:00-07:00 UTC).  When any property is set
 	// the platform will follow the rules for the upgrade method.
 	ApplicationBundleAutoUpgrade *ApplicationBundleAutoUpgradeSpec `json:"applicationBundleAutoUpgrade,omitempty"`
-}
-
-type KubernetesClusterOpenstackSpec struct {
-	// CACert is the CA used to trust the Openstack endpoint.
-	CACert *[]byte `json:"caCert,omitempty"`
-	// CloudConfig is a base64 encoded minimal clouds.yaml file for
-	// use by the ClusterManager to provision the IaaS bits.
-	CloudConfig *[]byte `json:"cloudConfig"`
-	// Cloud is the clouds.yaml key that identifes the configuration
-	// to use for provisioning.
-	Cloud *string `json:"cloud"`
-	// SSHKeyName is the SSH key name to use to provide access to the VMs.
-	SSHKeyName *string `json:"sshKeyName,omitempty"`
-	// FailureDomain is the global failure domain to use.  The cluster manager
-	// will always be deployed in this region.  Individual worload pools will
-	// default to this, but can override it.
-	FailureDomain *string `json:"failureDomain,omitempty"`
-	// VolumeFailureDomain is the default failure domain to use for volumes
-	// as these needn't match compute.  For legacy reasons, this will default
-	// to FailureDomain, but you shouldn't reply on this behaviour.
-	VolumeFailureDomain *string `json:"volumeFailureDomain,omitempty"`
-	// ExternalNetworkID is the Openstack external network ID.
-	ExternalNetworkID *string `json:"externalNetworkId,omitempty"`
 }
 
 type KubernetesClusterAPISpec struct {

@@ -25,18 +25,21 @@ import (
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
+	kubernetesprovisioners "github.com/unikorn-cloud/kubernetes/pkg/provisioners"
 )
 
 // Provisioner encapsulates control plane provisioning.
 type Provisioner struct {
+	options *kubernetesprovisioners.ClusterOpenstackOptions
 	// clusterManagerPrefix contains the IP address prefix to add
 	// to the cluster firewall if, required.
 	clusterManagerPrefix string
 }
 
 // New returns a new initialized provisioner object.
-func New(getApplication application.GetterFunc, clusterManagerPrefix string) *application.Provisioner {
+func New(getApplication application.GetterFunc, options *kubernetesprovisioners.ClusterOpenstackOptions, clusterManagerPrefix string) *application.Provisioner {
 	provisioner := &Provisioner{
+		options:              options,
 		clusterManagerPrefix: clusterManagerPrefix,
 	}
 
@@ -50,27 +53,19 @@ var _ application.PostProvisionHook = &Provisioner{}
 
 // generateMachineHelmValues translates the API's idea of a machine into what's
 // expected by the underlying Helm chart.
-func (p *Provisioner) generateMachineHelmValues(machine *unikornv1.MachineGeneric, failureDomain *string) map[string]interface{} {
+func (p *Provisioner) generateMachineHelmValues(machine *unikornv1.MachineGeneric, controlPlane bool) map[string]interface{} {
 	object := map[string]interface{}{
 		"imageID":  *machine.ImageID,
 		"flavorID": *machine.FlavorName,
 	}
 
-	if failureDomain != nil {
-		object["failureDomain"] = *failureDomain
-	}
-
-	if machine.ServerGroupID != nil {
-		object["serverGroupID"] = *machine.ServerGroupID
+	if controlPlane && p.options.ServerGroupID != nil {
+		object["serverGroupID"] = *p.options.ServerGroupID
 	}
 
 	if machine.DiskSize != nil {
 		disk := map[string]interface{}{
 			"size": machine.DiskSize.Value() >> 30,
-		}
-
-		if machine.VolumeFailureDomain != nil {
-			disk["failureDomain"] = *machine.VolumeFailureDomain
 		}
 
 		object["disk"] = disk
@@ -89,7 +84,7 @@ func (p *Provisioner) generateWorkloadPoolHelmValues(cluster *unikornv1.Kubernet
 
 		object := map[string]interface{}{
 			"replicas": *workloadPool.Replicas,
-			"machine":  p.generateMachineHelmValues(&workloadPool.MachineGeneric, workloadPool.FailureDomain),
+			"machine":  p.generateMachineHelmValues(&workloadPool.MachineGeneric, false),
 		}
 
 		if cluster.AutoscalingEnabled() && workloadPool.Autoscaling != nil {
@@ -162,8 +157,6 @@ func generateWorkloadPoolSchedulerHelmValues(p *unikornv1.KubernetesClusterWorkl
 }
 
 // Generate implements the application.Generator interface.
-//
-//nolint:cyclop
 func (p *Provisioner) Values(ctx context.Context, version *string) (interface{}, error) {
 	//nolint:forcetypeassert
 	cluster := application.FromContext(ctx).(*unikornv1.KubernetesCluster)
@@ -176,35 +169,13 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 		nameservers[i] = nameserver.IP.String()
 	}
 
-	// Support interim legacy behavior.
-	volumeFailureDomain := cluster.Spec.Openstack.VolumeFailureDomain
-	if volumeFailureDomain == nil {
-		volumeFailureDomain = cluster.Spec.Openstack.FailureDomain
-	}
-
 	openstackValues := map[string]interface{}{
-		"cloud":      *cluster.Spec.Openstack.Cloud,
-		"cloudsYAML": base64.StdEncoding.EncodeToString(*cluster.Spec.Openstack.CloudConfig),
+		"cloud":      p.options.Cloud,
+		"cloudsYAML": p.options.CloudConfig,
 	}
 
-	if cluster.Spec.Openstack.ExternalNetworkID != nil {
-		openstackValues["externalNetworkID"] = *cluster.Spec.Openstack.ExternalNetworkID
-	}
-
-	if cluster.Spec.Openstack.CACert != nil {
-		openstackValues["ca"] = base64.StdEncoding.EncodeToString(*cluster.Spec.Openstack.CACert)
-	}
-
-	if cluster.Spec.Openstack.SSHKeyName != nil {
-		openstackValues["sshKeyName"] = *cluster.Spec.Openstack.SSHKeyName
-	}
-
-	if cluster.Spec.Openstack.FailureDomain != nil {
-		openstackValues["computeFailureDomain"] = *cluster.Spec.Openstack.FailureDomain
-	}
-
-	if volumeFailureDomain != nil {
-		openstackValues["volumeFailureDomain"] = *volumeFailureDomain
+	if p.options.ExternalNetworkID != nil {
+		openstackValues["externalNetworkID"] = *p.options.ExternalNetworkID
 	}
 
 	labels, err := cluster.ResourceLabels()
@@ -221,6 +192,24 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 		"clusterID":      cluster.Name,
 		"projectID":      labels[constants.ProjectLabel],
 		"organizationID": labels[constants.OrganizationLabel],
+	}
+
+	networkValues := map[string]interface{}{
+		"nodeCIDR": cluster.Spec.Network.NodeNetwork.IPNet.String(),
+		"serviceCIDRs": []interface{}{
+			cluster.Spec.Network.ServiceNetwork.IPNet.String(),
+		},
+		"podCIDRs": []interface{}{
+			cluster.Spec.Network.PodNetwork.IPNet.String(),
+		},
+		"dnsNameservers": nameservers,
+	}
+
+	if p.options.ProviderNetwork != nil {
+		networkValues["provider"] = map[string]interface{}{
+			"networkID": *p.options.ProviderNetwork.NetworkID,
+			"subnetID":  *p.options.ProviderNetwork.SubnetID,
+		}
 	}
 
 	// TODO: generate types from the Helm values schema.
@@ -244,19 +233,10 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 		},
 		"controlPlane": map[string]interface{}{
 			"replicas": *cluster.Spec.ControlPlane.Replicas,
-			"machine":  p.generateMachineHelmValues(&cluster.Spec.ControlPlane.MachineGeneric, nil),
+			"machine":  p.generateMachineHelmValues(&cluster.Spec.ControlPlane.MachineGeneric, true),
 		},
 		"workloadPools": workloadPools,
-		"network": map[string]interface{}{
-			"nodeCIDR": cluster.Spec.Network.NodeNetwork.IPNet.String(),
-			"serviceCIDRs": []interface{}{
-				cluster.Spec.Network.ServiceNetwork.IPNet.String(),
-			},
-			"podCIDRs": []interface{}{
-				cluster.Spec.Network.PodNetwork.IPNet.String(),
-			},
-			"dnsNameservers": nameservers,
-		},
+		"network":       networkValues,
 	}
 
 	if cluster.Spec.API != nil {

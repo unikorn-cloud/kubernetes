@@ -20,6 +20,7 @@ package openstackcloudprovider
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 
@@ -29,7 +30,7 @@ import (
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 	"github.com/unikorn-cloud/core/pkg/provisioners/util"
-	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
+	kubernetesprovisioners "github.com/unikorn-cloud/kubernetes/pkg/provisioners"
 
 	"sigs.k8s.io/yaml"
 )
@@ -41,11 +42,15 @@ var (
 )
 
 // Provisioner encapsulates control plane provisioning.
-type Provisioner struct{}
+type Provisioner struct {
+	options *kubernetesprovisioners.ClusterOpenstackOptions
+}
 
 // New returns a new initialized provisioner object.
-func New(getApplication application.GetterFunc) *application.Provisioner {
-	provisioner := &Provisioner{}
+func New(getApplication application.GetterFunc, options *kubernetesprovisioners.ClusterOpenstackOptions) *application.Provisioner {
+	provisioner := &Provisioner{
+		options: options,
+	}
 
 	return application.New(getApplication).WithGenerator(provisioner).InNamespace("ocp-system")
 }
@@ -58,16 +63,21 @@ var _ application.ValuesGenerator = &Provisioner{}
 // https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/openstack-cloud-controller-manager/using-openstack-cloud-controller-manager.md#config-openstack-cloud-controller-manager
 //
 //nolint:cyclop
-func GenerateCloudConfig(cluster *unikornv1.KubernetesCluster) (string, error) {
-	var clouds clientconfig.Clouds
-
-	if err := yaml.Unmarshal(*cluster.Spec.Openstack.CloudConfig, &clouds); err != nil {
+func GenerateCloudConfig(options *kubernetesprovisioners.ClusterOpenstackOptions) (string, error) {
+	cloudConfigYAML, err := base64.URLEncoding.DecodeString(options.CloudConfig)
+	if err != nil {
 		return "", err
 	}
 
-	cloud, ok := clouds.Clouds[*cluster.Spec.Openstack.Cloud]
+	var clouds clientconfig.Clouds
+
+	if err := yaml.Unmarshal(cloudConfigYAML, &clouds); err != nil {
+		return "", err
+	}
+
+	cloud, ok := clouds.Clouds[options.Cloud]
 	if !ok {
-		return "", fmt.Errorf("%w: cloud '%s' not found in clouds.yaml", ErrCloudConfiguration, *cluster.Spec.Openstack.Cloud)
+		return "", fmt.Errorf("%w: cloud '%s' not found in clouds.yaml", ErrCloudConfiguration, options.Cloud)
 	}
 
 	if cloud.AuthType != clientconfig.AuthV3ApplicationCredential {
@@ -98,7 +108,7 @@ func GenerateCloudConfig(cluster *unikornv1.KubernetesCluster) (string, error) {
 		return "", err
 	}
 
-	if _, err := loadBalancer.NewKey("floating-network-id", *cluster.Spec.Openstack.ExternalNetworkID); err != nil {
+	if _, err := loadBalancer.NewKey("floating-network-id", *options.ExternalNetworkID); err != nil {
 		return "", err
 	}
 
@@ -124,10 +134,7 @@ func GenerateCloudConfig(cluster *unikornv1.KubernetesCluster) (string, error) {
 // Note there is an option, to just pass through the clouds.yaml file, however
 // the chart doesn't allow it to be exposed so we need to translate between formats.
 func (p *Provisioner) Values(ctx context.Context, _ *string) (interface{}, error) {
-	//nolint:forcetypeassert
-	cluster := application.FromContext(ctx).(*unikornv1.KubernetesCluster)
-
-	cloudConfig, err := GenerateCloudConfig(cluster)
+	cloudConfig, err := GenerateCloudConfig(p.options)
 	if err != nil {
 		return nil, err
 	}

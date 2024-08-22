@@ -17,6 +17,8 @@ spec:
       containers:
       - name: unikorn-cluster-manager-controller
         image: {{ include "unikorn.clusterManagerControllerImage" . }}
+        args:
+        {{- include "unikorn.otlp.flags" . | nindent 8 }}
         ports:
         - name: prometheus
           containerPort: 8080

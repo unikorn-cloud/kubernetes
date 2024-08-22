@@ -9,7 +9,7 @@ Please ensure updated generated code is commited with your pull request.
 
 ## API Definition
 
-Consult the [OpenAPI schema](../../pkg/server/openapi/server.spec.yaml) for full details of what it does.
+Consult the [OpenAPI schema](../../pkg/openapi/server.spec.yaml) for full details of what it does.
 
 ## Getting Started with Development and Testing.
 
