@@ -188,7 +188,7 @@ touch:
 .PHOMY: lint
 lint: $(GENDIR)
 	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(LINT_VERSION)
-	$(GOBIN)/golangci-lint run ./...
+	$(GOBIN)/golangci-lint run --timeout=10m ./...
 	helm lint --strict charts/kubernetes
 
 # Validate the server OpenAPI schema is legit.
