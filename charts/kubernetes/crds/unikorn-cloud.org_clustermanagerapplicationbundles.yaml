@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.1
   name: clustermanagerapplicationbundles.unikorn-cloud.org
 spec:
   group: unikorn-cloud.org
@@ -80,9 +80,8 @@ spec:
                           description: Name is the name of the resource we are referencing.
                           type: string
                         version:
-                          description: |-
-                            Version is the version of the application within the application type.
-                            TODO: make mandatory.
+                          description: Version is the version of the application within
+                            the application type.
                           type: string
                       required:
                       - kind

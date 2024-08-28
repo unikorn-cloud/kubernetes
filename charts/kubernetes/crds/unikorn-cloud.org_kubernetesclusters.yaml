@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.1
   name: kubernetesclusters.unikorn-cloud.org
 spec:
   group: unikorn-cloud.org
@@ -296,11 +296,6 @@ spec:
                     description: Replicas is the initial pool size to deploy.
                     minimum: 0
                     type: integer
-                  volumeFailureDomain:
-                    description: |-
-                      VolumeFailureDomain allows the volume failure domain to be set
-                      on a per machine deployment basis.
-                    type: string
                 required:
                 - flavorId
                 - flavorName
@@ -454,10 +449,6 @@ spec:
                             overrides the default ephemeral disk size defined in the flavor.
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
-                        failureDomain:
-                          description: FailureDomain is the failure domain to use
-                            for the pool.
-                          type: string
                         files:
                           description: |-
                             Files are a set of files that can be installed onto the node
@@ -507,11 +498,6 @@ spec:
                           description: Replicas is the initial pool size to deploy.
                           minimum: 0
                           type: integer
-                        volumeFailureDomain:
-                          description: |-
-                            VolumeFailureDomain allows the volume failure domain to be set
-                            on a per machine deployment basis.
-                          type: string
                       required:
                       - flavorId
                       - flavorName

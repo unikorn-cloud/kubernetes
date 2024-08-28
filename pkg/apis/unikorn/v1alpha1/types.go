@@ -18,139 +18,11 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"encoding/json"
-	"errors"
-	"net"
-
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"sigs.k8s.io/structured-merge-diff/v4/value"
 )
-
-var (
-	ErrJSONUnmarshal = errors.New("failed to unmarshal JSON")
-)
-
-// +kubebuilder:validation:Pattern="^v(?:[0-9]+\\.){2}(?:[0-9]+)$"
-type SemanticVersion string
-
-// +kubebuilder:validation:Type=string
-// +kubebuilder:validation:Pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])$"
-type IPv4Address struct {
-	net.IP
-}
-
-// Ensure the type implements json.Unmarshaler.
-var _ = json.Unmarshaler(&IPv4Address{})
-
-func (a *IPv4Address) UnmarshalJSON(b []byte) error {
-	var str string
-	if err := json.Unmarshal(b, &str); err != nil {
-		return err
-	}
-
-	ip := net.ParseIP(str)
-	if ip == nil {
-		return ErrJSONUnmarshal
-	}
-
-	a.IP = ip
-
-	return nil
-}
-
-// Ensure the type implements value.UnstructuredConverter.
-var _ = value.UnstructuredConverter(&IPv4Address{})
-
-func (a IPv4Address) MarshalJSON() ([]byte, error) {
-	return json.Marshal(a.IP.String())
-}
-
-func (a IPv4Address) ToUnstructured() interface{} {
-	return a.IP.String()
-}
-
-// There is no interface defined for these. See
-// https://github.com/kubernetes/kube-openapi/tree/master/pkg/generators
-// for reference.
-func (IPv4Address) OpenAPISchemaType() []string {
-	return []string{"string"}
-}
-
-func (IPv4Address) OpenAPISchemaFormat() string {
-	return ""
-}
-
-// See https://regex101.com/r/QUfWrF/1
-// +kubebuilder:validation:Type=string
-// +kubebuilder:validation:Pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\\/(?:3[0-2]|[1-2]?[0-9])$"
-type IPv4Prefix struct {
-	net.IPNet
-}
-
-// DeepCopyInto implements the interface deepcopy-gen is totally unable to
-// do by itself.
-func (p *IPv4Prefix) DeepCopyInto(out *IPv4Prefix) {
-	if p.IPNet.IP != nil {
-		in, out := &p.IPNet.IP, &out.IPNet.IP
-		*out = make(net.IP, len(*in))
-		copy(*out, *in)
-	}
-
-	if p.IPNet.Mask != nil {
-		in, out := &p.IPNet.Mask, &out.IPNet.Mask
-		*out = make(net.IPMask, len(*in))
-		copy(*out, *in)
-	}
-}
-
-// Ensure the type implements json.Unmarshaler.
-var _ = json.Unmarshaler(&IPv4Prefix{})
-
-func (p *IPv4Prefix) UnmarshalJSON(b []byte) error {
-	var str string
-	if err := json.Unmarshal(b, &str); err != nil {
-		return err
-	}
-
-	_, network, err := net.ParseCIDR(str)
-	if err != nil {
-		return ErrJSONUnmarshal
-	}
-
-	if network == nil {
-		return ErrJSONUnmarshal
-	}
-
-	p.IPNet = *network
-
-	return nil
-}
-
-// Ensure the type implements value.UnstructuredConverter.
-var _ = value.UnstructuredConverter(&IPv4Prefix{})
-
-func (p IPv4Prefix) MarshalJSON() ([]byte, error) {
-	return json.Marshal(p.IPNet.String())
-}
-
-func (p IPv4Prefix) ToUnstructured() interface{} {
-	return p.IP.String()
-}
-
-// There is no interface defined for these. See
-// https://github.com/kubernetes/kube-openapi/tree/master/pkg/generators
-// for reference.
-func (IPv4Prefix) OpenAPISchemaType() []string {
-	return []string{"string"}
-}
-
-func (IPv4Prefix) OpenAPISchemaFormat() string {
-	return ""
-}
 
 // ClusterManagerList is a typed list of cluster managers.
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -325,7 +197,7 @@ type KubernetesClusterSpec struct {
 	// Version is the Kubernetes version to install.  For performance
 	// reasons this should match what is already pre-installed on the
 	// provided image.
-	Version *SemanticVersion `json:"version"`
+	Version *unikornv1core.SemanticVersion `json:"version"`
 	// Network defines the Kubernetes networking.
 	Network *KubernetesClusterNetworkSpec `json:"network"`
 	// API defines Kubernetes API specific options.
@@ -353,22 +225,22 @@ type KubernetesClusterAPISpec struct {
 	SubjectAlternativeNames []string `json:"subjectAlternativeNames,omitempty"`
 	// AllowedPrefixes is a list of all IPv4 prefixes that are allowed to access
 	// the API.
-	AllowedPrefixes []IPv4Prefix `json:"allowedPrefixes,omitempty"`
+	AllowedPrefixes []unikornv1core.IPv4Prefix `json:"allowedPrefixes,omitempty"`
 }
 
 type KubernetesClusterNetworkSpec struct {
 	// NodeNetwork is the IPv4 prefix for the node network.
-	NodeNetwork *IPv4Prefix `json:"nodeNetwork"`
+	NodeNetwork *unikornv1core.IPv4Prefix `json:"nodeNetwork"`
 	// PodNetwork is the IPv4 prefix for the pod network.
-	PodNetwork *IPv4Prefix `json:"podNetwork"`
+	PodNetwork *unikornv1core.IPv4Prefix `json:"podNetwork"`
 	// ServiceNetwork is the IPv4 prefix for the service network.
-	ServiceNetwork *IPv4Prefix `json:"serviceNetwork"`
+	ServiceNetwork *unikornv1core.IPv4Prefix `json:"serviceNetwork"`
 	// DNSNameservers sets the DNS nameservers for pods.
 	// At present due to some technical challenges, this must contain
 	// only one DNS server.
 	// +listType=set
 	// +kubebuilder:validation:MinItems=1
-	DNSNameservers []IPv4Address `json:"dnsNameservers"`
+	DNSNameservers []unikornv1core.IPv4Address `json:"dnsNameservers"`
 }
 
 type KubernetesClusterFeaturesSpec struct {

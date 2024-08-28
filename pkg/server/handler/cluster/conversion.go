@@ -237,10 +237,10 @@ func (g *generator) generateNetwork() *unikornv1.KubernetesClusterNetworkSpec {
 	dnsNameservers := g.options.DNSNameservers
 
 	network := &unikornv1.KubernetesClusterNetworkSpec{
-		NodeNetwork:    &unikornv1.IPv4Prefix{IPNet: nodeNetwork},
-		ServiceNetwork: &unikornv1.IPv4Prefix{IPNet: serviceNetwork},
-		PodNetwork:     &unikornv1.IPv4Prefix{IPNet: podNetwork},
-		DNSNameservers: unikornv1.IPv4AddressSliceFromIPSlice(dnsNameservers),
+		NodeNetwork:    &unikornv1core.IPv4Prefix{IPNet: nodeNetwork},
+		ServiceNetwork: &unikornv1core.IPv4Prefix{IPNet: serviceNetwork},
+		PodNetwork:     &unikornv1core.IPv4Prefix{IPNet: podNetwork},
+		DNSNameservers: unikornv1core.IPv4AddressSliceFromIPSlice(dnsNameservers),
 	}
 
 	return network
@@ -447,7 +447,7 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 		Spec: unikornv1.KubernetesClusterSpec{
 			RegionID:                     request.Spec.RegionId,
 			ClusterManagerID:             *request.Spec.ClusterManagerId,
-			Version:                      util.ToPointer(unikornv1.SemanticVersion(request.Spec.Version)),
+			Version:                      util.ToPointer(unikornv1core.SemanticVersion(request.Spec.Version)),
 			ApplicationBundle:            &applicationBundle.Name,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
 			Network:                      g.generateNetwork(),
