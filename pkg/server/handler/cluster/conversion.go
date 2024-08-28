@@ -395,7 +395,7 @@ func (g *generator) installNvidiaOperator(ctx context.Context, request *openapi.
 			return err
 		}
 
-		if flavor.Spec.Gpu != nil {
+		if flavor.Spec.Gpu != nil && flavor.Spec.Gpu.Vendor == regionapi.NVIDIA {
 			cluster.Spec.Features.NvidiaOperator = util.ToPointer(true)
 
 			return nil
