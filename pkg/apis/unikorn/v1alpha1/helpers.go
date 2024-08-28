@@ -20,7 +20,6 @@ package v1alpha1
 import (
 	"errors"
 	"fmt"
-	"net"
 	"strings"
 	"time"
 
@@ -40,18 +39,6 @@ var (
 	// present in an application bundle bundle.
 	ErrApplicationLookup = errors.New("failed to lookup an application")
 )
-
-// IPv4AddressSliceFromIPSlice is a simple converter from Go types
-// to API types.
-func IPv4AddressSliceFromIPSlice(in []net.IP) []IPv4Address {
-	out := make([]IPv4Address, len(in))
-
-	for i, ip := range in {
-		out[i] = IPv4Address{IP: ip}
-	}
-
-	return out
-}
 
 // Paused implements the ReconcilePauser interface.
 func (c *ClusterManager) Paused() bool {
