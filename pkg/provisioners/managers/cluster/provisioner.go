@@ -430,6 +430,7 @@ func (p *Provisioner) identityOptions(ctx context.Context, client regionapi.Clie
 		CloudConfig:       *identity.Spec.Openstack.CloudConfig,
 		Cloud:             *identity.Spec.Openstack.Cloud,
 		ServerGroupID:     identity.Spec.Openstack.ServerGroupId,
+		SSHKeyName:        identity.Spec.Openstack.SshKeyName,
 		ExternalNetworkID: &externalNetwork.Id,
 	}
 

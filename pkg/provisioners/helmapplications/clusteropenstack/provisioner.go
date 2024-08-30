@@ -178,6 +178,10 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 		openstackValues["externalNetworkID"] = *p.options.ExternalNetworkID
 	}
 
+	if p.options.SSHKeyName != nil {
+		openstackValues["sshKeyName"] = *p.options.SSHKeyName
+	}
+
 	labels, err := cluster.ResourceLabels()
 	if err != nil {
 		return nil, err
