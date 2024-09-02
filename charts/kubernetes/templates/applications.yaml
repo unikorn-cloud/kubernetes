@@ -111,6 +111,9 @@ spec:
     repo: https://unikorn-cloud.github.io/helm-cluster-api
     chart: cluster-api
     interface: 1.0.0
+    parameters:
+    - name: cluster-api-bootstrap-kubeadm.kubeadm_bootstrap_token_ttl
+      value: 45m
 ---
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: HelmApplication
@@ -164,7 +167,7 @@ spec:
   tags:
   - infrastructure
   versions:
-  - version: v0.5.4
+  - version: v0.5.5
     repo: https://unikorn-cloud.github.io/helm-cluster-api
     chart: cluster-api-cluster-openstack
     createNamespace: true
