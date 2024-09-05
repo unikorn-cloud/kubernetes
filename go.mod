@@ -13,8 +13,8 @@ require (
 	github.com/spdx/tools-golang v0.5.5
 	github.com/spf13/pflag v1.0.5
 	github.com/unikorn-cloud/core v0.1.69
-	github.com/unikorn-cloud/identity v0.2.33
-	github.com/unikorn-cloud/region v0.1.37
+	github.com/unikorn-cloud/identity v0.2.36
+	github.com/unikorn-cloud/region v0.1.40
 	go.opentelemetry.io/otel/sdk v1.29.0
 	gopkg.in/ini.v1 v1.67.0
 	k8s.io/api v0.31.0
