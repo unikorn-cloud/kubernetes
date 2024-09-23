@@ -237,10 +237,12 @@ func (g *generator) generateNetwork() *unikornv1.KubernetesClusterNetworkSpec {
 	dnsNameservers := g.options.DNSNameservers
 
 	network := &unikornv1.KubernetesClusterNetworkSpec{
-		NodeNetwork:    &unikornv1core.IPv4Prefix{IPNet: nodeNetwork},
+		NetworkGeneric: unikornv1core.NetworkGeneric{
+			NodeNetwork:    &unikornv1core.IPv4Prefix{IPNet: nodeNetwork},
+			DNSNameservers: unikornv1core.IPv4AddressSliceFromIPSlice(dnsNameservers),
+		},
 		ServiceNetwork: &unikornv1core.IPv4Prefix{IPNet: serviceNetwork},
 		PodNetwork:     &unikornv1core.IPv4Prefix{IPNet: podNetwork},
-		DNSNameservers: unikornv1core.IPv4AddressSliceFromIPSlice(dnsNameservers),
 	}
 
 	return network
@@ -258,10 +260,12 @@ func (g *generator) generateMachineGeneric(ctx context.Context, request *openapi
 	}
 
 	machine := &unikornv1.MachineGeneric{
-		Replicas: m.Replicas,
-		ImageID:  util.ToPointer(image.Metadata.Id),
-		// TODO: this is a hack because CAPO is "broken".
-		FlavorID:   &flavor.Metadata.Id,
+		MachineGeneric: unikornv1core.MachineGeneric{
+			Replicas: m.Replicas,
+			ImageID:  util.ToPointer(image.Metadata.Id),
+			FlavorID: &flavor.Metadata.Id,
+		},
+		// TODO: remove with https://github.com/kubernetes-sigs/cluster-api-provider-openstack/pull/2148
 		FlavorName: &flavor.Metadata.Name,
 	}
 

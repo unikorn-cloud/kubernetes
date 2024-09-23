@@ -74,20 +74,10 @@ type ClusterManagerStatus struct {
 // MachineGeneric contains common things across all pool types, including
 // Kubernetes cluster manager nodes and workload pools.
 type MachineGeneric struct {
-	// Image is the OpenStack Glance image to deploy with.
-	ImageID *string `json:"imageId"`
-	// Flavor is the OpenStack Nova flavor to deploy with.
-	FlavorID *string `json:"flavorId"`
+	unikornv1core.MachineGeneric `json:",inline"`
 	// FlavorName is the name of the flavor.
 	// CAPO is broken and doesn't accept an ID, so we need to use this.
 	FlavorName *string `json:"flavorName"`
-	// DiskSize is the persistent root disk size to deploy with.  This
-	// overrides the default ephemeral disk size defined in the flavor.
-	DiskSize *resource.Quantity `json:"diskSize,omitempty"`
-	// Replicas is the initial pool size to deploy.
-	// +kubebuilder:validation:Minimum=0
-	// +kubebuilder:default=3
-	Replicas *int `json:"replicas,omitempty"`
 }
 
 // File is a file that can be deployed to a cluster node on creation.
@@ -229,18 +219,11 @@ type KubernetesClusterAPISpec struct {
 }
 
 type KubernetesClusterNetworkSpec struct {
-	// NodeNetwork is the IPv4 prefix for the node network.
-	NodeNetwork *unikornv1core.IPv4Prefix `json:"nodeNetwork"`
+	unikornv1core.NetworkGeneric `json:",inline"`
 	// PodNetwork is the IPv4 prefix for the pod network.
 	PodNetwork *unikornv1core.IPv4Prefix `json:"podNetwork"`
 	// ServiceNetwork is the IPv4 prefix for the service network.
 	ServiceNetwork *unikornv1core.IPv4Prefix `json:"serviceNetwork"`
-	// DNSNameservers sets the DNS nameservers for pods.
-	// At present due to some technical challenges, this must contain
-	// only one DNS server.
-	// +listType=set
-	// +kubebuilder:validation:MinItems=1
-	DNSNameservers []unikornv1core.IPv4Address `json:"dnsNameservers"`
 }
 
 type KubernetesClusterFeaturesSpec struct {
