@@ -62,7 +62,7 @@ var (
 
 	ErrAnnotation = errors.New("required annotation missing")
 
-	ErrResourceDependency = errors.New("resource deplendedncy error")
+	ErrResourceDependency = errors.New("resource dependency error")
 )
 
 type ApplicationReferenceGetter struct {
