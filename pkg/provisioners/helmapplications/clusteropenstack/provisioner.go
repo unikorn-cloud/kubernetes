@@ -20,12 +20,20 @@ package clusteropenstack
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
+	"slices"
 
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	kubernetesprovisioners "github.com/unikorn-cloud/kubernetes/pkg/provisioners"
+	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
+)
+
+var (
+	ErrReference = errors.New("reference error")
 )
 
 // Provisioner encapsulates control plane provisioning.
@@ -51,12 +59,33 @@ var _ application.ReleaseNamer = &Provisioner{}
 var _ application.ValuesGenerator = &Provisioner{}
 var _ application.PostProvisionHook = &Provisioner{}
 
+// getFlavor looks up a flavor.
+func (p *Provisioner) getFlavor(flavorID string) (*regionapi.Flavor, error) {
+	callback := func(flavor regionapi.Flavor) bool {
+		return flavor.Metadata.Id == flavorID
+	}
+
+	index := slices.IndexFunc(p.options.Flavors, callback)
+	if index < 0 {
+		return nil, fmt.Errorf("%w: unable to find requested flavor %s", ErrReference, flavorID)
+	}
+
+	return &p.options.Flavors[index], nil
+}
+
 // generateMachineHelmValues translates the API's idea of a machine into what's
 // expected by the underlying Helm chart.
-func (p *Provisioner) generateMachineHelmValues(machine *unikornv1.MachineGeneric, controlPlane bool) map[string]interface{} {
+func (p *Provisioner) generateMachineHelmValues(machine *unikornv1core.MachineGeneric, controlPlane bool) (map[string]interface{}, error) {
+	flavor, err := p.getFlavor(*machine.FlavorID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Translate from flavor ID to flavor name, because CAPO cannot accept one...
+	// https://github.com/kubernetes-sigs/cluster-api-provider-openstack/pull/2148
 	object := map[string]interface{}{
 		"imageID":  *machine.ImageID,
-		"flavorID": *machine.FlavorName,
+		"flavorID": flavor.Metadata.Name,
 	}
 
 	if controlPlane && p.options.ServerGroupID != nil {
@@ -71,24 +100,34 @@ func (p *Provisioner) generateMachineHelmValues(machine *unikornv1.MachineGeneri
 		object["disk"] = disk
 	}
 
-	return object
+	return object, nil
 }
 
 // generateWorkloadPoolHelmValues translates the API's idea of a workload pool into
 // what's expected by the underlying Helm chart.
-func (p *Provisioner) generateWorkloadPoolHelmValues(cluster *unikornv1.KubernetesCluster) map[string]interface{} {
+func (p *Provisioner) generateWorkloadPoolHelmValues(cluster *unikornv1.KubernetesCluster) (map[string]interface{}, error) {
 	workloadPools := map[string]interface{}{}
 
 	for i := range cluster.Spec.WorkloadPools.Pools {
 		workloadPool := &cluster.Spec.WorkloadPools.Pools[i]
 
+		machine, err := p.generateMachineHelmValues(&workloadPool.MachineGeneric, false)
+		if err != nil {
+			return nil, err
+		}
+
 		object := map[string]interface{}{
 			"replicas": *workloadPool.Replicas,
-			"machine":  p.generateMachineHelmValues(&workloadPool.MachineGeneric, false),
+			"machine":  machine,
 		}
 
 		if cluster.AutoscalingEnabled() && workloadPool.Autoscaling != nil {
-			object["autoscaling"] = generateWorkloadPoolSchedulerHelmValues(workloadPool)
+			autoscaling, err := p.generateWorkloadPoolSchedulerHelmValues(workloadPool)
+			if err != nil {
+				return nil, err
+			}
+
+			object["autoscaling"] = autoscaling
 		}
 
 		if len(workloadPool.Labels) != 0 {
@@ -117,43 +156,57 @@ func (p *Provisioner) generateWorkloadPoolHelmValues(cluster *unikornv1.Kubernet
 		workloadPools[workloadPool.Name] = object
 	}
 
-	return workloadPools
+	return workloadPools, nil
 }
 
 // generateWorkloadPoolSchedulerHelmValues translates from Kubernetes API scheduling
 // parameters into ones acceptable by Helm.
-func generateWorkloadPoolSchedulerHelmValues(p *unikornv1.KubernetesClusterWorkloadPoolsPoolSpec) map[string]interface{} {
-	// When enabled, scaling limits are required.
-	values := map[string]interface{}{
-		"limits": map[string]interface{}{
-			"minReplicas": *p.Autoscaling.MinimumReplicas,
-			"maxReplicas": *p.Autoscaling.MaximumReplicas,
-		},
-	}
-
+func (p *Provisioner) generateWorkloadPoolSchedulerHelmValues(pool *unikornv1.KubernetesClusterWorkloadPoolsPoolSpec) (map[string]interface{}, error) {
 	// When scaler from zero is enabled, you need to provide CPU and memory hints,
 	// the autoscaler cannot guess the flavor attributes.
-	if p.Autoscaling.Scheduler != nil {
-		scheduling := map[string]interface{}{
-			"cpu":    *p.Autoscaling.Scheduler.CPU,
-			"memory": fmt.Sprintf("%dG", p.Autoscaling.Scheduler.Memory.Value()>>30),
-		}
-
-		// If the flavor has a GPU, then we also need to inform the autoscaler
-		// about the GPU scheduling information.
-		if p.Autoscaling.Scheduler.GPU != nil {
-			gpu := map[string]interface{}{
-				"type":  *p.Autoscaling.Scheduler.GPU.Type,
-				"count": *p.Autoscaling.Scheduler.GPU.Count,
-			}
-
-			scheduling["gpu"] = gpu
-		}
-
-		values["scheduler"] = scheduling
+	flavor, err := p.getFlavor(*pool.FlavorID)
+	if err != nil {
+		return nil, err
 	}
 
-	return values
+	scheduling := map[string]interface{}{
+		"cpu":    flavor.Spec.Cpus,
+		"memory": fmt.Sprintf("%dG", flavor.Spec.Memory),
+	}
+
+	// Add in labels for GPUs so the autoscaler can correctly scale when more GPUs
+	// are requested.  To derive this value, each vendor will probably provide a
+	// node-labeller that you should install on the system.  It should then appear
+	// in the status.capacity map.
+	if flavor.Spec.Gpu != nil {
+		var t string
+
+		switch flavor.Spec.Gpu.Vendor {
+		case regionapi.NVIDIA:
+			t = "nvidia.com/gpu"
+		case regionapi.AMD:
+			t = "amd.com/gpu"
+		default:
+			return nil, fmt.Errorf("%w: unhandled gpu vendor case %s", ErrReference, flavor.Spec.Gpu.Vendor)
+		}
+
+		gpu := map[string]interface{}{
+			"type":  t,
+			"count": flavor.Spec.Gpu.Count,
+		}
+
+		scheduling["gpu"] = gpu
+	}
+
+	values := map[string]interface{}{
+		"limits": map[string]interface{}{
+			"minReplicas": *pool.Autoscaling.MinimumReplicas,
+			"maxReplicas": *pool.Autoscaling.MaximumReplicas,
+		},
+		"scheduler": scheduling,
+	}
+
+	return values, nil
 }
 
 func (p *Provisioner) generateNetworkValues(cluster *unikornv1.KubernetesCluster) interface{} {
@@ -202,7 +255,10 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 	//nolint:forcetypeassert
 	cluster := application.FromContext(ctx).(*unikornv1.KubernetesCluster)
 
-	workloadPools := p.generateWorkloadPoolHelmValues(cluster)
+	workloadPools, err := p.generateWorkloadPoolHelmValues(cluster)
+	if err != nil {
+		return nil, err
+	}
 
 	openstackValues := map[string]interface{}{
 		"cloud":      p.options.Cloud,
@@ -233,6 +289,11 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 		"organizationID": labels[constants.OrganizationLabel],
 	}
 
+	machine, err := p.generateMachineHelmValues(cluster.Spec.ControlPlane, true)
+	if err != nil {
+		return nil, err
+	}
+
 	// TODO: generate types from the Helm values schema.
 	values := map[string]interface{}{
 		"version":   string(*cluster.Spec.Version),
@@ -254,7 +315,7 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 		},
 		"controlPlane": map[string]interface{}{
 			"replicas": *cluster.Spec.ControlPlane.Replicas,
-			"machine":  p.generateMachineHelmValues(&cluster.Spec.ControlPlane.MachineGeneric, true),
+			"machine":  machine,
 		},
 		"workloadPools": workloadPools,
 		"network":       p.generateNetworkValues(cluster),

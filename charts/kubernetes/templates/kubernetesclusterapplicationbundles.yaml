@@ -37,6 +37,11 @@ spec:
       kind: HelmApplication
       name: {{ include "resource.id" "nvidia-gpu-operator" }}
       version: v23.9.1
+  - name: amd-gpu-operator
+    reference:
+      kind: HelmApplication
+      name: {{ include "resource.id" "amd-gpu-operator" }}
+      version: 0.13.0
   - name: cluster-autoscaler
     reference:
       kind: HelmApplication

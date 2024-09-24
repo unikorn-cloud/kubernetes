@@ -20,7 +20,6 @@ package v1alpha1
 import (
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -71,15 +70,6 @@ type ClusterManagerStatus struct {
 	Conditions []unikornv1core.Condition `json:"conditions,omitempty"`
 }
 
-// MachineGeneric contains common things across all pool types, including
-// Kubernetes cluster manager nodes and workload pools.
-type MachineGeneric struct {
-	unikornv1core.MachineGeneric `json:",inline"`
-	// FlavorName is the name of the flavor.
-	// CAPO is broken and doesn't accept an ID, so we need to use this.
-	FlavorName *string `json:"flavorName"`
-}
-
 // File is a file that can be deployed to a cluster node on creation.
 type File struct {
 	// Path is the absolute path to create the file in.
@@ -99,42 +89,12 @@ type MachineGenericAutoscaling struct {
 	// this pool can be scaled up to.
 	// +kubebuilder:validation:Minimum=1
 	MaximumReplicas *int `json:"maximumReplicas"`
-	// Scheduler is required when scale-from-zero support is requested
-	// i.e. MimumumReplicas is 0.  This provides scheduling hints to
-	// the autoscaler as it cannot derive CPU/memory constraints from
-	// the machine flavor.
-	Scheduler *MachineGenericAutoscalingScheduler `json:"scheduler,omitempty"`
-}
-
-// MachineGenericAutoscalingScheduler defines generic autoscaling scheduling
-// constraints.
-type MachineGenericAutoscalingScheduler struct {
-	// CPU defines the number of CPUs for the pool flavor.
-	// +kubebuilder:validation:Minimum=1
-	CPU *int `json:"cpu"`
-	// Memory defines the amount of memory for the pool flavor.
-	// Internally this will be rounded down to the nearest Gi.
-	Memory *resource.Quantity `json:"memory"`
-	// GPU needs to be set when the pool contains GPU resources so
-	// the autoscaler can make informed choices when scaling up.
-	GPU *MachineGenericAutoscalingSchedulerGPU `json:"gpu,omitempty"`
-}
-
-// MachineGenericAutoscalingSchedulerGPU defines generic autoscaling
-// scheduling constraints for GPUs.
-type MachineGenericAutoscalingSchedulerGPU struct {
-	// Type is the type of GPU.
-	// +kubebuilder:validation:Enum=nvidia.com/gpu
-	Type *string `json:"type"`
-	// Count is the number of GPUs for the pool flavor.
-	// +kubebuilder:validation:Minimum=1
-	Count *int `json:"count"`
 }
 
 // KubernetesWorkloadPoolSpec defines the requested machine pool
 // state.
 type KubernetesWorkloadPoolSpec struct {
-	MachineGeneric `json:",inline"`
+	unikornv1core.MachineGeneric `json:",inline"`
 	// Name is the name of the pool.
 	Name string `json:"name"`
 	// Labels is the set of node labels to apply to the pool on
@@ -193,7 +153,7 @@ type KubernetesClusterSpec struct {
 	// API defines Kubernetes API specific options.
 	API *KubernetesClusterAPISpec `json:"api,omitempty"`
 	// ControlPlane defines the cluster manager topology.
-	ControlPlane *KubernetesClusterControlPlaneSpec `json:"controlPlane"`
+	ControlPlane *unikornv1core.MachineGeneric `json:"controlPlane"`
 	// WorkloadPools defines the workload cluster topology.
 	WorkloadPools *KubernetesClusterWorkloadPoolsSpec `json:"workloadPools"`
 	// Features defines add-on features that can be enabled for the cluster.
@@ -227,16 +187,13 @@ type KubernetesClusterNetworkSpec struct {
 }
 
 type KubernetesClusterFeaturesSpec struct {
-	// Autoscaling, if true, provisions a cluster autoscaler
-	// and allows workload pools to specify autoscaling configuration.
+	// Autoscaling enables the provision of a cluster autoscaler.
+	// This is only installed if a workload pool has autoscaling enabled.
 	Autoscaling *bool `json:"autoscaling,omitempty"`
-	// NvidiaOperator, if false do not install the Nvidia Operator, otherwise
-	// install if GPU flavors are detected
-	NvidiaOperator *bool `json:"nvidiaOperator,omitempty"`
-}
-
-type KubernetesClusterControlPlaneSpec struct {
-	MachineGeneric `json:",inline"`
+	// GPUOperator enables the provision of a GPU operator.
+	// This is only installed if a workload pool has a flavor that defines
+	// a valid GPU specification and vendor.
+	GPUOperator *bool `json:"gpuOperator,omitempty"`
 }
 
 type KubernetesClusterWorkloadPoolsPoolSpec struct {

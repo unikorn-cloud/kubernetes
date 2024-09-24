@@ -304,6 +304,32 @@ spec:
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: HelmApplication
 metadata:
+  name: {{ include "resource.id" "amd-gpu-operator" }}
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
+    unikorn-cloud.org/name: amd-gpu-operator
+  annotations:
+    unikorn-cloud.org/description: |-
+      Provides AMD GPU support in Kubernetes clusters.
+spec:
+  documentation: https://github.com/ROCm/gpu-operator
+  license: Apache-2.0 License
+  icon: todo
+  tags:
+  - infrastructure
+  versions:
+  - version: 0.13.0
+    repo: https://rocm.github.io/k8s-device-plugin
+    chart: amd-gpu
+    parameters:
+    - name: nfd.enabled
+      value: 'true'
+    - name: labeller.enabled
+      value: 'true'
+---
+apiVersion: unikorn-cloud.org/v1alpha1
+kind: HelmApplication
+metadata:
   name: {{ include "resource.id" "cluster-autoscaler" }}
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}

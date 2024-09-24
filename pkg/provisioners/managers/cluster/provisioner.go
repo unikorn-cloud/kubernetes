@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 
 	"github.com/spf13/pflag"
 
@@ -41,6 +42,7 @@ import (
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/kubernetes/pkg/constants"
 	kubernetesprovisioners "github.com/unikorn-cloud/kubernetes/pkg/provisioners"
+	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/amdgpuoperator"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/cilium"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/clusterautoscaler"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/clusterautoscaleropenstack"
@@ -117,6 +119,10 @@ func (a *ApplicationReferenceGetter) metricsServer(ctx context.Context) (*unikor
 
 func (a *ApplicationReferenceGetter) nvidiaGPUOperator(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
 	return a.getApplication(ctx, "nvidia-gpu-operator")
+}
+
+func (a *ApplicationReferenceGetter) amdGPUOperator(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
+	return a.getApplication(ctx, "amd-gpu-operator")
 }
 
 func (a *ApplicationReferenceGetter) clusterAutoscaler(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
@@ -202,8 +208,61 @@ func (p *Provisioner) getClusterManager(ctx context.Context) (*unikornv1.Cluster
 	return &clusterManager, nil
 }
 
+// provisionerOptions are dervied facts about a cluster used to generate the provisioner.
+type provisionerOptions struct {
+	// autoscaling tells whether any pools have autoscaling enabled.
+	autoscaling bool
+	// gpuOperatorNvidia defines whether NVIDIA GPUs are present.
+	gpuVendorNvidia bool
+	// gpuOperatorAMD defines whether AMD GPUs are present.
+	gpuVendorAMD bool
+}
+
+func (p *Provisioner) getProvisionerOptions(options *kubernetesprovisioners.ClusterOpenstackOptions) (*provisionerOptions, error) {
+	provisionerOptions := &provisionerOptions{}
+
+	if options == nil {
+		return provisionerOptions, nil
+	}
+
+	for _, pool := range p.cluster.Spec.WorkloadPools.Pools {
+		if pool.Autoscaling != nil {
+			provisionerOptions.autoscaling = true
+		}
+
+		callback := func(flavor regionapi.Flavor) bool {
+			return flavor.Metadata.Id == *pool.FlavorID
+		}
+
+		index := slices.IndexFunc(options.Flavors, callback)
+		if index < 0 {
+			return nil, fmt.Errorf("%w: unable to lookup flavor %s", ErrResourceDependency, *pool.FlavorID)
+		}
+
+		flavor := &options.Flavors[index]
+
+		if flavor.Spec.Gpu != nil {
+			switch flavor.Spec.Gpu.Vendor {
+			case regionapi.NVIDIA:
+				provisionerOptions.gpuVendorNvidia = true
+			case regionapi.AMD:
+				provisionerOptions.gpuVendorAMD = true
+			default:
+				return nil, fmt.Errorf("%w: unhandled GPU vendor %v", ErrResourceDependency, flavor.Spec.Gpu.Vendor)
+			}
+		}
+	}
+
+	return provisionerOptions, nil
+}
+
 func (p *Provisioner) getProvisioner(ctx context.Context, options *kubernetesprovisioners.ClusterOpenstackOptions) (provisioners.Provisioner, error) {
 	apps := newApplicationReferenceGetter(&p.cluster)
+
+	provisionerOptions, err := p.getProvisionerOptions(options)
+	if err != nil {
+		return nil, err
+	}
 
 	clusterManager, err := p.getClusterManager(ctx)
 	if err != nil {
@@ -230,7 +289,7 @@ func (p *Provisioner) getProvisioner(ctx context.Context, options *kubernetespro
 	)
 
 	clusterAutoscalerProvisioner := conditional.New("cluster-autoscaler",
-		p.cluster.AutoscalingEnabled,
+		func() bool { return p.cluster.AutoscalingEnabled() && provisionerOptions.autoscaling },
 		concurrent.New("cluster-autoscaler",
 			clusterautoscaler.New(apps.clusterAutoscaler).InNamespace(p.cluster.Name),
 			clusterautoscaleropenstack.New(apps.clusterAutoscalerOpenstack).InNamespace(p.cluster.Name),
@@ -240,7 +299,14 @@ func (p *Provisioner) getProvisioner(ctx context.Context, options *kubernetespro
 	addonsProvisioner := concurrent.New("cluster add-ons",
 		openstackplugincindercsi.New(apps.openstackPluginCinderCSI, options),
 		metricsserver.New(apps.metricsServer),
-		conditional.New("nvidia-gpu-operator", p.cluster.NvidiaOperatorEnabled, nvidiagpuoperator.New(apps.nvidiaGPUOperator)),
+		conditional.New("nvidia-gpu-operator",
+			func() bool { return p.cluster.GPUOperatorEnabled() && provisionerOptions.gpuVendorNvidia },
+			nvidiagpuoperator.New(apps.nvidiaGPUOperator),
+		),
+		conditional.New("amd-gpu-operator",
+			func() bool { return p.cluster.GPUOperatorEnabled() && provisionerOptions.gpuVendorAMD },
+			amdgpuoperator.New(apps.amdGPUOperator),
+		),
 	)
 
 	// Create the cluster and the boostrap components in parallel, the cluster will
@@ -314,6 +380,19 @@ func (p *Provisioner) getRegionClient(ctx context.Context, traceName string) (co
 	}
 
 	return ctx, client, nil
+}
+
+func (p *Provisioner) getFlavors(ctx context.Context, client regionapi.ClientWithResponsesInterface) (regionapi.Flavors, error) {
+	response, err := client.GetApiV1OrganizationsOrganizationIDRegionsRegionIDFlavorsWithResponse(ctx, p.cluster.Labels[coreconstants.OrganizationLabel], p.cluster.Spec.RegionID)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("%w: flavors GET expected 200 got %d", coreerrors.ErrAPIStatus, response.StatusCode())
+	}
+
+	return *response.JSON200, nil
 }
 
 func (p *Provisioner) getIdentity(ctx context.Context, client regionapi.ClientWithResponsesInterface) (*regionapi.IdentityRead, error) {
@@ -426,12 +505,18 @@ func (p *Provisioner) identityOptions(ctx context.Context, client regionapi.Clie
 		return nil, err
 	}
 
+	flavors, err := p.getFlavors(ctx, client)
+	if err != nil {
+		return nil, err
+	}
+
 	options := &kubernetesprovisioners.ClusterOpenstackOptions{
 		CloudConfig:       *identity.Spec.Openstack.CloudConfig,
 		Cloud:             *identity.Spec.Openstack.Cloud,
 		ServerGroupID:     identity.Spec.Openstack.ServerGroupId,
 		SSHKeyName:        identity.Spec.Openstack.SshKeyName,
 		ExternalNetworkID: &externalNetwork.Id,
+		Flavors:           flavors,
 	}
 
 	physicalNetwork, err := p.getPhysicalNetwork(ctx, client)

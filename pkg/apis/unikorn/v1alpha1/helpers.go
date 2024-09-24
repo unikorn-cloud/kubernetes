@@ -142,9 +142,9 @@ func (c *KubernetesCluster) AutoscalingEnabled() bool {
 	return c.Spec.Features != nil && c.Spec.Features.Autoscaling != nil && *c.Spec.Features.Autoscaling
 }
 
-// NvidiaOperatorEnabled indicates whether to install the Nvidia GPU operator.
-func (c *KubernetesCluster) NvidiaOperatorEnabled() bool {
-	return c.Spec.Features != nil && c.Spec.Features.NvidiaOperator != nil && *c.Spec.Features.NvidiaOperator
+// GPUOperatorEnabled indicates whether to install the GPU operator.
+func (c *KubernetesCluster) GPUOperatorEnabled() bool {
+	return c.Spec.Features != nil && c.Spec.Features.GPUOperator != nil && *c.Spec.Features.GPUOperator
 }
 
 func CompareClusterManager(a, b ClusterManager) int {
