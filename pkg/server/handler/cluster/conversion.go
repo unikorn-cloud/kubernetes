@@ -41,7 +41,12 @@ import (
 )
 
 var (
+	// ErrResourceLookup is raised when we are looking for a referenced resource
+	// but cannot find it.
 	ErrResourceLookup = goerrors.New("could not find the requested resource")
+
+	// ErrUnhandledCase is raised when an unhandled switch case is encountered.
+	ErrUnhandledCase = goerrors.New("handled case")
 )
 
 // generator wraps up the myriad things we need to pass around as an object
@@ -73,7 +78,7 @@ func newGenerator(client client.Client, options *Options, region regionapi.Clien
 }
 
 // convertMachine converts from a custom resource into the API definition.
-func convertMachine(in *unikornv1.MachineGeneric) *openapi.MachinePool {
+func convertMachine(in *unikornv1core.MachineGeneric) *openapi.MachinePool {
 	machine := &openapi.MachinePool{
 		Replicas: in.Replicas,
 		FlavorId: in.FlavorID,
@@ -249,7 +254,7 @@ func (g *generator) generateNetwork() *unikornv1.KubernetesClusterNetworkSpec {
 }
 
 // generateMachineGeneric generates a generic machine part of the cluster.
-func (g *generator) generateMachineGeneric(ctx context.Context, request *openapi.KubernetesClusterWrite, m *openapi.MachinePool, flavor *regionapi.Flavor) (*unikornv1.MachineGeneric, error) {
+func (g *generator) generateMachineGeneric(ctx context.Context, request *openapi.KubernetesClusterWrite, m *openapi.MachinePool, flavor *regionapi.Flavor) (*unikornv1core.MachineGeneric, error) {
 	if m.Replicas == nil {
 		m.Replicas = util.ToPointer(3)
 	}
@@ -259,14 +264,10 @@ func (g *generator) generateMachineGeneric(ctx context.Context, request *openapi
 		return nil, err
 	}
 
-	machine := &unikornv1.MachineGeneric{
-		MachineGeneric: unikornv1core.MachineGeneric{
-			Replicas: m.Replicas,
-			ImageID:  util.ToPointer(image.Metadata.Id),
-			FlavorID: &flavor.Metadata.Id,
-		},
-		// TODO: remove with https://github.com/kubernetes-sigs/cluster-api-provider-openstack/pull/2148
-		FlavorName: &flavor.Metadata.Name,
+	machine := &unikornv1core.MachineGeneric{
+		Replicas: m.Replicas,
+		ImageID:  util.ToPointer(image.Metadata.Id),
+		FlavorID: &flavor.Metadata.Id,
 	}
 
 	if m.Disk != nil {
@@ -282,7 +283,7 @@ func (g *generator) generateMachineGeneric(ctx context.Context, request *openapi
 }
 
 // generateControlPlane generates the control plane part of a cluster.
-func (g *generator) generateControlPlane(ctx context.Context, request *openapi.KubernetesClusterWrite) (*unikornv1.KubernetesClusterControlPlaneSpec, error) {
+func (g *generator) generateControlPlane(ctx context.Context, request *openapi.KubernetesClusterWrite) (*unikornv1core.MachineGeneric, error) {
 	// Add in any missing defaults.
 	resource, err := g.defaultControlPlaneFlavor(ctx, request)
 	if err != nil {
@@ -298,11 +299,7 @@ func (g *generator) generateControlPlane(ctx context.Context, request *openapi.K
 		return nil, err
 	}
 
-	spec := &unikornv1.KubernetesClusterControlPlaneSpec{
-		MachineGeneric: *machine,
-	}
-
-	return spec, nil
+	return machine, nil
 }
 
 // generateWorkloadPools generates the workload pools part of a cluster.
@@ -337,29 +334,9 @@ func (g *generator) generateWorkloadPools(ctx context.Context, request *openapi.
 		// the flavor used in validation, this prevents having to surface this
 		// complexity to the client via the API.
 		if pool.Autoscaling != nil {
-			memory, err := resource.ParseQuantity(fmt.Sprintf("%dGi", flavor.Spec.Memory))
-			if err != nil {
-				return nil, err
-			}
-
 			workloadPool.Autoscaling = &unikornv1.MachineGenericAutoscaling{
 				MinimumReplicas: &pool.Autoscaling.MinimumReplicas,
 				MaximumReplicas: pool.Machine.Replicas,
-				Scheduler: &unikornv1.MachineGenericAutoscalingScheduler{
-					CPU:    &flavor.Spec.Cpus,
-					Memory: &memory,
-				},
-			}
-
-			if flavor.Spec.Gpu != nil {
-				// TODO: this is needed for scale from zero, at no point do the docs
-				// mention AMD...
-				t := "nvidia.com/gpu"
-
-				workloadPool.Autoscaling.Scheduler.GPU = &unikornv1.MachineGenericAutoscalingSchedulerGPU{
-					Type:  &t,
-					Count: &flavor.Spec.Gpu.Count,
-				}
 			}
 		}
 
@@ -388,38 +365,6 @@ func (g *generator) lookupFlavor(ctx context.Context, request *openapi.Kubernete
 	}
 
 	return &flavors[index], nil
-}
-
-// installNvidiaOperator installs the nvidia operator if any workload pool flavor
-// has a GPU in it.
-func (g *generator) installNvidiaOperator(ctx context.Context, request *openapi.KubernetesClusterWrite, cluster *unikornv1.KubernetesCluster) error {
-	for _, pool := range request.Spec.WorkloadPools {
-		flavor, err := g.lookupFlavor(ctx, request, *pool.Machine.FlavorId)
-		if err != nil {
-			return err
-		}
-
-		if flavor.Spec.Gpu != nil && flavor.Spec.Gpu.Vendor == regionapi.NVIDIA {
-			cluster.Spec.Features.NvidiaOperator = util.ToPointer(true)
-
-			return nil
-		}
-	}
-
-	return nil
-}
-
-// installClusterAutoscaler installs the cluster autoscaler if any workload pool has
-// autoscaling enabled.
-// TODO: probably push this down into the cluster manager.
-func installClusterAutoscaler(cluster *unikornv1.KubernetesCluster) {
-	for _, pool := range cluster.Spec.WorkloadPools.Pools {
-		if pool.Autoscaling != nil {
-			cluster.Spec.Features.Autoscaling = util.ToPointer(true)
-
-			return
-		}
-	}
 }
 
 // generate generates the full cluster custom resource.
@@ -457,14 +402,11 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 			Network:                      g.generateNetwork(),
 			ControlPlane:                 kubernetesControlPlane,
 			WorkloadPools:                kubernetesWorkloadPools,
-			Features:                     &unikornv1.KubernetesClusterFeaturesSpec{},
+			Features: &unikornv1.KubernetesClusterFeaturesSpec{
+				Autoscaling: util.ToPointer(true),
+				GPUOperator: util.ToPointer(true),
+			},
 		},
-	}
-
-	installClusterAutoscaler(cluster)
-
-	if err := g.installNvidiaOperator(ctx, request, cluster); err != nil {
-		return nil, err
 	}
 
 	return cluster, nil

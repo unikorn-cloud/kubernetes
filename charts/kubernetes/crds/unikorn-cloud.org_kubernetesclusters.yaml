@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
   name: kubernetesclusters.unikorn-cloud.org
 spec:
   group: unikorn-cloud.org
@@ -278,18 +278,14 @@ spec:
                     description: |-
                       DiskSize is the persistent root disk size to deploy with.  This
                       overrides the default ephemeral disk size defined in the flavor.
+                      This is irrelevant for baremetal machine flavors.
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
                   flavorId:
-                    description: Flavor is the OpenStack Nova flavor to deploy with.
-                    type: string
-                  flavorName:
-                    description: |-
-                      FlavorName is the name of the flavor.
-                      CAPO is broken and doesn't accept an ID, so we need to use this.
+                    description: Flavor is the regions service flavor to deploy with.
                     type: string
                   imageId:
-                    description: Image is the OpenStack Glance image to deploy with.
+                    description: Image is the region service image to deploy with.
                     type: string
                   replicas:
                     default: 3
@@ -298,7 +294,6 @@ spec:
                     type: integer
                 required:
                 - flavorId
-                - flavorName
                 - imageId
                 type: object
               features:
@@ -307,23 +302,22 @@ spec:
                 properties:
                   autoscaling:
                     description: |-
-                      Autoscaling, if true, provisions a cluster autoscaler
-                      and allows workload pools to specify autoscaling configuration.
+                      Autoscaling enables the provision of a cluster autoscaler.
+                      This is only installed if a workload pool has autoscaling enabled.
                     type: boolean
-                  nvidiaOperator:
+                  gpuOperator:
                     description: |-
-                      NvidiaOperator, if false do not install the Nvidia Operator, otherwise
-                      install if GPU flavors are detected
+                      GPUOperator enables the provision of a GPU operator.
+                      This is only installed if a workload pool has a flavor that defines
+                      a valid GPU specification and vendor.
                     type: boolean
                 type: object
               network:
                 description: Network defines the Kubernetes networking.
                 properties:
                   dnsNameservers:
-                    description: |-
-                      DNSNameservers sets the DNS nameservers for pods.
-                      At present due to some technical challenges, this must contain
-                      only one DNS server.
+                    description: DNSNameservers sets the DNS nameservers for hosts
+                      on the network.
                     items:
                       pattern: ^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])$
                       type: string
@@ -331,7 +325,9 @@ spec:
                     type: array
                     x-kubernetes-list-type: set
                   nodeNetwork:
-                    description: NodeNetwork is the IPv4 prefix for the node network.
+                    description: |-
+                      NodeNetwork is the IPv4 prefix for the node network.
+                      This is tyically used to populate a physical network address range.
                     pattern: ^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\/(?:3[0-2]|[1-2]?[0-9])$
                     type: string
                   podNetwork:
@@ -389,50 +385,6 @@ spec:
                                 this pool can be scaled down to.
                               minimum: 0
                               type: integer
-                            scheduler:
-                              description: |-
-                                Scheduler is required when scale-from-zero support is requested
-                                i.e. MimumumReplicas is 0.  This provides scheduling hints to
-                                the autoscaler as it cannot derive CPU/memory constraints from
-                                the machine flavor.
-                              properties:
-                                cpu:
-                                  description: CPU defines the number of CPUs for
-                                    the pool flavor.
-                                  minimum: 1
-                                  type: integer
-                                gpu:
-                                  description: |-
-                                    GPU needs to be set when the pool contains GPU resources so
-                                    the autoscaler can make informed choices when scaling up.
-                                  properties:
-                                    count:
-                                      description: Count is the number of GPUs for
-                                        the pool flavor.
-                                      minimum: 1
-                                      type: integer
-                                    type:
-                                      description: Type is the type of GPU.
-                                      enum:
-                                      - nvidia.com/gpu
-                                      type: string
-                                  required:
-                                  - count
-                                  - type
-                                  type: object
-                                memory:
-                                  anyOf:
-                                  - type: integer
-                                  - type: string
-                                  description: |-
-                                    Memory defines the amount of memory for the pool flavor.
-                                    Internally this will be rounded down to the nearest Gi.
-                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                                  x-kubernetes-int-or-string: true
-                              required:
-                              - cpu
-                              - memory
-                              type: object
                           required:
                           - maximumReplicas
                           - minimumReplicas
@@ -447,6 +399,7 @@ spec:
                           description: |-
                             DiskSize is the persistent root disk size to deploy with.  This
                             overrides the default ephemeral disk size defined in the flavor.
+                            This is irrelevant for baremetal machine flavors.
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
                         files:
@@ -471,16 +424,11 @@ spec:
                             type: object
                           type: array
                         flavorId:
-                          description: Flavor is the OpenStack Nova flavor to deploy
+                          description: Flavor is the regions service flavor to deploy
                             with.
                           type: string
-                        flavorName:
-                          description: |-
-                            FlavorName is the name of the flavor.
-                            CAPO is broken and doesn't accept an ID, so we need to use this.
-                          type: string
                         imageId:
-                          description: Image is the OpenStack Glance image to deploy
+                          description: Image is the region service image to deploy
                             with.
                           type: string
                         labels:
@@ -500,7 +448,6 @@ spec:
                           type: integer
                       required:
                       - flavorId
-                      - flavorName
                       - imageId
                       - name
                       type: object
