@@ -24,11 +24,9 @@ import (
 
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/core/pkg/server/util"
-	identityclient "github.com/unikorn-cloud/identity/pkg/client"
 	identityapi "github.com/unikorn-cloud/identity/pkg/openapi"
 	"github.com/unikorn-cloud/identity/pkg/rbac"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
-	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/application"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/cluster"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/clustermanager"
 	regionclient "github.com/unikorn-cloud/region/pkg/client"
@@ -46,19 +44,15 @@ type Handler struct {
 	// options allows behaviour to be defined on the CLI.
 	options *Options
 
-	// identity is a client to access the identity service.
-	identity *identityclient.Client
-
 	// region is a client to access regions.
 	region *regionclient.Client
 }
 
-func New(client client.Client, namespace string, options *Options, identity *identityclient.Client, region *regionclient.Client) (*Handler, error) {
+func New(client client.Client, namespace string, options *Options, region *regionclient.Client) (*Handler, error) {
 	h := &Handler{
 		client:    client,
 		namespace: namespace,
 		options:   options,
-		identity:  identity,
 		region:    region,
 	}
 
@@ -270,15 +264,4 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersCl
 
 	h.setUncacheable(w)
 	util.WriteOctetStreamResponse(w, r, http.StatusOK, result)
-}
-
-func (h *Handler) GetApiV1OrganizationsOrganizationIDApplications(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter) {
-	result, err := application.NewClient(h.client).List(r.Context())
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	h.setUncacheable(w)
-	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }

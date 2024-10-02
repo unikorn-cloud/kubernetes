@@ -90,9 +90,6 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// GetApiV1OrganizationsOrganizationIDApplications request
-	GetApiV1OrganizationsOrganizationIDApplications(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetApiV1OrganizationsOrganizationIDClustermanagers request
 	GetApiV1OrganizationsOrganizationIDClustermanagers(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -127,18 +124,6 @@ type ClientInterface interface {
 
 	// GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfig request
 	GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfig(ctx context.Context, organizationID OrganizationIDParameter, projectID ProjectIDParameter, clusterID ClusterIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error)
-}
-
-func (c *Client) GetApiV1OrganizationsOrganizationIDApplications(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApiV1OrganizationsOrganizationIDApplicationsRequest(c.Server, organizationID)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
 }
 
 func (c *Client) GetApiV1OrganizationsOrganizationIDClustermanagers(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -295,40 +280,6 @@ func (c *Client) GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClu
 		return nil, err
 	}
 	return c.Client.Do(req)
-}
-
-// NewGetApiV1OrganizationsOrganizationIDApplicationsRequest generates requests for GetApiV1OrganizationsOrganizationIDApplications
-func NewGetApiV1OrganizationsOrganizationIDApplicationsRequest(server string, organizationID OrganizationIDParameter) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organizationID", runtime.ParamLocationPath, organizationID)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/api/v1/organizations/%s/applications", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
 }
 
 // NewGetApiV1OrganizationsOrganizationIDClustermanagersRequest generates requests for GetApiV1OrganizationsOrganizationIDClustermanagers
@@ -816,9 +767,6 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// GetApiV1OrganizationsOrganizationIDApplicationsWithResponse request
-	GetApiV1OrganizationsOrganizationIDApplicationsWithResponse(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1OrganizationsOrganizationIDApplicationsResponse, error)
-
 	// GetApiV1OrganizationsOrganizationIDClustermanagersWithResponse request
 	GetApiV1OrganizationsOrganizationIDClustermanagersWithResponse(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1OrganizationsOrganizationIDClustermanagersResponse, error)
 
@@ -853,31 +801,6 @@ type ClientWithResponsesInterface interface {
 
 	// GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfigWithResponse request
 	GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfigWithResponse(ctx context.Context, organizationID OrganizationIDParameter, projectID ProjectIDParameter, clusterID ClusterIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfigResponse, error)
-}
-
-type GetApiV1OrganizationsOrganizationIDApplicationsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *ApplicationResponse
-	JSON400      *externalRef0.BadRequestResponse
-	JSON401      *externalRef0.UnauthorizedResponse
-	JSON500      *externalRef0.InternalServerErrorResponse
-}
-
-// Status returns HTTPResponse.Status
-func (r GetApiV1OrganizationsOrganizationIDApplicationsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetApiV1OrganizationsOrganizationIDApplicationsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
 }
 
 type GetApiV1OrganizationsOrganizationIDClustermanagersResponse struct {
@@ -1118,15 +1041,6 @@ func (r GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKub
 	return 0
 }
 
-// GetApiV1OrganizationsOrganizationIDApplicationsWithResponse request returning *GetApiV1OrganizationsOrganizationIDApplicationsResponse
-func (c *ClientWithResponses) GetApiV1OrganizationsOrganizationIDApplicationsWithResponse(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1OrganizationsOrganizationIDApplicationsResponse, error) {
-	rsp, err := c.GetApiV1OrganizationsOrganizationIDApplications(ctx, organizationID, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetApiV1OrganizationsOrganizationIDApplicationsResponse(rsp)
-}
-
 // GetApiV1OrganizationsOrganizationIDClustermanagersWithResponse request returning *GetApiV1OrganizationsOrganizationIDClustermanagersResponse
 func (c *ClientWithResponses) GetApiV1OrganizationsOrganizationIDClustermanagersWithResponse(ctx context.Context, organizationID OrganizationIDParameter, reqEditors ...RequestEditorFn) (*GetApiV1OrganizationsOrganizationIDClustermanagersResponse, error) {
 	rsp, err := c.GetApiV1OrganizationsOrganizationIDClustermanagers(ctx, organizationID, reqEditors...)
@@ -1238,53 +1152,6 @@ func (c *ClientWithResponses) GetApiV1OrganizationsOrganizationIDProjectsProject
 		return nil, err
 	}
 	return ParseGetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDKubeconfigResponse(rsp)
-}
-
-// ParseGetApiV1OrganizationsOrganizationIDApplicationsResponse parses an HTTP response from a GetApiV1OrganizationsOrganizationIDApplicationsWithResponse call
-func ParseGetApiV1OrganizationsOrganizationIDApplicationsResponse(rsp *http.Response) (*GetApiV1OrganizationsOrganizationIDApplicationsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetApiV1OrganizationsOrganizationIDApplicationsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ApplicationResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest externalRef0.BadRequestResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest externalRef0.UnauthorizedResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest externalRef0.InternalServerErrorResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
 }
 
 // ParseGetApiV1OrganizationsOrganizationIDClustermanagersResponse parses an HTTP response from a GetApiV1OrganizationsOrganizationIDClustermanagersWithResponse call

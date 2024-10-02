@@ -12,15 +12,16 @@ require (
 	github.com/prometheus/client_golang v1.20.2
 	github.com/spdx/tools-golang v0.5.5
 	github.com/spf13/pflag v1.0.5
-	github.com/unikorn-cloud/core v0.1.70
-	github.com/unikorn-cloud/identity v0.2.36
-	github.com/unikorn-cloud/region v0.1.40
+	github.com/unikorn-cloud/core v0.1.72
+	github.com/unikorn-cloud/identity v0.2.40
+	github.com/unikorn-cloud/region v0.1.43
+	go.opentelemetry.io/otel v1.29.0
 	go.opentelemetry.io/otel/sdk v1.29.0
 	gopkg.in/ini.v1 v1.67.0
-	k8s.io/api v0.31.0
-	k8s.io/apimachinery v0.31.0
-	k8s.io/cli-runtime v0.31.0
-	k8s.io/client-go v0.31.0
+	k8s.io/api v0.31.1
+	k8s.io/apimachinery v0.31.1
+	k8s.io/cli-runtime v0.31.1
+	k8s.io/client-go v0.31.1
 	sigs.k8s.io/controller-runtime v0.19.0
 	sigs.k8s.io/yaml v1.4.0
 )
@@ -83,7 +84,6 @@ require (
 	github.com/spf13/cobra v1.8.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
-	go.opentelemetry.io/otel v1.29.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.29.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.29.0 // indirect
 	go.opentelemetry.io/otel/metric v1.29.0 // indirect

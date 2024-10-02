@@ -11,69 +11,6 @@ const (
 	Oauth2AuthenticationScopes = "oauth2Authentication.Scopes"
 )
 
-// ApplicationDependencies A set of applications that will be installed before this application.
-type ApplicationDependencies = []ApplicationDependency
-
-// ApplicationDependency An application dependency.
-type ApplicationDependency struct {
-	// Name The application name.
-	Name string `json:"name"`
-}
-
-// ApplicationRead defines model for applicationRead.
-type ApplicationRead struct {
-	// Metadata Resource metadata valid for all reads.
-	Metadata externalRef0.ResourceReadMetadata `json:"metadata"`
-
-	// Spec An application.
-	Spec ApplicationSpec `json:"spec"`
-}
-
-// ApplicationRecommends A set of recommended application that may be installed after this application.
-type ApplicationRecommends = []ApplicationDependency
-
-// ApplicationSpec An application.
-type ApplicationSpec struct {
-	// Documentation Documentation link for the application.
-	Documentation string `json:"documentation"`
-
-	// HumanReadableName Human readable application name.
-	HumanReadableName string `json:"humanReadableName"`
-
-	// Icon A base64 encoded SVG icon.  This should work in both light and dark themes.
-	Icon []byte `json:"icon"`
-
-	// License The license under which the application is released.
-	License string `json:"license"`
-
-	// Tags A set of tags for filtering applications.
-	Tags *ApplicationTags `json:"tags,omitempty"`
-
-	// Versions A set of application versions.
-	Versions ApplicationVersions `json:"versions"`
-}
-
-// ApplicationTags A set of tags for filtering applications.
-type ApplicationTags = []string
-
-// ApplicationVersion An application version.
-type ApplicationVersion struct {
-	// Dependencies A set of applications that will be installed before this application.
-	Dependencies *ApplicationDependencies `json:"dependencies,omitempty"`
-
-	// Recommends A set of recommended application that may be installed after this application.
-	Recommends *ApplicationRecommends `json:"recommends,omitempty"`
-
-	// Version The application's Helm chart version.
-	Version string `json:"version"`
-}
-
-// ApplicationVersions A set of application versions.
-type ApplicationVersions = []ApplicationVersion
-
-// Applications A list of appications.
-type Applications = []ApplicationRead
-
 // ClusterManagerRead A cluster manager.
 type ClusterManagerRead struct {
 	Metadata externalRef0.ProjectScopedResourceReadMetadata `json:"metadata"`
@@ -182,9 +119,6 @@ type OrganizationIDParameter = KubernetesNameParameter
 
 // ProjectIDParameter A Kubernetes name. Must be a valid DNS containing only lower case characters, numbers or hyphens, start and end with a character or number, and be at most 63 characters in length.
 type ProjectIDParameter = KubernetesNameParameter
-
-// ApplicationResponse A list of appications.
-type ApplicationResponse = Applications
 
 // ClusterManagerResponse A cluster manager.
 type ClusterManagerResponse = ClusterManagerRead

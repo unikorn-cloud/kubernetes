@@ -152,7 +152,7 @@ server:
 ```
 
 ```shell
-helm install unikorn charts/unikorn --namespace unikorn --create-namespace --values values.yaml
+helm install unikorn-kubernetes charts/kubernetes --namespace unikorn-kubernetes --create-namespace --values values.yaml
 ```
 </details>
 
@@ -168,8 +168,8 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://unikorn-cloud.github.io/unikorn
-    chart: unikorn
+    repoURL: https://unikorn-cloud.github.io/kubernetes
+    chart: kubernetes
     targetRevision: v0.1.8
   destination:
     namespace: unikorn

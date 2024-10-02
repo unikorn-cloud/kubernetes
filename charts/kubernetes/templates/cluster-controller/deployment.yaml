@@ -18,6 +18,7 @@ spec:
       - name: unikorn-cluster-controller
         image: {{ include "unikorn.clusterControllerImage" . }}
         args:
+        {{- include "unikorn.core.flags" . | nindent 8 }}
         {{- include "unikorn.identity.flags" . | nindent 8 }}
         {{- include "unikorn.region.flags" . | nindent 8 }}
         {{- include "unikorn.otlp.flags" . | nindent 8 }}
