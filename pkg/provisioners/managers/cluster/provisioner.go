@@ -78,6 +78,11 @@ func newApplicationReferenceGetter(cluster *unikornv1.KubernetesCluster) *Applic
 }
 
 func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name string) (*unikornv1core.ApplicationReference, error) {
+	namespace, err := coreclient.NamespaceFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	// TODO: we could cache this, it's from a cache anyway, so quite cheap...
 	cli, err := coreclient.ProvisionerClientFromContext(ctx)
 	if err != nil {
@@ -85,7 +90,8 @@ func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name st
 	}
 
 	key := client.ObjectKey{
-		Name: *a.cluster.Spec.ApplicationBundle,
+		Namespace: namespace,
+		Name:      *a.cluster.Spec.ApplicationBundle,
 	}
 
 	bundle := &unikornv1.KubernetesClusterApplicationBundle{}

@@ -68,13 +68,19 @@ func newApplicationReferenceGetter(clusterManager *unikornv1.ClusterManager) *Ap
 }
 
 func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name string) (*unikornv1core.ApplicationReference, error) {
+	namespace, err := coreclient.NamespaceFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	cli, err := coreclient.ProvisionerClientFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	key := client.ObjectKey{
-		Name: *a.clusterManager.Spec.ApplicationBundle,
+		Namespace: namespace,
+		Name:      *a.clusterManager.Spec.ApplicationBundle,
 	}
 
 	bundle := &unikornv1.ClusterManagerApplicationBundle{}

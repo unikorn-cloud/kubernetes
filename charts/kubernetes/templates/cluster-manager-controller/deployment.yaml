@@ -18,6 +18,7 @@ spec:
       - name: unikorn-cluster-manager-controller
         image: {{ include "unikorn.clusterManagerControllerImage" . }}
         args:
+        {{- include "unikorn.core.flags" . | nindent 8 }}
         {{- include "unikorn.otlp.flags" . | nindent 8 }}
         ports:
         - name: prometheus

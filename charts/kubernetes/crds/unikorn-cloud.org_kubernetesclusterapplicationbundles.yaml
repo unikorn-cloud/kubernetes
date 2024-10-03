@@ -14,7 +14,7 @@ spec:
     listKind: KubernetesClusterApplicationBundleList
     plural: kubernetesclusterapplicationbundles
     singular: kubernetesclusterapplicationbundle
-  scope: Cluster
+  scope: Namespaced
   versions:
   - additionalPrinterColumns:
     - jsonPath: .spec.version

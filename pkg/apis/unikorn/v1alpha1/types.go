@@ -229,9 +229,8 @@ type ClusterManagerApplicationBundleList struct {
 // associated with it.  This forms the backbone of upgrades by allowing bundles to be
 // switched out in cluster managers etc.
 // +genclient
-// +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +kubebuilder:resource:scope=Cluster,categories=unikorn
+// +kubebuilder:resource:scope=Namespaced,categories=unikorn
 // +kubebuilder:printcolumn:name="version",type="string",JSONPath=".spec.version"
 // +kubebuilder:printcolumn:name="preview",type="string",JSONPath=".spec.preview"
 // +kubebuilder:printcolumn:name="end of life",type="string",JSONPath=".spec.endOfLife"
@@ -256,9 +255,8 @@ type KubernetesClusterApplicationBundleList struct {
 // associated with it.  This forms the backbone of upgrades by allowing bundles to be
 // switched out in cluster managers etc.
 // +genclient
-// +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +kubebuilder:resource:scope=Cluster,categories=unikorn
+// +kubebuilder:resource:scope=Namespaced,categories=unikorn
 // +kubebuilder:printcolumn:name="version",type="string",JSONPath=".spec.version"
 // +kubebuilder:printcolumn:name="preview",type="string",JSONPath=".spec.preview"
 // +kubebuilder:printcolumn:name="end of life",type="string",JSONPath=".spec.endOfLife"

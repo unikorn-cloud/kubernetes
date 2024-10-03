@@ -256,25 +256,6 @@ paths:
           $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/notFoundResponse'
         '500':
           $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
-  /api/v1/organizations/{organizationID}/applications:
-    x-documentation-group: main
-    description: Cluster application services.
-    parameters:
-    - $ref: '#/components/parameters/organizationIDParameter'
-    get:
-      description: |-
-        Lists applications available to be installed on clusters.
-      security:
-      - oauth2Authentication: []
-      responses:
-        '200':
-          $ref: '#/components/responses/applicationResponse'
-        '400':
-          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
-        '401':
-          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
-        '500':
-          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
 components:
   parameters:
     organizationIDParameter:
@@ -489,92 +470,6 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/kubernetesClusterRead'
-    applicationVersion:
-      description: An application version.
-      type: object
-      required:
-      - version
-      properties:
-        version:
-          description: The application's Helm chart version.
-          type: string
-        dependencies:
-          $ref: '#/components/schemas/applicationDependencies'
-        recommends:
-          $ref: '#/components/schemas/applicationRecommends'
-    applicationVersions:
-      description: A set of application versions.
-      type: array
-      items:
-        $ref: '#/components/schemas/applicationVersion'
-    applicationTags:
-      description: A set of tags for filtering applications.
-      type: array
-      items:
-        description: An application tag.
-        type: string
-    applicationDependency:
-      description: An application dependency.
-      type: object
-      required:
-      - name
-      properties:
-        name:
-          description: The application name.
-          type: string
-    applicationDependencies:
-      description: A set of applications that will be installed before this application.
-      type: array
-      items:
-        $ref: '#/components/schemas/applicationDependency'
-    applicationRecommends:
-      description: A set of recommended application that may be installed after this application.
-      type: array
-      items:
-        $ref: '#/components/schemas/applicationDependency'
-    applicationSpec:
-      description: An application.
-      type: object
-      required:
-      - humanReadableName
-      - documentation
-      - license
-      - icon
-      - versions
-      properties:
-        humanReadableName:
-          description: Human readable application name.
-          type: string
-        documentation:
-          description: Documentation link for the application.
-          type: string
-          format: uri
-        license:
-          description: The license under which the application is released.
-          type: string
-        icon:
-          description: A base64 encoded SVG icon.  This should work in both light and dark themes.
-          type: string
-          format: byte
-        versions:
-          $ref: '#/components/schemas/applicationVersions'
-        tags:
-          $ref: '#/components/schemas/applicationTags'
-    applicationRead:
-      type: object
-      required:
-      - spec
-      - metadata
-      properties:
-        metadata:
-          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/schemas/resourceReadMetadata'
-        spec:
-          $ref: '#/components/schemas/applicationSpec'
-    applications:
-      description: A list of appications.
-      type: array
-      items:
-        $ref: '#/components/schemas/applicationRead'
   requestBodies:
     createControlPlaneRequest:
       description: Control plane request parameters.
@@ -693,29 +588,6 @@ components:
                     size: 50
                   flavorId: c7568e2d-f9ab-453d-9a3a-51375f78426b
                   replicas: 3
-    applicationResponse:
-      description: A list of available applications.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/applications'
-          example:
-          - metadata:
-              id: c7568e2d-f9ab-453d-9a3a-51375f78426b
-              name: longhorn
-              description: |-
-                Provides an alternative replicated storage provider that distributes storage across
-                the Kubernetes cluster.  Features high-availabilty, incremental snapshots and backups,
-                disaster recovery, and shared file mounts (read/write many).
-              creationTime: 2023-07-31T10:45:45Z
-              provisioningStatus: unknown
-            spec:
-              documentation: https://longhorn.io/
-              humanReadableName: Longhorn
-              icon: PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTQuMjU2MTkgMTU5LjA4OTEyIj48dGl0bGU+aWNvbjwvdGl0bGU+PHBhdGggZmlsbD0iIzVmMjI0YSIgZD0iTTk3LjEyODEsODAuNjI2OWExMC4wMDksMTAuMDA5LDAsMCwxLTEuOTU4LS4xOTMzNmwtNS4yODM5NC0xLjA1NDkzLDQuNTQ4NTksMjcuOTgzMTVhOS45MjQyOSw5LjkyNDI5LDAsMCwxLC4xMjk4OCwxLjYwNDQ5aDUuMTI2YTkuOTk5Nyw5Ljk5OTcsMCwwLDEsLjE2MzA4LTEuNzk3MzZsNS4wOTgxNS0yNy45MDY0M0w5OS4wODYxLDgwLjQzMzU0QTEwLjAwODkyLDEwLjAwODkyLDAsMCwxLDk3LjEyODEsODAuNjI2OVoiLz48cGF0aCBmaWxsPSIjNWYyMjRhIiBkPSJNMTczLjY5NTYsMEgyMC41NjA3MUEyMC42MjEwNSwyMC42MjEwNSwwLDAsMCwwLDIwLjU2MDY3VjEzOC41Mjg0NWEyMC42MjEwNiwyMC42MjEwNiwwLDAsMCwyMC41NjA2NywyMC41NjA2N0gxNzMuNjk1NmEyMC42MjEsMjAuNjIxLDAsMCwwLDIwLjU2MDU1LTIwLjU2MDY3VjIwLjU2MDY3QTIwLjYyMSwyMC42MjEsMCwwLDAsMTczLjY5NTYsMFptMy40NTUsNDEuNTgxLTIuNTAyLDE3YTEwLjAwMDYsMTAuMDAwNiwwLDAsMS03LjkzNTU0LDguMzUwNThMMTI2LjA0NTQ1LDc1LjA1MWMtLjAwNy4wNDA3MS0uMDA4NTQuMDgxMDYtLjAxNi4xMjE3N2wtNi4zNjYyMSwzNC44NTA1OEEyMC4wMjY1LDIwLjAyNjUsMCwwLDEsOTkuNjkwNiwxMjguOTY2MjVoLTUuMTI2YTIwLjAyNTg3LDIwLjAyNTg3LDAsMCwxLTE5Ljk3ODUyLTE5LjA1ODFMNjguOTQ0NzUsNzUuMTk3NThsLTQxLjQwMTYyLTguMjY2QTEwLjAwMDYsMTAuMDAwNiwwLDAsMSwxOS42MDc1OSw1OC41ODFsLTIuNTAyLTE3YTEwLjAwMDEzLDEwLjAwMDEzLDAsMCwxLDE5Ljc4NzExLTIuOTEyMTFsMS40NzU1OSwxMC4wMjkzTDk3LjEyODEsNjAuNDI5NjNsNTguNzU5NzYtMTEuNzMxNDQsMS40NzU1OS0xMC4wMjkzQTEwLjAwMDEzLDEwLjAwMDEzLDAsMCwxLDE3Ny4xNTA1Niw0MS41ODFaIi8+PC9zdmc+Cg==
-              license: Apache-2.0 License
-              versions:
-              - version: 1.5.1
   securitySchemes:
     oauth2Authentication:
       description: Operation requires OAuth2 bearer token authentication.

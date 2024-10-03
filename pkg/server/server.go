@@ -153,10 +153,9 @@ func (s *Server) GetServer(client client.Client) (*http.Server, error) {
 		},
 	}
 
-	identity := identityclient.New(client, s.IdentityOptions, &s.ClientOptions)
 	region := regionclient.New(client, s.RegionOptions, &s.ClientOptions)
 
-	handlerInterface, err := handler.New(client, s.Options.Namespace, &s.HandlerOptions, identity, region)
+	handlerInterface, err := handler.New(client, s.Options.Namespace, &s.HandlerOptions, region)
 	if err != nil {
 		return nil, err
 	}
