@@ -183,9 +183,8 @@ func (g *generator) defaultApplicationBundle(ctx context.Context) (*unikornv1.Ku
 }
 
 // defaultControlPlaneFlavor returns a default control plane flavor.  This will be
-// one that doesxn't have any GPUs.  The provider ensures the "nost cost-effective"
+// one that doesxn't have any GPUs.  The provider ensures the "most cost-effective"
 // comes first.
-// TODO: we should allow this to be configured per region.
 func (g *generator) defaultControlPlaneFlavor(ctx context.Context, request *openapi.KubernetesClusterWrite) (*regionapi.Flavor, error) {
 	resp, err := g.region.GetApiV1OrganizationsOrganizationIDRegionsRegionIDFlavorsWithResponse(ctx, g.organizationID, request.Spec.RegionId)
 	if err != nil {
@@ -204,7 +203,8 @@ func (g *generator) defaultControlPlaneFlavor(ctx context.Context, request *open
 		return nil, errors.OAuth2ServerError("unable to select a control plane flavor")
 	}
 
-	return &flavors[0], nil
+	// Pick the most "epic" flavor possible, things tend to melt if you are too stingy.
+	return &flavors[len(flavors)-1], nil
 }
 
 // defaultImage returns a default image for either control planes or workload pools
