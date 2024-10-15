@@ -147,6 +147,16 @@ func (c *KubernetesCluster) GPUOperatorEnabled() bool {
 	return c.Spec.Features != nil && c.Spec.Features.GPUOperator != nil && *c.Spec.Features.GPUOperator
 }
 
+func (c *KubernetesCluster) GetWorkloadPool(name string) *KubernetesClusterWorkloadPoolsPoolSpec {
+	for i, pool := range c.Spec.WorkloadPools.Pools {
+		if pool.Name == name {
+			return &c.Spec.WorkloadPools.Pools[i]
+		}
+	}
+
+	return nil
+}
+
 func CompareClusterManager(a, b ClusterManager) int {
 	return strings.Compare(a.Name, b.Name)
 }

@@ -64,6 +64,11 @@ type generator struct {
 	organizationID string
 	// projectID is the unique project identifier.
 	projectID string
+	// existing is the existing cluster used to preserve options
+	// across updates.  This does two things, ensures we don't accidentally
+	// pick up new defaults, and we preserve any modifications that were
+	// made in a support capacity.
+	existing *unikornv1.KubernetesCluster
 }
 
 func newGenerator(client client.Client, options *Options, region regionapi.ClientWithResponsesInterface, namespace, organizationID, projectID string) *generator {
@@ -75,6 +80,12 @@ func newGenerator(client client.Client, options *Options, region regionapi.Clien
 		organizationID: organizationID,
 		projectID:      projectID,
 	}
+}
+
+func (g *generator) withExisting(existing *unikornv1.KubernetesCluster) *generator {
+	g.existing = existing
+
+	return g
 }
 
 // convertMachine converts from a custom resource into the API definition.
@@ -254,20 +265,20 @@ func (g *generator) generateNetwork() *unikornv1.KubernetesClusterNetworkSpec {
 }
 
 // generateMachineGeneric generates a generic machine part of the cluster.
-func (g *generator) generateMachineGeneric(ctx context.Context, request *openapi.KubernetesClusterWrite, m *openapi.MachinePool, flavor *regionapi.Flavor) (*unikornv1core.MachineGeneric, error) {
-	if m.Replicas == nil {
-		m.Replicas = util.ToPointer(3)
-	}
-
-	image, err := g.defaultImage(ctx, request, request.Spec.Version)
-	if err != nil {
-		return nil, err
-	}
-
+func (g *generator) generateMachineGeneric(ctx context.Context, request *openapi.KubernetesClusterWrite, m *openapi.MachinePool, imageID *string) (*unikornv1core.MachineGeneric, error) {
 	machine := &unikornv1core.MachineGeneric{
 		Replicas: m.Replicas,
-		ImageID:  util.ToPointer(image.Metadata.Id),
-		FlavorID: &flavor.Metadata.Id,
+		FlavorID: m.FlavorId,
+		ImageID:  imageID,
+	}
+
+	if imageID == nil {
+		image, err := g.defaultImage(ctx, request, request.Spec.Version)
+		if err != nil {
+			return nil, err
+		}
+
+		machine.ImageID = util.ToPointer(image.Metadata.Id)
 	}
 
 	if m.Disk != nil {
@@ -284,17 +295,32 @@ func (g *generator) generateMachineGeneric(ctx context.Context, request *openapi
 
 // generateControlPlane generates the control plane part of a cluster.
 func (g *generator) generateControlPlane(ctx context.Context, request *openapi.KubernetesClusterWrite) (*unikornv1core.MachineGeneric, error) {
-	// Add in any missing defaults.
-	resource, err := g.defaultControlPlaneFlavor(ctx, request)
-	if err != nil {
-		return nil, err
-	}
+	// Preserve anything that may have been generated previously so it doesn't change
+	// randomly, or may have been set manually by an administrator.
+	var imageID *string
 
 	machineOptions := &openapi.MachinePool{
-		FlavorId: &resource.Metadata.Id,
+		Replicas: util.ToPointer(3),
 	}
 
-	machine, err := g.generateMachineGeneric(ctx, request, machineOptions, resource)
+	if g.existing != nil {
+		imageID = g.existing.Spec.ControlPlane.ImageID
+
+		machineOptions.Replicas = g.existing.Spec.ControlPlane.Replicas
+		machineOptions.FlavorId = g.existing.Spec.ControlPlane.FlavorID
+	}
+
+	// Add in any missing defaults.
+	if machineOptions.FlavorId == nil {
+		flavor, err := g.defaultControlPlaneFlavor(ctx, request)
+		if err != nil {
+			return nil, err
+		}
+
+		machineOptions.FlavorId = &flavor.Metadata.Id
+	}
+
+	machine, err := g.generateMachineGeneric(ctx, request, machineOptions, imageID)
 	if err != nil {
 		return nil, err
 	}
@@ -309,12 +335,16 @@ func (g *generator) generateWorkloadPools(ctx context.Context, request *openapi.
 	for i := range request.Spec.WorkloadPools {
 		pool := &request.Spec.WorkloadPools[i]
 
-		flavor, err := g.lookupFlavor(ctx, request, *pool.Machine.FlavorId)
-		if err != nil {
-			return nil, err
+		// Preserve anything we default to that may change across invocations.
+		var imageID *string
+
+		if g.existing != nil {
+			if pool := g.existing.GetWorkloadPool(pool.Name); pool != nil {
+				imageID = pool.ImageID
+			}
 		}
 
-		machine, err := g.generateMachineGeneric(ctx, request, &pool.Machine, flavor)
+		machine, err := g.generateMachineGeneric(ctx, request, &pool.Machine, imageID)
 		if err != nil {
 			return nil, err
 		}
@@ -346,27 +376,6 @@ func (g *generator) generateWorkloadPools(ctx context.Context, request *openapi.
 	return workloadPools, nil
 }
 
-// lookupFlavor resolves the flavor from its name.
-// NOTE: It looks like garbage performance, but the provider should be memoized...
-func (g *generator) lookupFlavor(ctx context.Context, request *openapi.KubernetesClusterWrite, id string) (*regionapi.Flavor, error) {
-	resp, err := g.region.GetApiV1OrganizationsOrganizationIDRegionsRegionIDFlavorsWithResponse(ctx, g.organizationID, request.Spec.RegionId)
-	if err != nil {
-		return nil, err
-	}
-
-	flavors := *resp.JSON200
-
-	index := slices.IndexFunc(flavors, func(flavor regionapi.Flavor) bool {
-		return flavor.Metadata.Id == id
-	})
-
-	if index < 0 {
-		return nil, fmt.Errorf("%w: flavor %s", ErrResourceLookup, id)
-	}
-
-	return &flavors[index], nil
-}
-
 // generate generates the full cluster custom resource.
 // TODO: there are a lot of parameters being passed about, we should make this
 // a struct and pass them as a single blob.
@@ -381,9 +390,28 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 		return nil, err
 	}
 
-	applicationBundle, err := g.defaultApplicationBundle(ctx)
-	if err != nil {
-		return nil, err
+	// Handle anything defaulted so we preserve across calls.
+	var applicationBundleName *string
+
+	if g.existing != nil {
+		applicationBundleName = g.existing.Spec.ApplicationBundle
+	}
+
+	if applicationBundleName == nil {
+		applicationBundle, err := g.defaultApplicationBundle(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		applicationBundleName = &applicationBundle.Name
+	}
+
+	autoscaling := util.ToPointer(true)
+	gpuOperator := util.ToPointer(true)
+
+	if g.existing != nil {
+		autoscaling = g.existing.Spec.Features.Autoscaling
+		gpuOperator = g.existing.Spec.Features.GPUOperator
 	}
 
 	userinfo, err := authorization.UserinfoFromContext(ctx)
@@ -397,14 +425,14 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 			RegionID:                     request.Spec.RegionId,
 			ClusterManagerID:             *request.Spec.ClusterManagerId,
 			Version:                      util.ToPointer(unikornv1core.SemanticVersion(request.Spec.Version)),
-			ApplicationBundle:            &applicationBundle.Name,
+			ApplicationBundle:            applicationBundleName,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
 			Network:                      g.generateNetwork(),
 			ControlPlane:                 kubernetesControlPlane,
 			WorkloadPools:                kubernetesWorkloadPools,
 			Features: &unikornv1.KubernetesClusterFeaturesSpec{
-				Autoscaling: util.ToPointer(true),
-				GPUOperator: util.ToPointer(true),
+				Autoscaling: autoscaling,
+				GPUOperator: gpuOperator,
 			},
 		},
 	}
