@@ -390,7 +390,7 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 		return err
 	}
 
-	required, err := newGenerator(c.client, c.options, c.region, namespace.Name, organizationID, projectID).generate(ctx, request)
+	required, err := newGenerator(c.client, c.options, c.region, namespace.Name, organizationID, projectID).withExisting(current).generate(ctx, request)
 	if err != nil {
 		return err
 	}
