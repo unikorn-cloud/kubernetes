@@ -54,10 +54,8 @@ spec:
     chart: vcluster
     release: vcluster
     parameters:
-    # Looks like this was removed in 0.20 but should come back in 0.21... https://github.com/loft-sh/vcluster/blob/v0.21.0-beta.2/chart/values.schema.json#L101-L105
-    # Causes error in helm template atm."controlPlane: Additional property hostpathMapper is not allowed"
-    #- name: controlPlane.hostpathMapper.enabled
-    #  value: 'true'
+    - name: controlPlane.hostPathMapper.enabled
+      value: 'true'
     - name: controlPlane.backingStore.database.embedded.enabled
       value: 'true'
     - name: controlPlane.statefulSet.persistence.volumeClaim.retentionPolicy
