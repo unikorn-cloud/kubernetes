@@ -24,11 +24,12 @@ import (
 	"net/http"
 	"slices"
 
+	"github.com/masterminds/semver"
+
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	coreopenapi "github.com/unikorn-cloud/core/pkg/openapi"
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
-	"github.com/unikorn-cloud/core/pkg/util"
 	"github.com/unikorn-cloud/identity/pkg/middleware/authorization"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
@@ -36,6 +37,7 @@ import (
 	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
 
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/utils/ptr"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -148,7 +150,7 @@ func convert(in *unikornv1.KubernetesCluster) *openapi.KubernetesClusterRead {
 		Spec: openapi.KubernetesClusterSpec{
 			RegionId:         in.Spec.RegionID,
 			ClusterManagerId: &in.Spec.ClusterManagerID,
-			Version:          string(*in.Spec.Version),
+			Version:          in.Spec.Version.Original(),
 			WorkloadPools:    convertWorkloadPools(in),
 		},
 	}
@@ -278,7 +280,7 @@ func (g *generator) generateMachineGeneric(ctx context.Context, request *openapi
 			return nil, err
 		}
 
-		machine.ImageID = util.ToPointer(image.Metadata.Id)
+		machine.ImageID = ptr.To(image.Metadata.Id)
 	}
 
 	if m.Disk != nil {
@@ -300,7 +302,7 @@ func (g *generator) generateControlPlane(ctx context.Context, request *openapi.K
 	var imageID *string
 
 	machineOptions := &openapi.MachinePool{
-		Replicas: util.ToPointer(3),
+		Replicas: ptr.To(3),
 	}
 
 	if g.existing != nil {
@@ -406,8 +408,8 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 		applicationBundleName = &applicationBundle.Name
 	}
 
-	autoscaling := util.ToPointer(true)
-	gpuOperator := util.ToPointer(true)
+	autoscaling := ptr.To(true)
+	gpuOperator := ptr.To(true)
 
 	if g.existing != nil {
 		autoscaling = g.existing.Spec.Features.Autoscaling
@@ -419,12 +421,19 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 		return nil, err
 	}
 
+	version, err := semver.NewVersion(request.Spec.Version)
+	if err != nil {
+		return nil, err
+	}
+
 	cluster := &unikornv1.KubernetesCluster{
 		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, g.namespace, userinfo.Sub).WithOrganization(g.organizationID).WithProject(g.projectID).Get(),
 		Spec: unikornv1.KubernetesClusterSpec{
-			RegionID:                     request.Spec.RegionId,
-			ClusterManagerID:             *request.Spec.ClusterManagerId,
-			Version:                      util.ToPointer(unikornv1core.SemanticVersion(request.Spec.Version)),
+			RegionID:         request.Spec.RegionId,
+			ClusterManagerID: *request.Spec.ClusterManagerId,
+			Version: &unikornv1core.SemanticVersion{
+				Version: *version,
+			},
 			ApplicationBundle:            applicationBundleName,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
 			Network:                      g.generateNetwork(),
