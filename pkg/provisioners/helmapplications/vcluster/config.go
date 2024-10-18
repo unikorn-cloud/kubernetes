@@ -165,7 +165,7 @@ func getClientConfig(ctx context.Context, getter ConfigGetter, namespace, name s
 		host = "https://localhost:8443"
 	}
 
-	config.Clusters["my-vcluster"].Server = host
+	config.Clusters["kubernetes"].Server = host
 
 	return &config, nil
 }
