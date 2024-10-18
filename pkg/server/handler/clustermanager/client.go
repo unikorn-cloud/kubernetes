@@ -26,7 +26,6 @@ import (
 	coreopenapi "github.com/unikorn-cloud/core/pkg/openapi"
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
-	"github.com/unikorn-cloud/core/pkg/util"
 	"github.com/unikorn-cloud/identity/pkg/middleware/authorization"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
@@ -38,6 +37,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
+	"k8s.io/utils/ptr"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -85,7 +85,7 @@ func (c *Client) CreateImplicit(ctx context.Context, organizationID, projectID s
 	request := &openapi.ClusterManagerWrite{
 		Metadata: coreopenapi.ResourceWriteMetadata{
 			Name:        "default",
-			Description: util.ToPointer("Implicitly provisioned cluster controller"),
+			Description: ptr.To("Implicitly provisioned cluster controller"),
 		},
 	}
 

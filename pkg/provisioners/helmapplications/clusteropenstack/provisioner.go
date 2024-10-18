@@ -30,6 +30,8 @@ import (
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	kubernetesprovisioners "github.com/unikorn-cloud/kubernetes/pkg/provisioners"
 	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
+
+	"k8s.io/utils/ptr"
 )
 
 var (
@@ -192,7 +194,7 @@ func (p *Provisioner) generateWorkloadPoolSchedulerHelmValues(pool *unikornv1.Ku
 
 		gpu := map[string]interface{}{
 			"type":  t,
-			"count": flavor.Spec.Gpu.Count,
+			"count": flavor.Spec.Gpu.LogicalCount,
 		}
 
 		scheduling["gpu"] = gpu
@@ -296,7 +298,7 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 
 	// TODO: generate types from the Helm values schema.
 	values := map[string]interface{}{
-		"version":   string(*cluster.Spec.Version),
+		"version":   ptr.To(cluster.Spec.Version.Original()),
 		"openstack": openstackValues,
 		"cluster": map[string]interface{}{
 			"taints": []interface{}{
