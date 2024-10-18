@@ -30,7 +30,6 @@ import (
 	coreapi "github.com/unikorn-cloud/core/pkg/openapi"
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
-	"github.com/unikorn-cloud/core/pkg/util"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/clusteropenstack"
@@ -44,6 +43,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
+	"k8s.io/utils/ptr"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -194,7 +194,7 @@ func (c *Client) createIdentity(ctx context.Context, organizationID, projectID, 
 	request := regionapi.PostApiV1OrganizationsOrganizationIDProjectsProjectIDIdentitiesJSONRequestBody{
 		Metadata: coreapi.ResourceWriteMetadata{
 			Name:        "kubernetes-cluster-" + clusterID,
-			Description: util.ToPointer("Identity for Kubernetes cluster " + clusterID),
+			Description: ptr.To("Identity for Kubernetes cluster " + clusterID),
 		},
 		Spec: regionapi.IdentityWriteSpec{
 			RegionId: regionID,
@@ -231,7 +231,7 @@ func (c *Client) createPhysicalNetworkOpenstack(ctx context.Context, organizatio
 	request := regionapi.PhysicalNetworkWrite{
 		Metadata: coreapi.ResourceWriteMetadata{
 			Name:        "kubernetes-cluster-" + cluster.Name,
-			Description: util.ToPointer("Physical network for cluster " + cluster.Name),
+			Description: ptr.To("Physical network for cluster " + cluster.Name),
 		},
 		Spec: &regionapi.PhysicalNetworkWriteSpec{
 			Tags:           &tags,
@@ -321,7 +321,7 @@ func (c *Client) Create(ctx context.Context, organizationID, projectID string, r
 			return nil, err
 		}
 
-		request.Spec.ClusterManagerId = util.ToPointer(clusterManager.Name)
+		request.Spec.ClusterManagerId = ptr.To(clusterManager.Name)
 	}
 
 	cluster, err := newGenerator(c.client, c.options, c.region, namespace.Name, organizationID, projectID).generate(ctx, request)

@@ -356,7 +356,7 @@ spec:
                   Version is the Kubernetes version to install.  For performance
                   reasons this should match what is already pre-installed on the
                   provided image.
-                pattern: ^v(?:[0-9]+\.){2}(?:[0-9]+)$
+                pattern: ^v?[0-9]+(\.[0-9]+)?(\.[0-9]+)?(-([0-9A-Za-z\-]+(\.[0-9A-Za-z\-]+)*))?(\+([0-9A-Za-z\-]+(\.[0-9A-Za-z\-]+)*))?$
                 type: string
               workloadPools:
                 description: WorkloadPools defines the workload cluster topology.
