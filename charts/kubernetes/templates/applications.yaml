@@ -49,18 +49,17 @@ spec:
   - security
   - infrastructure
   versions:
-  - version: 0.19.5
+  - version: 0.20.1
     repo: https://charts.loft.sh
     chart: vcluster
     release: vcluster
     parameters:
-    - name: hostpathMapper.enabled
+    - name: controlPlane.hostPathMapper.enabled
       value: 'true'
-    - name: autoDeletePersistentVolumeClaims
+    - name: controlPlane.backingStore.database.embedded.enabled
       value: 'true'
-    # This will be valid from v0.20 onward
-    #- name: controlPlane.statefulSet.persistence.volumeClaim.retentionPolicy
-    #  value: Delete
+    - name: controlPlane.statefulSet.persistence.volumeClaim.retentionPolicy
+      value: Delete
 ---
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: HelmApplication
