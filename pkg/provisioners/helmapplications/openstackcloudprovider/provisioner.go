@@ -112,6 +112,10 @@ func GenerateCloudConfig(options *kubernetesprovisioners.ClusterOpenstackOptions
 		return "", err
 	}
 
+	if _, err := loadBalancer.NewKey("create-monitor", "true"); err != nil {
+		return "", err
+	}
+
 	blockStorage, err := cloudConfig.NewSection("BlockStorage")
 	if err != nil {
 		return "", err
