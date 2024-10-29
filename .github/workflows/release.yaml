@@ -32,8 +32,6 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build and Push Images
       run: make touch all images -e RELEASE=1 VERSION=${{ github.ref_name }}
-#    - name: Build SBOMS
-#      run: go run ./hack/sbom
 #    - name: Build Documentation
 #      run: sudo apt -y install wbritish && go run github.com/unikorn-cloud/core/hack/docs -o docs/server-api.md
     - name: Configure Git
@@ -51,5 +49,4 @@ jobs:
         name: Release ${{ github.ref_name }}
         tag_name: ${{ github.ref_name }}
 #        files: |
-#          sboms/*.spdx
 #          docs/server-api.md

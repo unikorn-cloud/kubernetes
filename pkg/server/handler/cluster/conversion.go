@@ -24,7 +24,7 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/masterminds/semver"
+	"github.com/Masterminds/semver/v3"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	coreopenapi "github.com/unikorn-cloud/core/pkg/openapi"
