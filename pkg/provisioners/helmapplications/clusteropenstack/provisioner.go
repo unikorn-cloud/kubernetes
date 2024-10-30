@@ -283,7 +283,7 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 	// These must have parity with what's defined by the API to make
 	// cross referencing between unikorn and openstack logging easier.
 	serverMetadata := map[string]interface{}{
-		"cluterKind":     "kubernetes",
+		"clusterKind":    "kubernetes",
 		"clusterID":      cluster.Name,
 		"projectID":      labels[constants.ProjectLabel],
 		"organizationID": labels[constants.OrganizationLabel],
