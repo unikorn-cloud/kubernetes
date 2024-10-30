@@ -3,17 +3,16 @@ module github.com/unikorn-cloud/kubernetes
 go 1.23.2
 
 require (
+	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/getkin/kin-openapi v0.128.0
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-logr/logr v1.4.2
 	github.com/google/uuid v1.6.0
 	github.com/gophercloud/utils v0.0.0-20231010081019-80377eca5d56
-	github.com/masterminds/semver v1.5.0
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/prometheus/client_golang v1.20.5
-	github.com/spdx/tools-golang v0.5.5
 	github.com/spf13/pflag v1.0.5
-	github.com/unikorn-cloud/core v0.1.77
+	github.com/unikorn-cloud/core v0.1.79
 	github.com/unikorn-cloud/identity v0.2.42
 	github.com/unikorn-cloud/region v0.1.44
 	go.opentelemetry.io/otel v1.31.0
@@ -30,7 +29,6 @@ require (
 
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
-	github.com/anchore/go-struct-converter v0.0.0-20240925125616-a0883641c664 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
