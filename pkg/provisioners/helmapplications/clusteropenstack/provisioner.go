@@ -282,13 +282,12 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 
 	// These must have parity with what's defined by the API to make
 	// cross referencing between unikorn and openstack logging easier.
-	// TODO: clusterID is not going to cut it moving forward, especially
-	// when baremetal clusters are a thing and we'll need to differentiate
-	// between them.
 	serverMetadata := map[string]interface{}{
+		"cluterKind":     "kubernetes",
 		"clusterID":      cluster.Name,
 		"projectID":      labels[constants.ProjectLabel],
 		"organizationID": labels[constants.OrganizationLabel],
+		"regionID":       cluster.Spec.RegionID,
 	}
 
 	machine, err := p.generateMachineHelmValues(cluster.Spec.ControlPlane, true)
