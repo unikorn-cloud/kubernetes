@@ -19,7 +19,6 @@ spec:
   tags:
   - security
   - networking
-  exported: true
   versions:
   - version: v1.14.5
     repo: https://charts.jetstack.io
