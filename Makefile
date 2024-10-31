@@ -71,7 +71,7 @@ CONTROLLER_TOOLS_VERSION=v0.16.3
 # This should be kept in sync with the Kubenetes library versions defined in go.mod.
 CODEGEN_VERSION=v0.27.3
 
-OPENAPI_CODEGEN_VERSION=v1.16.2
+OPENAPI_CODEGEN_VERSION=v2.4.1
 OPENAPI_CODEGEN_FLAGS=-package openapi -config pkg/openapi/config.yaml
 OPENAPI_SCHEMA=pkg/openapi/server.spec.yaml
 OPENAPI_FILES = \
@@ -162,19 +162,19 @@ $(GENDIR): $(APISRC)
 
 # Generate the server schema, types and router boilerplate.
 pkg/openapi/types.go: $(OPENAPI_SCHEMA)
-	@go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@$(OPENAPI_CODEGEN_VERSION)
+	@go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@$(OPENAPI_CODEGEN_VERSION)
 	oapi-codegen -generate types $(OPENAPI_CODEGEN_FLAGS) -o $@ $<
 
 pkg/openapi/schema.go: $(OPENAPI_SCHEMA)
-	@go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@$(OPENAPI_CODEGEN_VERSION)
+	@go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@$(OPENAPI_CODEGEN_VERSION)
 	oapi-codegen -generate spec $(OPENAPI_CODEGEN_FLAGS) -o $@ $<
 
 pkg/openapi/client.go: $(OPENAPI_SCHEMA)
-	@go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@$(OPENAPI_CODEGEN_VERSION)
+	@go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@$(OPENAPI_CODEGEN_VERSION)
 	oapi-codegen -generate client $(OPENAPI_CODEGEN_FLAGS) -o $@ $<
 
 pkg/openapi/router.go: $(OPENAPI_SCHEMA)
-	@go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@$(OPENAPI_CODEGEN_VERSION)
+	@go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@$(OPENAPI_CODEGEN_VERSION)
 	oapi-codegen -generate chi-server $(OPENAPI_CODEGEN_FLAGS) -o $@ $<
 
 # When checking out, the files timestamps are pretty much random, and make cause
