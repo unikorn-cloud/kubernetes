@@ -177,10 +177,10 @@ github.com/ugorji/go/codec v1.2.12 h1:9LC83zGrHhuUA9l16C9AHXAqEV/2wBQ4nkvumAE65E
 github.com/ugorji/go/codec v1.2.12/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
 github.com/unikorn-cloud/core v0.1.79 h1:fdIUG7R2Sa2wBY+x+JLhCzQYuGFQqCf7PS/lB7u1Dzg=
 github.com/unikorn-cloud/core v0.1.79/go.mod h1:wEKzCwAnIyTbo27l++Wl+gK95TAxMsFS3y3jbFB03aw=
-github.com/unikorn-cloud/identity v0.2.42 h1:9amEcydDq23RZYO4rTtxOhVgw/BH1mdXQgq0fWT+RM0=
-github.com/unikorn-cloud/identity v0.2.42/go.mod h1:JMbS6iTYzt0OVt5AkqZys3WVnpLabGvUl8kGWcxzFZI=
-github.com/unikorn-cloud/region v0.1.44 h1:GJnUHFBkxnOAssHd7NBXY9Zpva6lB5ozKPesHnORVzo=
-github.com/unikorn-cloud/region v0.1.44/go.mod h1:N5wS4Js49JR5WARnRwzeVXRL//M+WVKZBAiqQVA7Yao=
+github.com/unikorn-cloud/identity v0.2.44 h1:tXV/qsJ77Dkx8ba8gnBFXHWUgBNsJ2oo/5TjnyhkH7U=
+github.com/unikorn-cloud/identity v0.2.44/go.mod h1:JMbS6iTYzt0OVt5AkqZys3WVnpLabGvUl8kGWcxzFZI=
+github.com/unikorn-cloud/region v0.1.45 h1:qpUwB+s/SEZNHZqwHTYovtWUVdJB2AKEl06NbiIwnOw=
+github.com/unikorn-cloud/region v0.1.45/go.mod h1:QqWLEfB8bNRIUAU7h5JjkQsjyJdTV+2ltDYksRjKMds=
 github.com/x448/float16 v0.8.4 h1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=
 github.com/x448/float16 v0.8.4/go.mod h1:14CWIYCyZA/cWjXOioeEpHeN/83MdbZDRQHoFcYsOfg=
 github.com/xlab/treeprint v1.2.0 h1:HzHnuAF1plUN2zGlAFHbSQP2qJ0ZAD3XF5XD7OesXRQ=
