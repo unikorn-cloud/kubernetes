@@ -9,24 +9,48 @@ info:
     clusters. Requests must specify the HTML content type
     header.
   version: 0.2.0
-# This allows the documentation engine to combine API endpoints into related groups
-# and also defines the order of appearance.
-x-documentation-groups:
-- id: main
-  name: Core API
-  description: |-
-    The core API allows the management of core resources. Conceptually there are projects
-    that are implicitly referenced by a scoped token issued during authentication.  Within
-    a project are a number of cluster managers. In the context of the Kubernetes Service, a
-    cluster manager is a management layer that provides multi-tenant isolation, and Kubernetes
-    cluster provisioning and scaling services. Kubernetes clusters are provisioned within
-    a cluster manager. Provisioning of projects and cluster managers may be done explicitly or
-    implicitly, however this latter approach is less flexible as the Kubernetes Service will
-    have to choose some default values for you, however it provides a faster and better
-    user experience.
 paths:
+  /api/v1/organizations/{organizationID}/regions/{regionID}/flavors:
+    description: |-
+      Kubernetes flavor services.
+    parameters:
+    - $ref: '#/components/parameters/organizationIDParameter'
+    - $ref: '#/components/parameters/regionIDParameter'
+    get:
+      description: |-
+        Lists all Kubernetes compatible flavors that the user has access to.
+      security:
+      - oauth2Authentication: []
+      responses:
+        '200':
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/region/main/pkg/openapi/server.spec.yaml#/components/responses/flavorsResponse'
+        '400':
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
+        '401':
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
+        '500':
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
+  /api/v1/organizations/{organizationID}/regions/{regionID}/images:
+    description: |-
+      Kubernetes image services.
+    parameters:
+    - $ref: '#/components/parameters/organizationIDParameter'
+    - $ref: '#/components/parameters/regionIDParameter'
+    get:
+      description: |-
+        Lists all Kubernetes compatible images that the user has access to.
+      security:
+      - oauth2Authentication: []
+      responses:
+        '200':
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/region/main/pkg/openapi/server.spec.yaml#/components/responses/imagesResponse'
+        '400':
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/badRequestResponse'
+        '401':
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/unauthorizedResponse'
+        '500':
+          $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/organizations/{organizationID}/clustermanagers:
-    x-documentation-group: main
     description: |-
       Implements cluster manager management services. Control planes manage the
       life cycle of Kubernetes clusters, through provisioning, upgrading, to deletion.
@@ -86,7 +110,6 @@ paths:
         '500':
           $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/organizations/{organizationID}/projects/{projectID}/clustermanagers/{clusterManagerID}:
-    x-documentation-group: main
     description: |-
       Implements cluster manager management services. Control planes manage the
       life cycle of Kubernetes clusters, through provisioning, upgrading, to deletion.
@@ -138,7 +161,6 @@ paths:
         '500':
           $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/organizations/{organizationID}/clusters:
-    x-documentation-group: main
     description: Cluster services.
     parameters:
     - $ref: '#/components/parameters/organizationIDParameter'
@@ -161,7 +183,6 @@ paths:
         '500':
           $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/organizations/{organizationID}/projects/{projectID}/clusters:
-    x-documentation-group: main
     description: Cluster services.
     parameters:
     - $ref: '#/components/parameters/organizationIDParameter'
@@ -187,7 +208,6 @@ paths:
         '500':
           $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/organizations/{organizationID}/projects/{projectID}/clusters/{clusterID}:
-    x-documentation-group: main
     description: Cluster services.
     parameters:
     - $ref: '#/components/parameters/organizationIDParameter'
@@ -232,7 +252,6 @@ paths:
         '500':
           $ref: 'https://raw.githubusercontent.com/unikorn-cloud/core/main/pkg/openapi/common.spec.yaml#/components/responses/internalServerErrorResponse'
   /api/v1/organizations/{organizationID}/projects/{projectID}/clusters/{clusterID}/kubeconfig:
-    x-documentation-group: main
     description: Cluster services.
     parameters:
     - $ref: '#/components/parameters/organizationIDParameter'
@@ -271,6 +290,13 @@ components:
       in: path
       description: |-
         The project name.
+      required: true
+      schema:
+        $ref: '#/components/schemas/kubernetesNameParameter'
+    regionIDParameter:
+      name: regionID
+      in: path
+      description: The region identifier.
       required: true
       schema:
         $ref: '#/components/schemas/kubernetesNameParameter'

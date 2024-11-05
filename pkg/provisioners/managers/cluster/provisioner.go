@@ -52,6 +52,7 @@ import (
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/openstackcloudprovider"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/openstackplugincindercsi"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/vcluster"
+	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/region"
 	regionclient "github.com/unikorn-cloud/region/pkg/client"
 	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
 
@@ -373,32 +374,19 @@ func (p *Provisioner) getRegionClient(ctx context.Context, traceName string) (co
 
 	tokenIssuer := identityclient.NewTokenIssuer(cli, p.options.identityOptions, &p.options.clientOptions, constants.Application, constants.Version)
 
-	ctx, err = tokenIssuer.Context(ctx, traceName)
+	token, err := tokenIssuer.Issue(ctx, traceName)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	getter := regionclient.New(cli, p.options.regionOptions, &p.options.clientOptions)
 
-	client, err := getter.Client(ctx)
+	client, err := getter.Client(ctx, token)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	return ctx, client, nil
-}
-
-func (p *Provisioner) getFlavors(ctx context.Context, client regionapi.ClientWithResponsesInterface) (regionapi.Flavors, error) {
-	response, err := client.GetApiV1OrganizationsOrganizationIDRegionsRegionIDFlavorsWithResponse(ctx, p.cluster.Labels[coreconstants.OrganizationLabel], p.cluster.Spec.RegionID)
-	if err != nil {
-		return nil, err
-	}
-
-	if response.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("%w: flavors GET expected 200 got %d", coreerrors.ErrAPIStatus, response.StatusCode())
-	}
-
-	return *response.JSON200, nil
 }
 
 func (p *Provisioner) getIdentity(ctx context.Context, client regionapi.ClientWithResponsesInterface) (*regionapi.IdentityRead, error) {
@@ -511,7 +499,7 @@ func (p *Provisioner) identityOptions(ctx context.Context, client regionapi.Clie
 		return nil, err
 	}
 
-	flavors, err := p.getFlavors(ctx, client)
+	flavors, err := region.Flavors(ctx, client, p.cluster.Labels[coreconstants.OrganizationLabel], p.cluster.Spec.RegionID)
 	if err != nil {
 		return nil, err
 	}

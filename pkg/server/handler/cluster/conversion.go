@@ -21,7 +21,6 @@ import (
 	"context"
 	goerrors "errors"
 	"fmt"
-	"net/http"
 	"slices"
 
 	"github.com/Masterminds/semver/v3"
@@ -34,6 +33,7 @@ import (
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/applicationbundle"
+	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/region"
 	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -195,22 +195,17 @@ func (g *generator) defaultApplicationBundle(ctx context.Context) (*unikornv1.Ku
 	return &applicationBundles.Items[0], nil
 }
 
-// defaultControlPlaneFlavor returns a default control plane flavor.  This will be
-// one that doesxn't have any GPUs.  The provider ensures the "most cost-effective"
-// comes first.
+// defaultControlPlaneFlavor returns a default control plane flavor.
 func (g *generator) defaultControlPlaneFlavor(ctx context.Context, request *openapi.KubernetesClusterWrite) (*regionapi.Flavor, error) {
-	resp, err := g.region.GetApiV1OrganizationsOrganizationIDRegionsRegionIDFlavorsWithResponse(ctx, g.organizationID, request.Spec.RegionId)
+	flavors, err := region.Flavors(ctx, g.region, g.organizationID, request.Spec.RegionId)
 	if err != nil {
-		return nil, err
+		return nil, errors.OAuth2ServerError("failed to list flavors").WithError(err)
 	}
 
-	if resp.StatusCode() != http.StatusOK {
-		return nil, errors.OAuth2ServerError("failed to list flavors")
-	}
-
-	flavors := *resp.JSON200
-
-	flavors = slices.DeleteFunc(flavors, func(x regionapi.Flavor) bool { return x.Spec.Gpu != nil })
+	// No baremetal flavors, and no GPUs.  Would be very wasteful otherwise!
+	flavors = slices.DeleteFunc(flavors, func(x regionapi.Flavor) bool {
+		return (x.Spec.Baremetal != nil && *x.Spec.Baremetal) || x.Spec.Gpu != nil
+	})
 
 	if len(flavors) == 0 {
 		return nil, errors.OAuth2ServerError("unable to select a control plane flavor")
@@ -223,19 +218,14 @@ func (g *generator) defaultControlPlaneFlavor(ctx context.Context, request *open
 // defaultImage returns a default image for either control planes or workload pools
 // based on the specified Kubernetes version.
 func (g *generator) defaultImage(ctx context.Context, request *openapi.KubernetesClusterWrite, version string) (*regionapi.Image, error) {
-	resp, err := g.region.GetApiV1OrganizationsOrganizationIDRegionsRegionIDImagesWithResponse(ctx, g.organizationID, request.Spec.RegionId)
+	images, err := region.Images(ctx, g.region, g.organizationID, request.Spec.RegionId)
 	if err != nil {
-		return nil, err
+		return nil, errors.OAuth2ServerError("failed to list images").WithError(err)
 	}
 
-	if resp.StatusCode() != http.StatusOK {
-		return nil, errors.OAuth2ServerError("failed to list images")
-	}
-
-	images := *resp.JSON200
-
+	// Only get the version asked for.
 	images = slices.DeleteFunc(images, func(x regionapi.Image) bool {
-		return x.Spec.SoftwareVersions == nil || x.Spec.SoftwareVersions.Kubernetes == nil || *x.Spec.SoftwareVersions.Kubernetes != version
+		return *x.Spec.SoftwareVersions.Kubernetes != version
 	})
 
 	if len(images) == 0 {
