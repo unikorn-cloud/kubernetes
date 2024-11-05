@@ -25,7 +25,6 @@ import (
 
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	"github.com/unikorn-cloud/identity/pkg/middleware/authorization"
-	"github.com/unikorn-cloud/identity/pkg/middleware/openapi/accesstoken"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -78,28 +77,29 @@ func (c *Client) HTTPClient(ctx context.Context) (*http.Client, error) {
 	return client, nil
 }
 
+type AccessTokenGetter interface {
+	Get() string
+}
+
 // accessTokenInjector implements OAuth2 bearer token authorization.
-func accessTokenInjector(ctx context.Context, req *http.Request) error {
-	accessToken, err := accesstoken.FromContext(ctx)
-	if err != nil {
-		return err
+func accessTokenInjector(accessToken AccessTokenGetter) func(context.Context, *http.Request) error {
+	return func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Authorization", "bearer "+accessToken.Get())
+		otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
+		authorization.InjectClientCert(ctx, req.Header)
+
+		return nil
 	}
-
-	req.Header.Set("Authorization", "bearer "+accessToken)
-	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
-	authorization.InjectClientCert(ctx, req.Header)
-
-	return nil
 }
 
 // Client returns a new OpenAPI client that can be used to access the API.
-func (c *Client) Client(ctx context.Context) (*openapi.ClientWithResponses, error) {
+func (c *Client) Client(ctx context.Context, accessToken AccessTokenGetter) (*openapi.ClientWithResponses, error) {
 	httpClient, err := c.HTTPClient(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := openapi.NewClientWithResponses(c.options.Host(), openapi.WithHTTPClient(httpClient), openapi.WithRequestEditorFn(accessTokenInjector))
+	client, err := openapi.NewClientWithResponses(c.options.Host(), openapi.WithHTTPClient(httpClient), openapi.WithRequestEditorFn(accessTokenInjector(accessToken)))
 	if err != nil {
 		return nil, err
 	}
