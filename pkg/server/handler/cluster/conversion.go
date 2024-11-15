@@ -204,7 +204,23 @@ func (g *generator) defaultControlPlaneFlavor(ctx context.Context, request *open
 
 	// No baremetal flavors, and no GPUs.  Would be very wasteful otherwise!
 	flavors = slices.DeleteFunc(flavors, func(x regionapi.Flavor) bool {
-		return (x.Spec.Baremetal != nil && *x.Spec.Baremetal) || x.Spec.Gpu != nil
+		if x.Spec.Baremetal != nil && *x.Spec.Baremetal {
+			return true
+		}
+
+		if x.Spec.Gpu != nil {
+			return true
+		}
+
+		if x.Spec.Cpus > g.options.ControlPlaneCPUsMax {
+			return true
+		}
+
+		if x.Spec.Memory > g.options.ControlPlaneMemoryMaxGiB {
+			return true
+		}
+
+		return false
 	})
 
 	if len(flavors) == 0 {

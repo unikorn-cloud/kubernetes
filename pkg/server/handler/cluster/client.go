@@ -49,10 +49,12 @@ import (
 )
 
 type Options struct {
-	NodeNetwork    net.IPNet
-	ServiceNetwork net.IPNet
-	PodNetwork     net.IPNet
-	DNSNameservers []net.IP
+	ControlPlaneCPUsMax      int
+	ControlPlaneMemoryMaxGiB int
+	NodeNetwork              net.IPNet
+	ServiceNetwork           net.IPNet
+	PodNetwork               net.IPNet
+	DNSNameservers           []net.IP
 }
 
 func (o *Options) AddFlags(f *pflag.FlagSet) {
@@ -62,6 +64,8 @@ func (o *Options) AddFlags(f *pflag.FlagSet) {
 
 	dnsNameservers := []net.IP{net.ParseIP("8.8.8.8")}
 
+	f.IntVar(&o.ControlPlaneCPUsMax, "control-plane-cpus-max", 8, "Default maximum CPUs for control plane flavor selection")
+	f.IntVar(&o.ControlPlaneMemoryMaxGiB, "control-plane-memory-max-gib", 16, "Default maximum memory for control plane flavor selection")
 	f.IPNetVar(&o.NodeNetwork, "default-node-network", *nodeNetwork, "Default node network to use when creating a cluster")
 	f.IPNetVar(&o.ServiceNetwork, "default-service-network", *serviceNetwork, "Default service network to use when creating a cluster")
 	f.IPNetVar(&o.PodNetwork, "default-pod-network", *podNetwork, "Default pod network to use when creating a cluster")
