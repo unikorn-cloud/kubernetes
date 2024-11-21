@@ -67,15 +67,15 @@ func newApplicationReferenceGetter(clusterManager *unikornv1.ClusterManager) *Ap
 	}
 }
 
-func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name string) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name string) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	namespace, err := coreclient.NamespaceFromContext(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	cli, err := coreclient.ProvisionerClientFromContext(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	key := client.ObjectKey{
@@ -86,21 +86,37 @@ func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name st
 	bundle := &unikornv1.ClusterManagerApplicationBundle{}
 
 	if err := cli.Get(ctx, key, bundle); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return bundle.Spec.GetApplication(name)
+	reference, err := bundle.Spec.GetApplication(name)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	key = client.ObjectKey{
+		Namespace: namespace,
+		Name:      *reference.Name,
+	}
+
+	application := &unikornv1core.HelmApplication{}
+
+	if err := cli.Get(ctx, key, application); err != nil {
+		return nil, nil, err
+	}
+
+	return application, &reference.Version, nil
 }
 
-func (a *ApplicationReferenceGetter) vCluster(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) vCluster(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	return a.getApplication(ctx, "vcluster")
 }
 
-func (a *ApplicationReferenceGetter) certManager(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) certManager(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	return a.getApplication(ctx, "cert-manager")
 }
 
-func (a *ApplicationReferenceGetter) clusterAPI(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) clusterAPI(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	return a.getApplication(ctx, "cluster-api")
 }
 

@@ -271,7 +271,7 @@ type KubernetesClusterApplicationBundle struct {
 // ApplicationBundleSpec defines the requested resource state.
 type ApplicationBundleSpec struct {
 	// Version is a semantic version of the bundle, must be unique.
-	Version *string `json:"version"`
+	Version unikornv1core.SemanticVersion `json:"version"`
 	// Preview indicates that this bundle is a preview and should not be
 	// used by default.
 	Preview *bool `json:"preview,omitempty"`
