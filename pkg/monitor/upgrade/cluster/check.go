@@ -88,7 +88,7 @@ func (c *Checker) upgradeResource(ctx context.Context, resource *unikornv1.Kuber
 		return nil
 	}
 
-	logger.Info("bundle upgrading", "from", *bundle.Spec.Version, "to", *target.Spec.Version)
+	logger.Info("bundle upgrading", "from", bundle.Spec.Version, "to", target.Spec.Version)
 
 	resource.Spec.ApplicationBundle = &target.Name
 

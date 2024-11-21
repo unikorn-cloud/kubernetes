@@ -78,16 +78,16 @@ func newApplicationReferenceGetter(cluster *unikornv1.KubernetesCluster) *Applic
 	}
 }
 
-func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name string) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name string) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	namespace, err := coreclient.NamespaceFromContext(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// TODO: we could cache this, it's from a cache anyway, so quite cheap...
 	cli, err := coreclient.ProvisionerClientFromContext(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	key := client.ObjectKey{
@@ -98,45 +98,61 @@ func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name st
 	bundle := &unikornv1.KubernetesClusterApplicationBundle{}
 
 	if err := cli.Get(ctx, key, bundle); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return bundle.Spec.GetApplication(name)
+	reference, err := bundle.Spec.GetApplication(name)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	key = client.ObjectKey{
+		Namespace: namespace,
+		Name:      *reference.Name,
+	}
+
+	application := &unikornv1core.HelmApplication{}
+
+	if err := cli.Get(ctx, key, application); err != nil {
+		return nil, nil, err
+	}
+
+	return application, &reference.Version, nil
 }
 
-func (a *ApplicationReferenceGetter) clusterOpenstack(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) clusterOpenstack(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	return a.getApplication(ctx, "cluster-openstack")
 }
 
-func (a *ApplicationReferenceGetter) cilium(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) cilium(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	return a.getApplication(ctx, "cilium")
 }
 
-func (a *ApplicationReferenceGetter) openstackCloudProvider(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) openstackCloudProvider(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	return a.getApplication(ctx, "openstack-cloud-provider")
 }
 
-func (a *ApplicationReferenceGetter) openstackPluginCinderCSI(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) openstackPluginCinderCSI(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	return a.getApplication(ctx, "openstack-plugin-cinder-csi")
 }
 
-func (a *ApplicationReferenceGetter) metricsServer(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) metricsServer(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	return a.getApplication(ctx, "metrics-server")
 }
 
-func (a *ApplicationReferenceGetter) nvidiaGPUOperator(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) nvidiaGPUOperator(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	return a.getApplication(ctx, "nvidia-gpu-operator")
 }
 
-func (a *ApplicationReferenceGetter) amdGPUOperator(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) amdGPUOperator(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	return a.getApplication(ctx, "amd-gpu-operator")
 }
 
-func (a *ApplicationReferenceGetter) clusterAutoscaler(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) clusterAutoscaler(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	return a.getApplication(ctx, "cluster-autoscaler")
 }
 
-func (a *ApplicationReferenceGetter) clusterAutoscalerOpenstack(ctx context.Context) (*unikornv1core.ApplicationReference, error) {
+func (a *ApplicationReferenceGetter) clusterAutoscalerOpenstack(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	return a.getApplication(ctx, "cluster-autoscaler-openstack")
 }
 

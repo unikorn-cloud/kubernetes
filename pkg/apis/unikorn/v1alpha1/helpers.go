@@ -166,15 +166,11 @@ func CompareKubernetesCluster(a, b KubernetesCluster) int {
 }
 
 func CompareClusterManagerApplicationBundle(a, b ClusterManagerApplicationBundle) int {
-	// TODO: while this works now, it won't unless we parse and compare as
-	// a semantic version.
-	return strings.Compare(*a.Spec.Version, *b.Spec.Version)
+	return a.Spec.Version.Compare(&b.Spec.Version)
 }
 
 func CompareKubernetesClusterApplicationBundle(a, b KubernetesClusterApplicationBundle) int {
-	// TODO: while this works now, it won't unless we parse and compare as
-	// a semantic version.
-	return strings.Compare(*a.Spec.Version, *b.Spec.Version)
+	return a.Spec.Version.Compare(&b.Spec.Version)
 }
 
 // Get retrieves the named bundle.
