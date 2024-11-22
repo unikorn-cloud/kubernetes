@@ -47,7 +47,7 @@ func New(getApplication application.GetterFunc, options *kubernetesprovisioners.
 		options: options,
 	}
 
-	return application.New(getApplication).WithGenerator(provisioner).InNamespace("ocp-system")
+	return application.New(getApplication).WithGenerator(provisioner)
 }
 
 // Ensure the Provisioner interface is implemented.

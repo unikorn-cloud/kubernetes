@@ -24,6 +24,7 @@ spec:
     repo: https://charts.jetstack.io
     chart: cert-manager
     release: cert-manager
+    namespace: cert-manager
     createNamespace: true
     parameters:
     - name: installCRDs
@@ -108,6 +109,7 @@ spec:
   - version: 1.16.0
     repo: https://helm.cilium.io
     chart: cilium
+    namespace: kube-system
     parameters:
     - name: hubble.relay.enabled
       value: 'true'
@@ -167,6 +169,7 @@ spec:
   - version: 2.31.1
     repo: https://kubernetes.github.io/cloud-provider-openstack
     chart: openstack-cloud-controller-manager
+    namespace: ocp-system
     createNamespace: true
     interface: 1.0.0
 ---
@@ -192,6 +195,7 @@ spec:
   - version: 2.31.1
     repo: https://kubernetes.github.io/cloud-provider-openstack
     chart: openstack-cinder-csi
+    namespace: ocp-system
     createNamespace: true
     interface: 1.0.0
     parameters:
@@ -224,6 +228,7 @@ spec:
   - version: 3.12.1
     repo: https://kubernetes-sigs.github.io/metrics-server
     chart: metrics-server
+    namespace: kube-system
     interface: 1.0.0
     parameters:
     - name: args[0]
@@ -249,6 +254,7 @@ spec:
   - version: v23.6.1
     repo: https://helm.ngc.nvidia.com/nvidia
     chart: gpu-operator
+    namespace: kube-system
     parameters:
     - name: validator.plugin.env[0].name
       value: "WITH_WORKLOAD"
@@ -258,6 +264,7 @@ spec:
   - version: v23.9.1
     repo: https://helm.ngc.nvidia.com/nvidia
     chart: gpu-operator
+    namespace: kube-system
     parameters:
     - name: validator.plugin.env[0].name
       value: "WITH_WORKLOAD"
@@ -291,6 +298,7 @@ spec:
   - version: 0.13.0
     repo: https://rocm.github.io/k8s-device-plugin
     chart: amd-gpu
+    namespace: kube-system
     parameters:
     - name: nfd.enabled
       value: 'true'

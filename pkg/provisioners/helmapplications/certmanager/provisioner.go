@@ -21,14 +21,7 @@ import (
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 )
 
-const (
-	// applicationName is the unique name of the application.
-	applicationName = "cert-manager"
-)
-
 // New returns a new initialized provisioner object.
 func New(getApplication application.GetterFunc) *application.Provisioner {
-	// Cert manager doesn't need any special handling, ensure it's installed in the specified
-	// remote and in the cert-manager namespace.
-	return application.New(getApplication).InNamespace(applicationName)
+	return application.New(getApplication)
 }

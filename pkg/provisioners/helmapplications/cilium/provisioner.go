@@ -32,7 +32,7 @@ import (
 func New(getApplication application.GetterFunc) *application.Provisioner {
 	provisioner := &Provisioner{}
 
-	return application.New(getApplication).WithGenerator(provisioner).InNamespace("kube-system")
+	return application.New(getApplication).WithGenerator(provisioner)
 }
 
 type Provisioner struct{}
