@@ -33,7 +33,7 @@ var _ application.ValuesGenerator = &Provisioner{}
 func New(getApplication application.GetterFunc) *application.Provisioner {
 	p := &Provisioner{}
 
-	return application.New(getApplication).WithGenerator(p).InNamespace("kube-system")
+	return application.New(getApplication).WithGenerator(p)
 }
 
 // Generate implements the application.Generator interface.

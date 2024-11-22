@@ -24,17 +24,11 @@ import (
 	"github.com/unikorn-cloud/core/pkg/provisioners/util"
 )
 
-const (
-	// defaultNamespace is where to install the component.
-	// NOTE: this requires the namespace to exist first, so pick an existing one.
-	defaultNamespace = "kube-system"
-)
-
 // New returns a new initialized provisioner object.
 func New(getApplication application.GetterFunc) *application.Provisioner {
 	p := &Provisioner{}
 
-	return application.New(getApplication).WithGenerator(p).InNamespace(defaultNamespace)
+	return application.New(getApplication).WithGenerator(p)
 }
 
 type Provisioner struct{}
