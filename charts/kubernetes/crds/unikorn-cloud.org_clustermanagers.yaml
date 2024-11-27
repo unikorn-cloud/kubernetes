@@ -243,6 +243,22 @@ spec:
               pause:
                 description: Pause, if true, will inhibit reconciliation.
                 type: boolean
+              tags:
+                description: Tags are aribrary user data.
+                items:
+                  description: Tag is an arbirary key/value.
+                  properties:
+                    name:
+                      description: Name of the tag.
+                      type: string
+                    value:
+                      description: Value of the tag.
+                      type: string
+                  required:
+                  - name
+                  - value
+                  type: object
+                type: array
             required:
             - applicationBundle
             type: object

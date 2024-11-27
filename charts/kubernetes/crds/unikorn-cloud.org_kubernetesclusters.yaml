@@ -351,6 +351,22 @@ spec:
               regionId:
                 description: Region to provision the cluster in.
                 type: string
+              tags:
+                description: Tags are aribrary user data.
+                items:
+                  description: Tag is an arbirary key/value.
+                  properties:
+                    name:
+                      description: Name of the tag.
+                      type: string
+                    value:
+                      description: Value of the tag.
+                      type: string
+                  required:
+                  - name
+                  - value
+                  type: object
+                type: array
               version:
                 description: |-
                   Version is the Kubernetes version to install.  For performance

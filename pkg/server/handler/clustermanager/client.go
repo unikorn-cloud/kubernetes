@@ -106,7 +106,7 @@ func (c *Client) convert(in *unikornv1.ClusterManager) *openapi.ClusterManagerRe
 	}
 
 	out := &openapi.ClusterManagerRead{
-		Metadata: conversion.ProjectScopedResourceReadMetadata(in, provisioningStatus),
+		Metadata: conversion.ProjectScopedResourceReadMetadata(in, in.Spec.Tags, provisioningStatus),
 	}
 
 	return out
@@ -204,6 +204,7 @@ func (c *Client) generate(ctx context.Context, namespace *corev1.Namespace, orga
 	out := &unikornv1.ClusterManager{
 		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, namespace.Name, userinfo.Sub).WithOrganization(organizationID).WithProject(projectID).Get(),
 		Spec: unikornv1.ClusterManagerSpec{
+			Tags:                         conversion.GenerateTagList(request.Metadata.Tags),
 			ApplicationBundle:            &applicationBundle.Name,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
 		},

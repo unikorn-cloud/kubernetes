@@ -188,8 +188,8 @@ func (c *Client) GetKubeconfig(ctx context.Context, organizationID, projectID, c
 }
 
 func (c *Client) createIdentity(ctx context.Context, organizationID, projectID, regionID, clusterID string) (*regionapi.IdentityRead, error) {
-	tags := regionapi.TagList{
-		regionapi.Tag{
+	tags := coreapi.TagList{
+		coreapi.Tag{
 			Name:  constants.KubernetesClusterLabel,
 			Value: clusterID,
 		},
@@ -199,10 +199,10 @@ func (c *Client) createIdentity(ctx context.Context, organizationID, projectID, 
 		Metadata: coreapi.ResourceWriteMetadata{
 			Name:        "kubernetes-cluster-" + clusterID,
 			Description: ptr.To("Identity for Kubernetes cluster " + clusterID),
+			Tags:        &tags,
 		},
 		Spec: regionapi.IdentityWriteSpec{
 			RegionId: regionID,
-			Tags:     &tags,
 		},
 	}
 
@@ -218,9 +218,9 @@ func (c *Client) createIdentity(ctx context.Context, organizationID, projectID, 
 	return resp.JSON201, nil
 }
 
-func (c *Client) createPhysicalNetworkOpenstack(ctx context.Context, organizationID, projectID string, cluster *unikornv1.KubernetesCluster, identity *regionapi.IdentityRead) (*regionapi.PhysicalNetworkRead, error) {
-	tags := regionapi.TagList{
-		regionapi.Tag{
+func (c *Client) createPhysicalNetworkOpenstack(ctx context.Context, organizationID, projectID string, cluster *unikornv1.KubernetesCluster, identity *regionapi.IdentityRead) (*regionapi.NetworkRead, error) {
+	tags := coreapi.TagList{
+		coreapi.Tag{
 			Name:  constants.KubernetesClusterLabel,
 			Value: cluster.Name,
 		},
@@ -232,19 +232,19 @@ func (c *Client) createPhysicalNetworkOpenstack(ctx context.Context, organizatio
 		dnsNameservers[i] = ip.String()
 	}
 
-	request := regionapi.PhysicalNetworkWrite{
+	request := regionapi.NetworkWrite{
 		Metadata: coreapi.ResourceWriteMetadata{
 			Name:        "kubernetes-cluster-" + cluster.Name,
 			Description: ptr.To("Physical network for cluster " + cluster.Name),
+			Tags:        &tags,
 		},
-		Spec: &regionapi.PhysicalNetworkWriteSpec{
-			Tags:           &tags,
+		Spec: &regionapi.NetworkWriteSpec{
 			Prefix:         cluster.Spec.Network.NodeNetwork.String(),
 			DnsNameservers: dnsNameservers,
 		},
 	}
 
-	resp, err := c.region.PostApiV1OrganizationsOrganizationIDProjectsProjectIDIdentitiesIdentityIDPhysicalnetworksWithResponse(ctx, organizationID, projectID, identity.Metadata.Id, request)
+	resp, err := c.region.PostApiV1OrganizationsOrganizationIDProjectsProjectIDIdentitiesIdentityIDNetworksWithResponse(ctx, organizationID, projectID, identity.Metadata.Id, request)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("unable to physical network").WithError(err)
 	}

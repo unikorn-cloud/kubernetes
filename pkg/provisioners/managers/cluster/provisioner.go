@@ -450,16 +450,16 @@ func (p *Provisioner) deleteIdentity(ctx context.Context, client regionapi.Clien
 	return nil
 }
 
-func (p *Provisioner) getPhysicalNetwork(ctx context.Context, client regionapi.ClientWithResponsesInterface) (*regionapi.PhysicalNetworkRead, error) {
+func (p *Provisioner) getNetwork(ctx context.Context, client regionapi.ClientWithResponsesInterface) (*regionapi.NetworkRead, error) {
 	log := log.FromContext(ctx)
 
-	physicalNetworkID, ok := p.cluster.Annotations[coreconstants.PhysicalNetworkAnnotation]
+	networkID, ok := p.cluster.Annotations[coreconstants.PhysicalNetworkAnnotation]
 	if !ok {
 		//nolint: nilnil
 		return nil, nil
 	}
 
-	response, err := client.GetApiV1OrganizationsOrganizationIDProjectsProjectIDIdentitiesIdentityIDPhysicalnetworksPhysicalNetworkIDWithResponse(ctx, p.cluster.Labels[coreconstants.OrganizationLabel], p.cluster.Labels[coreconstants.ProjectLabel], p.cluster.Annotations[coreconstants.IdentityAnnotation], physicalNetworkID)
+	response, err := client.GetApiV1OrganizationsOrganizationIDProjectsProjectIDIdentitiesIdentityIDNetworksNetworkIDWithResponse(ctx, p.cluster.Labels[coreconstants.OrganizationLabel], p.cluster.Labels[coreconstants.ProjectLabel], p.cluster.Annotations[coreconstants.IdentityAnnotation], networkID)
 	if err != nil {
 		return nil, err
 	}
@@ -529,15 +529,15 @@ func (p *Provisioner) identityOptions(ctx context.Context, client regionapi.Clie
 		Flavors:           flavors,
 	}
 
-	physicalNetwork, err := p.getPhysicalNetwork(ctx, client)
+	network, err := p.getNetwork(ctx, client)
 	if err != nil {
 		return nil, err
 	}
 
-	if physicalNetwork != nil {
+	if network != nil {
 		options.ProviderNetwork = &kubernetesprovisioners.ClusterOpenstackProviderOptions{
-			NetworkID: physicalNetwork.Spec.Openstack.NetworkId,
-			SubnetID:  physicalNetwork.Spec.Openstack.SubnetId,
+			NetworkID: network.Spec.Openstack.NetworkId,
+			SubnetID:  network.Spec.Openstack.SubnetId,
 		}
 	}
 
