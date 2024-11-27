@@ -146,7 +146,7 @@ func convert(in *unikornv1.KubernetesCluster) *openapi.KubernetesClusterRead {
 	}
 
 	out := &openapi.KubernetesClusterRead{
-		Metadata: conversion.ProjectScopedResourceReadMetadata(in, provisioningStatus),
+		Metadata: conversion.ProjectScopedResourceReadMetadata(in, in.Spec.Tags, provisioningStatus),
 		Spec: openapi.KubernetesClusterSpec{
 			RegionId:         in.Spec.RegionID,
 			ClusterManagerId: &in.Spec.ClusterManagerID,
@@ -435,6 +435,7 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 	cluster := &unikornv1.KubernetesCluster{
 		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, g.namespace, userinfo.Sub).WithOrganization(g.organizationID).WithProject(g.projectID).Get(),
 		Spec: unikornv1.KubernetesClusterSpec{
+			Tags:             conversion.GenerateTagList(request.Metadata.Tags),
 			RegionID:         request.Spec.RegionId,
 			ClusterManagerID: *request.Spec.ClusterManagerId,
 			Version: &unikornv1core.SemanticVersion{

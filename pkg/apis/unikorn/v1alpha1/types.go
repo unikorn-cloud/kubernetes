@@ -53,6 +53,8 @@ type ClusterManager struct {
 type ClusterManagerSpec struct {
 	// Pause, if true, will inhibit reconciliation.
 	Pause bool `json:"pause,omitempty"`
+	// Tags are aribrary user data.
+	Tags unikornv1core.TagList `json:"tags,omitempty"`
 	// ApplicationBundle defines the applications used to create the cluster manager.
 	// Change this to a new bundle to start an upgrade.
 	ApplicationBundle *string `json:"applicationBundle"`
@@ -140,6 +142,8 @@ type KubernetesCluster struct {
 type KubernetesClusterSpec struct {
 	// Pause, if true, will inhibit reconciliation.
 	Pause bool `json:"pause,omitempty"`
+	// Tags are aribrary user data.
+	Tags unikornv1core.TagList `json:"tags,omitempty"`
 	// Region to provision the cluster in.
 	RegionID string `json:"regionId"`
 	// ClusterManager that provides lifecycle management for the cluster.
