@@ -22,3 +22,13 @@ spec:
       kind: HelmApplication
       name: {{ include "resource.id" "cluster-api" }}
       version: v0.2.1
+  - name: kamaji
+    reference:
+      kind: HelmApplication
+      name: {{ include "resource.id" "kamaji" }}
+      version: 1.0.0
+  - name: kamaji-control-plane-provider
+    reference:
+      kind: HelmApplication
+      name: {{ include "resource.id" "kamaji-control-plane-provider" }}
+      version: v0.13.0

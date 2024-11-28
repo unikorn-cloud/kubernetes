@@ -59,8 +59,8 @@ type Options struct {
 
 func (o *Options) AddFlags(f *pflag.FlagSet) {
 	_, nodeNetwork, _ := net.ParseCIDR("192.168.0.0/24")
-	_, serviceNetwork, _ := net.ParseCIDR("172.16.0.0/12")
-	_, podNetwork, _ := net.ParseCIDR("10.0.0.0/8")
+	_, serviceNetwork, _ := net.ParseCIDR("10.43.0.0/16")
+	_, podNetwork, _ := net.ParseCIDR("10.42.0.0/16")
 
 	dnsNameservers := []net.IP{net.ParseIP("8.8.8.8")}
 

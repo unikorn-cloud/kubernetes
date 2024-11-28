@@ -32,7 +32,9 @@ import (
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/certmanager"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/clusterapi"
+	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/kamaji"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/vcluster"
+	kamajiControlPlaneProvider "github.com/unikorn-cloud/kubernetes/pkg/provisioners/kamajicontrolplaneprovider"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -120,6 +122,14 @@ func (a *ApplicationReferenceGetter) clusterAPI(ctx context.Context) (*unikornv1
 	return a.getApplication(ctx, "cluster-api")
 }
 
+func (a *ApplicationReferenceGetter) kamaji(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
+	return a.getApplication(ctx, "kamaji")
+}
+
+func (a *ApplicationReferenceGetter) kamajiControlPlaneProvider(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
+	return a.getApplication(ctx, "kamaji-control-plane-provider")
+}
+
 // Provisioner encapsulates control plane provisioning.
 type Provisioner struct {
 	provisioners.Metadata
@@ -152,6 +162,8 @@ func (p *Provisioner) getClusterManagerProvisioner() provisioners.Provisioner {
 	clusterAPIProvisioner := serial.New("cluster-api",
 		certmanager.New(apps.certManager),
 		clusterapi.New(apps.clusterAPI),
+		kamaji.New(apps.kamaji),
+		kamajiControlPlaneProvider.New(apps.kamajiControlPlaneProvider),
 	)
 
 	// Provision the vitual cluster, setup the remote cluster then
