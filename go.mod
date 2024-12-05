@@ -14,7 +14,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/unikorn-cloud/core v0.1.86
 	github.com/unikorn-cloud/identity v0.2.45
-	github.com/unikorn-cloud/region v0.1.47-rc1
+	github.com/unikorn-cloud/region v0.1.47-rc3
 	go.opentelemetry.io/otel v1.31.0
 	go.opentelemetry.io/otel/sdk v1.31.0
 	gopkg.in/ini.v1 v1.67.0
