@@ -78,9 +78,10 @@ spec:
   tags:
   - infrastructure
   versions:
-  - version: v0.2.1
-    repo: https://unikorn-cloud.github.io/helm-cluster-api
-    chart: cluster-api
+  - version: v0.3.0
+    repo: https://github.com/unikorn-cloud/helm-cluster-api.git
+    branch: kamaji
+    path: "charts/cluster-api/"
     interface: 1.0.0
     parameters:
     - name: cluster-api-bootstrap-kubeadm.kubeadm_bootstrap_token_ttl
@@ -106,17 +107,17 @@ spec:
   - networking
   - security
   versions:
-  - version: 1.16.0
+  - version: 1.16.4
     repo: https://helm.cilium.io
     chart: cilium
     namespace: kube-system
     parameters:
     - name: hubble.relay.enabled
-      value: 'true'
-    - name: hubble.ui.enabled
-      value: 'true'
-    - name: operator.setNodeTaints
       value: 'false'
+    - name: hubble.ui.enabled
+      value: 'false'
+    - name: operator.setNodeTaints
+      value: 'true'
     - name: envoy.enabled
       value: 'false'
     interface: 1.0.0
