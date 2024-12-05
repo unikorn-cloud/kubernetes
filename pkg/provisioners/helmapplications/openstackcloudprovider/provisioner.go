@@ -151,10 +151,15 @@ func (p *Provisioner) Values(ctx context.Context, _ *string) (interface{}, error
 	tolerations := util.ControlPlaneTolerations()
 	tolerations = append(tolerations, util.ControlPlaneInitTolerations()...)
 	// Required for Kamaji, see https://github.com/clastix/cluster-api-control-plane-provider-kamaji/blob/master/docs/providers-openstack.md
-	tolerations = append(tolerations, map[string]interface{}{
-		"key":    "node.cluster.x-k8s.io/uninitialized",
-		"effect": "NoSchedule",
-	})
+	tolerations = append(tolerations,
+		map[string]interface{}{
+			"key":    "node.cluster.x-k8s.io/uninitialized",
+			"effect": "NoSchedule",
+		},
+		map[string]interface{}{
+			"key":    "node.kubernetes.io/not-ready",
+			"effect": "NoSchedule",
+		})
 
 	values := map[string]interface{}{
 		"commonAnnotations": map[string]interface{}{

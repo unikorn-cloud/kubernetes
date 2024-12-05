@@ -24,8 +24,6 @@ import (
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	coreerrors "github.com/unikorn-cloud/core/pkg/errors"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
-	"github.com/unikorn-cloud/core/pkg/provisioners/util"
-	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 )
 
 // New returns a new initialized provisioner object.
@@ -41,19 +39,6 @@ type Provisioner struct{}
 var _ application.ValuesGenerator = &Provisioner{}
 
 func (p *Provisioner) Values(ctx context.Context, _ *string) (interface{}, error) {
-	//nolint:forcetypeassert
-	cluster := application.FromContext(ctx).(*unikornv1.KubernetesCluster)
-
-	// Scale to zero support.
-	operatorValues := map[string]interface{}{
-		"nodeSelector": util.ControlPlaneNodeSelector(),
-	}
-
-	// If the cluster CP has one node, then this will fail to deploy
-	// as cilium has 2 as the default, we need to work some magic here.
-	if *cluster.Spec.ControlPlane.Replicas == 1 {
-		operatorValues["replicas"] = cluster.Spec.ControlPlane.Replicas
-	}
 	// We run in sans-kube-proxy mode, as it's faster and doesn't involve
 	// iptables ;-), for that we need to specify the Kubernetes API endpoint
 	// as per https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free.
@@ -70,20 +55,9 @@ func (p *Provisioner) Values(ctx context.Context, _ *string) (interface{}, error
 	}
 
 	values := map[string]interface{}{
-		"operator":             operatorValues,
 		"kubeProxyReplacement": "true",
 		"k8sServiceHost":       clusterContext.Host,
 		"k8sServicePort":       clusterContext.Port,
-		"hubble": map[string]interface{}{
-			"relay": map[string]interface{}{
-				"nodeSelector": util.ControlPlaneNodeSelector(),
-				"tolerations":  util.ControlPlaneTolerations(),
-			},
-			"ui": map[string]interface{}{
-				"nodeSelector": util.ControlPlaneNodeSelector(),
-				"tolerations":  util.ControlPlaneTolerations(),
-			},
-		},
 	}
 
 	return values, nil

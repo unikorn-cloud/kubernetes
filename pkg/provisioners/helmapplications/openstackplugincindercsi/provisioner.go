@@ -122,15 +122,6 @@ func (p *Provisioner) Values(ctx context.Context, version *string) (interface{},
 		"commonAnnotations": map[string]interface{}{
 			constants.ConfigurationHashAnnotation: cloudConfigHash,
 		},
-		// Allow scale to zero.
-		"csi": map[string]interface{}{
-			"plugin": map[string]interface{}{
-				"controllerPlugin": map[string]interface{}{
-					"nodeSelector": util.ControlPlaneNodeSelector(),
-					"tolerations":  util.ControlPlaneTolerations(),
-				},
-			},
-		},
 		"storageClass": map[string]interface{}{
 			"enabled": false,
 			"custom":  strings.Join(yamls, "---\n"),
