@@ -65,7 +65,7 @@ func Images(ctx context.Context, client regionapi.ClientWithResponsesInterface, 
 	images := *resp.JSON200
 
 	images = slices.DeleteFunc(images, func(x regionapi.Image) bool {
-		return x.Spec.SoftwareVersions == nil || x.Spec.SoftwareVersions.Kubernetes == nil
+		return x.Spec.SoftwareVersions == nil || (*x.Spec.SoftwareVersions)["kubernetes"] == ""
 	})
 
 	return images, nil

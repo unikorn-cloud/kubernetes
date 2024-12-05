@@ -241,7 +241,7 @@ func (g *generator) defaultImage(ctx context.Context, request *openapi.Kubernete
 
 	// Only get the version asked for.
 	images = slices.DeleteFunc(images, func(x regionapi.Image) bool {
-		return *x.Spec.SoftwareVersions.Kubernetes != version
+		return (*x.Spec.SoftwareVersions)["kubernetes"] != version
 	})
 
 	if len(images) == 0 {
