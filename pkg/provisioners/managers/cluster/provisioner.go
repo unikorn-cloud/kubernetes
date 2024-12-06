@@ -340,7 +340,7 @@ func (p *Provisioner) getProvisioner(ctx context.Context, options *kubernetespro
 		serial.New("kubernetes cluster",
 			concurrent.New("kubernetes cluster",
 				clusterProvisioner,
-				remoteCluster.ProvisionOn(bootstrapProvisioner, remotecluster.BackgroundDeletion),
+				remoteCluster.ProvisionOn(bootstrapProvisioner),
 			),
 			clusterAutoscalerProvisioner,
 			remoteCluster.ProvisionOn(addonsProvisioner, remotecluster.BackgroundDeletion),
