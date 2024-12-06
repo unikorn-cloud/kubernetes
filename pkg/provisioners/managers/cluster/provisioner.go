@@ -279,7 +279,7 @@ func (p *Provisioner) getProvisionerOptions(options *kubernetesprovisioners.Clus
 	return provisionerOptions, nil
 }
 
-func (p *Provisioner) getProvisioner(ctx context.Context, options *kubernetesprovisioners.ClusterOpenstackOptions) (provisioners.Provisioner, error) {
+func (p *Provisioner) getProvisioner(ctx context.Context, options *kubernetesprovisioners.ClusterOpenstackOptions, provision bool) (provisioners.Provisioner, error) {
 	apps := newApplicationReferenceGetter(&p.cluster)
 
 	provisionerOptions, err := p.getProvisionerOptions(options)
@@ -336,12 +336,26 @@ func (p *Provisioner) getProvisioner(ctx context.Context, options *kubernetespro
 	// come up but never reach healthy until the CNI and cloud controller manager
 	// are added.  Follow that up by the autoscaler as some addons may require worker
 	// nodes to schedule onto.
+	// When deprovisioning, we need to tear down the cloud controller manager before
+	// the cluster vanishes as there are some required cleanup items e.g. free up
+	// load balancers and floaing IPs.
+	var kubernetesClusterProvisioner provisioners.Provisioner
+
+	if provision {
+		kubernetesClusterProvisioner = concurrent.New("kubernetes cluster",
+			clusterProvisioner,
+			remoteCluster.ProvisionOn(bootstrapProvisioner),
+		)
+	} else {
+		kubernetesClusterProvisioner = serial.New("kubernetes cluster",
+			clusterProvisioner,
+			remoteCluster.ProvisionOn(bootstrapProvisioner),
+		)
+	}
+
 	provisioner := remoteClusterManager.ProvisionOn(
 		serial.New("kubernetes cluster",
-			concurrent.New("kubernetes cluster",
-				clusterProvisioner,
-				remoteCluster.ProvisionOn(bootstrapProvisioner, remotecluster.BackgroundDeletion),
-			),
+			kubernetesClusterProvisioner,
 			clusterAutoscalerProvisioner,
 			remoteCluster.ProvisionOn(addonsProvisioner, remotecluster.BackgroundDeletion),
 		),
@@ -565,7 +579,7 @@ func (p *Provisioner) Provision(ctx context.Context) error {
 		return err
 	}
 
-	provisioner, err := p.getProvisioner(ctx, options)
+	provisioner, err := p.getProvisioner(ctx, options, true)
 	if err != nil {
 		return err
 	}
@@ -579,7 +593,7 @@ func (p *Provisioner) Provision(ctx context.Context) error {
 
 // Deprovision implements the Provision interface.
 func (p *Provisioner) Deprovision(ctx context.Context) error {
-	provisioner, err := p.getProvisioner(ctx, nil)
+	provisioner, err := p.getProvisioner(ctx, nil, false)
 	if err != nil {
 		if errors.Is(err, ErrClusterManager) {
 			return nil

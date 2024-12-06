@@ -23,15 +23,21 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/gophercloud/utils/openstack/clientconfig"
 	ini "gopkg.in/ini.v1"
 
+	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	"github.com/unikorn-cloud/core/pkg/constants"
+	"github.com/unikorn-cloud/core/pkg/provisioners"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 	"github.com/unikorn-cloud/core/pkg/provisioners/util"
 	kubernetesprovisioners "github.com/unikorn-cloud/kubernetes/pkg/provisioners"
 
+	corev1 "k8s.io/api/core/v1"
+
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/yaml"
 )
 
@@ -45,6 +51,8 @@ var (
 type Provisioner struct {
 	options *kubernetesprovisioners.ClusterOpenstackOptions
 }
+
+var _ application.PreDeprovisionHook = &Provisioner{}
 
 // New returns a new initialized provisioner object.
 func New(getApplication application.GetterFunc, options *kubernetesprovisioners.ClusterOpenstackOptions) *application.Provisioner {
@@ -165,4 +173,42 @@ func (p *Provisioner) Values(ctx context.Context, _ *string) (interface{}, error
 	}
 
 	return values, nil
+}
+
+// PreDeprovision allows us to delete all load balancer resources that are in
+// existence and free them, and their IP addresses up, as some cloud platforms
+// will not do this for themselves.
+func (p *Provisioner) PreDeprovision(ctx context.Context) error {
+	log := log.FromContext(ctx)
+
+	clusterContext, err := coreclient.ClusterFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	client := clusterContext.Client
+
+	var services corev1.ServiceList
+
+	if err := client.List(ctx, &services); err != nil {
+		return err
+	}
+
+	services.Items = slices.DeleteFunc(services.Items, func(service corev1.Service) bool {
+		return service.Spec.Type != corev1.ServiceTypeLoadBalancer
+	})
+
+	log.Info("freeing load balancer services before removing cloud controller", "remanaing", len(services.Items))
+
+	if len(services.Items) == 0 {
+		return nil
+	}
+
+	for i := range services.Items {
+		if err := client.Delete(ctx, &services.Items[i]); err != nil {
+			return err
+		}
+	}
+
+	return provisioners.ErrYield
 }
