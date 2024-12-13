@@ -49,7 +49,7 @@ spec:
   - security
   - infrastructure
   versions:
-  - version: 0.20.1
+  - version: 0.21.1
     repo: https://charts.loft.sh
     chart: vcluster
     release: vcluster
