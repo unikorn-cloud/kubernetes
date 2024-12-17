@@ -54,6 +54,15 @@ spec:
       value: 'true'
     - name: controlPlane.statefulSet.persistence.volumeClaim.retentionPolicy
       value: Delete
+  - version: 0.19.5
+    repo: https://charts.loft.sh
+    chart: vcluster
+    release: vcluster
+    parameters:
+    - name: hostpathMapper.enabled
+      value: 'true'
+    - name: autoDeletePersistentVolumeClaims
+      value: 'true'
 ---
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: HelmApplication
