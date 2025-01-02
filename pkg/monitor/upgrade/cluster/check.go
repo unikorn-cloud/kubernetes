@@ -42,23 +42,18 @@ func New(client client.Client) *Checker {
 	}
 }
 
-func (c *Checker) upgradeResource(ctx context.Context, resource *unikornv1.KubernetesCluster, bundles *unikornv1.KubernetesClusterApplicationBundleList, target *unikornv1.KubernetesClusterApplicationBundle) error {
+func (c *Checker) upgradeResource(ctx context.Context, resource *unikornv1.KubernetesCluster, current, target *unikornv1.KubernetesClusterApplicationBundle) error {
 	logger := log.FromContext(ctx)
 
-	bundle := bundles.Get(*resource.Spec.ApplicationBundle)
-	if bundle == nil {
-		return fmt.Errorf("%w: %s", errors.ErrMissingBundle, *resource.Spec.ApplicationBundle)
-	}
-
 	// If the current bundle is in preview, then don't offer to upgrade.
-	if bundle.Spec.Preview != nil && *bundle.Spec.Preview {
+	if current.Spec.Preview != nil && *current.Spec.Preview {
 		logger.Info("bundle in preview, ignoring")
 
 		return nil
 	}
 
 	// If the current bundle is the best option already, we are done.
-	if bundle.Name == target.Name {
+	if current.Name == target.Name {
 		logger.Info("bundle already latest, ignoring")
 
 		return nil
@@ -67,7 +62,7 @@ func (c *Checker) upgradeResource(ctx context.Context, resource *unikornv1.Kuber
 	upgradable := util.UpgradeableResource(resource)
 
 	if resource.Spec.ApplicationBundleAutoUpgrade == nil {
-		if bundle.Spec.EndOfLife == nil || time.Now().Before(bundle.Spec.EndOfLife.Time) {
+		if current.Spec.EndOfLife == nil || time.Now().Before(current.Spec.EndOfLife.Time) {
 			logger.Info("resource auto-upgrade disabled, ignoring")
 
 			return nil
@@ -88,7 +83,7 @@ func (c *Checker) upgradeResource(ctx context.Context, resource *unikornv1.Kuber
 		return nil
 	}
 
-	logger.Info("bundle upgrading", "from", bundle.Spec.Version, "to", target.Spec.Version)
+	logger.Info("bundle upgrading")
 
 	resource.Spec.ApplicationBundle = &target.Name
 
@@ -110,18 +105,6 @@ func (c *Checker) Check(ctx context.Context) error {
 		return err
 	}
 
-	// Extract the potential upgrade target bundles, these are sorted by version, so
-	// the newest is on the top, we shall see why later...
-	bundles := allBundles.Upgradable()
-	if len(bundles.Items) == 0 {
-		return errors.ErrNoBundles
-	}
-
-	slices.SortStableFunc(bundles.Items, unikornv1.CompareKubernetesClusterApplicationBundle)
-
-	// Pick the most recent as our upgrade target.
-	upgradeTarget := &bundles.Items[len(bundles.Items)-1]
-
 	resources := &unikornv1.KubernetesClusterList{}
 
 	if err := c.client.List(ctx, resources); err != nil {
@@ -131,13 +114,44 @@ func (c *Checker) Check(ctx context.Context) error {
 	for i := range resources.Items {
 		resource := &resources.Items[i]
 
+		// What we need to do is respect semantic versioning, e.g. a major is a breaking
+		// change therefore auto-upgrade is not allowed.
+		currentBundle := allBundles.Get(*resource.Spec.ApplicationBundle)
+		if currentBundle == nil {
+			return fmt.Errorf("%w: %s", errors.ErrMissingBundle, *resource.Spec.ApplicationBundle)
+		}
+
+		discard := func(bundle unikornv1.KubernetesClusterApplicationBundle) bool {
+			return bundle.Spec.Version.Version.Major() != currentBundle.Spec.Version.Major()
+		}
+
+		allowedBundles := &unikornv1.KubernetesClusterApplicationBundleList{
+			Items: slices.Clone(allBundles.Items),
+		}
+
+		allowedBundles.Items = slices.DeleteFunc(allowedBundles.Items, discard)
+
+		// Extract the potential upgrade target bundles, these are sorted by version, so
+		// the newest is on the top, we shall see why later...
+		upgradeTagetBundles := allowedBundles.Upgradable()
+		if len(upgradeTagetBundles.Items) == 0 {
+			return errors.ErrNoBundles
+		}
+
+		slices.SortStableFunc(upgradeTagetBundles.Items, unikornv1.CompareKubernetesClusterApplicationBundle)
+
+		// Pick the most recent as our upgrade target.
+		upgradeTarget := &upgradeTagetBundles.Items[len(upgradeTagetBundles.Items)-1]
+
 		logger := logger.WithValues(
 			"organization", resource.Labels[constants.OrganizationLabel],
 			"project", resource.Labels[constants.ProjectLabel],
 			"cluster", resource.Name,
+			"from", currentBundle.Spec.Version,
+			"to", upgradeTarget.Spec.Version,
 		)
 
-		if err := c.upgradeResource(log.IntoContext(ctx, logger), resource, allBundles, upgradeTarget); err != nil {
+		if err := c.upgradeResource(log.IntoContext(ctx, logger), resource, currentBundle, upgradeTarget); err != nil {
 			return err
 		}
 	}
