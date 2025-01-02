@@ -69,7 +69,7 @@ CONTROLLER_TOOLS_VERSION=v0.16.3
 
 # Defines the version of code generator tools to use.
 # This should be kept in sync with the Kubenetes library versions defined in go.mod.
-CODEGEN_VERSION=v0.27.3
+CODEGEN_VERSION=v0.32.0
 
 OPENAPI_CODEGEN_VERSION=v2.4.1
 OPENAPI_CODEGEN_FLAGS=-package openapi -config pkg/openapi/config.yaml
@@ -84,13 +84,10 @@ MOCKGEN_VERSION=v0.3.0
 
 # This is the base directory to generate kubernetes API primitives from e.g.
 # clients and CRDs.
-GENAPIBASE = github.com/unikorn-cloud/kubernetes/pkg/apis
-
-# This is the list of APIs to generate clients for.
-GENAPIS = $(GENAPIBASE)/unikorn/v1alpha1
+GENAPIBASE = github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1
 
 # These are generic arguments that need to be passed to client generation.
-GENARGS = --go-header-file hack/boilerplate.go.txt --output-base ../../..
+GENARGS = --go-header-file hack/boilerplate.go.txt
 
 # This defines how docker containers are tagged.
 DOCKER_ORG = ghcr.io/unikorn-cloud
@@ -157,7 +154,7 @@ $(CRDDIR): $(APISRC)
 # Generate a clientset to interact with our custom resources.
 $(GENDIR): $(APISRC)
 	@go install k8s.io/code-generator/cmd/deepcopy-gen@$(CODEGEN_VERSION)
-	$(GOBIN)/deepcopy-gen --input-dirs $(GENAPIS) -O zz_generated.deepcopy --bounding-dirs $(GENAPIBASE) $(GENARGS)
+	$(GOBIN)/deepcopy-gen --output-file zz_generated.deepcopy.go $(GENARGS) $(GENAPIBASE)
 	@touch $@
 
 # Generate the server schema, types and router boilerplate.
