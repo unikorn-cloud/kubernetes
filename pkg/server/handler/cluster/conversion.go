@@ -422,7 +422,7 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 		gpuOperator = g.existing.Spec.Features.GPUOperator
 	}
 
-	userinfo, err := authorization.UserinfoFromContext(ctx)
+	info, err := authorization.FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -433,7 +433,7 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 	}
 
 	cluster := &unikornv1.KubernetesCluster{
-		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, g.namespace, userinfo.Sub).WithOrganization(g.organizationID).WithProject(g.projectID).Get(),
+		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, g.namespace, info.Userinfo.Sub).WithOrganization(g.organizationID).WithProject(g.projectID).Get(),
 		Spec: unikornv1.KubernetesClusterSpec{
 			Tags:             conversion.GenerateTagList(request.Metadata.Tags),
 			RegionID:         request.Spec.RegionId,
