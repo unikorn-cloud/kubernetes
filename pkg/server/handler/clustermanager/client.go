@@ -196,13 +196,13 @@ func (c *Client) generate(ctx context.Context, namespace *corev1.Namespace, orga
 		return nil, err
 	}
 
-	userinfo, err := authorization.UserinfoFromContext(ctx)
+	info, err := authorization.FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	out := &unikornv1.ClusterManager{
-		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, namespace.Name, userinfo.Sub).WithOrganization(organizationID).WithProject(projectID).Get(),
+		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, namespace.Name, info.Userinfo.Sub).WithOrganization(organizationID).WithProject(projectID).Get(),
 		Spec: unikornv1.ClusterManagerSpec{
 			Tags:                         conversion.GenerateTagList(request.Metadata.Tags),
 			ApplicationBundle:            &applicationBundle.Name,
