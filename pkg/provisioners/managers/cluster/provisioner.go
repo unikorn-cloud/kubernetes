@@ -567,7 +567,7 @@ func (p *Provisioner) Provision(ctx context.Context) error {
 	}
 
 	// Likewise identity creation is provisioned asynchronously as it too takes a
-	// long time, epspectially if a physical network is being provisioned and that
+	// long time, especially if a physical network is being provisioned and that
 	// needs to go out and talk to swiches.
 	clientContext, client, err := p.getRegionClient(ctx, "provision")
 	if err != nil {

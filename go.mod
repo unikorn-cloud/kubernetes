@@ -12,8 +12,8 @@ require (
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/prometheus/client_golang v1.20.5
 	github.com/spf13/pflag v1.0.5
-	github.com/unikorn-cloud/core v0.1.89-rc3
-	github.com/unikorn-cloud/identity v0.2.53-rc2
+	github.com/unikorn-cloud/core v0.1.89-rc5
+	github.com/unikorn-cloud/identity v0.2.53-rc4
 	github.com/unikorn-cloud/region v0.1.48-rc1
 	go.opentelemetry.io/otel v1.34.0
 	go.opentelemetry.io/otel/sdk v1.34.0

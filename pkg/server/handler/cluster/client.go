@@ -19,6 +19,8 @@ package cluster
 
 import (
 	"context"
+	goerrors "errors"
+	"fmt"
 	"net"
 	"net/http"
 	"slices"
@@ -30,22 +32,29 @@ import (
 	coreapi "github.com/unikorn-cloud/core/pkg/openapi"
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
+	identityapi "github.com/unikorn-cloud/identity/pkg/openapi"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/clusteropenstack"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/vcluster"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/clustermanager"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/common"
+	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/region"
 	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
 
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/utils/ptr"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+var (
+	ErrConsistency = goerrors.New("consistency error")
+
+	ErrAPI = goerrors.New("remote api error")
 )
 
 type Options struct {
@@ -83,16 +92,20 @@ type Client struct {
 	// options control various defaults and the like.
 	options *Options
 
+	// identity is a client to access the identity service.
+	identity identityapi.ClientWithResponsesInterface
+
 	// region is a client to access regions.
 	region regionapi.ClientWithResponsesInterface
 }
 
 // NewClient returns a new client with required parameters.
-func NewClient(client client.Client, namespace string, options *Options, region regionapi.ClientWithResponsesInterface) *Client {
+func NewClient(client client.Client, namespace string, options *Options, identity identityapi.ClientWithResponsesInterface, region regionapi.ClientWithResponsesInterface) *Client {
 	return &Client{
 		client:    client,
 		namespace: namespace,
 		options:   options,
+		identity:  identity,
 		region:    region,
 	}
 }
@@ -185,6 +198,129 @@ func (c *Client) GetKubeconfig(ctx context.Context, organizationID, projectID, c
 	}
 
 	return secret.Data["value"], nil
+}
+
+func (c *Client) generateAllocations(ctx context.Context, organizationID string, resource *unikornv1.KubernetesCluster) (*identityapi.AllocationWrite, error) {
+	flavors, err := region.Flavors(ctx, c.region, organizationID, resource.Spec.RegionID)
+	if err != nil {
+		return nil, err
+	}
+
+	var serversCommitted int
+
+	var serversReserved int
+
+	var gpusCommitted int
+
+	var gpusReserved int
+
+	// NOTE: the control plane is "free".
+	for _, pool := range resource.Spec.WorkloadPools.Pools {
+		serversMinimum := *pool.Replicas
+		serversMaximum := *pool.Replicas
+
+		if pool.Autoscaling != nil {
+			serversMinimum = *pool.Autoscaling.MinimumReplicas
+			serversMaximum = *pool.Autoscaling.MaximumReplicas
+		}
+
+		serversCommitted += serversMinimum
+		serversReserved += serversMaximum - serversMinimum
+
+		flavorByID := func(f regionapi.Flavor) bool {
+			return f.Metadata.Id == *pool.FlavorID
+		}
+
+		index := slices.IndexFunc(flavors, flavorByID)
+		if index < 0 {
+			return nil, fmt.Errorf("%w: flavorID does not exist", ErrConsistency)
+		}
+
+		flavor := flavors[index]
+
+		if flavor.Spec.Gpu != nil {
+			gpusCommitted += serversMinimum * flavor.Spec.Gpu.PhysicalCount
+			gpusReserved += serversMaximum * flavor.Spec.Gpu.PhysicalCount
+		}
+	}
+
+	request := &identityapi.AllocationWrite{
+		Metadata: coreapi.ResourceWriteMetadata{
+			Name: "unused",
+		},
+		Spec: identityapi.AllocationSpec{
+			Kind: "kubernetescluster",
+			Id:   resource.Name,
+			Allocations: identityapi.QuotaListDetailed{
+				{
+					Kind:      "clusters",
+					Committed: 1,
+					Reserved:  0,
+				},
+				{
+					Kind:      "servers",
+					Committed: serversCommitted,
+					Reserved:  serversReserved,
+				},
+				{
+					Kind:      "gpus",
+					Committed: gpusCommitted,
+					Reserved:  gpusReserved,
+				},
+			},
+		},
+	}
+
+	return request, nil
+}
+
+func (c *Client) createAllocation(ctx context.Context, organizationID, projectID string, resource *unikornv1.KubernetesCluster) (*identityapi.AllocationRead, error) {
+	allocations, err := c.generateAllocations(ctx, organizationID, resource)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.identity.PostApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsWithResponse(ctx, organizationID, projectID, *allocations)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode() != http.StatusCreated {
+		return nil, fmt.Errorf("%w: unexpected status code %d", ErrAPI, resp.StatusCode())
+	}
+
+	return resp.JSON201, nil
+}
+
+func (c *Client) updateAllocation(ctx context.Context, organizationID, projectID string, resource *unikornv1.KubernetesCluster) error {
+	allocations, err := c.generateAllocations(ctx, organizationID, resource)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.identity.PutApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsAllocationIDWithResponse(ctx, organizationID, projectID, resource.Annotations[constants.AllocationAnnotation], *allocations)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return fmt.Errorf("%w: unexpected status code %d", ErrAPI, resp.StatusCode())
+	}
+
+	return nil
+}
+
+func (c *Client) deleteAllocation(ctx context.Context, organizationID, projectID, allocationID string) error {
+	resp, err := c.identity.DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsAllocationIDWithResponse(ctx, organizationID, projectID, allocationID)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode() != http.StatusAccepted {
+		return fmt.Errorf("%w: unexpected status code %d", ErrAPI, resp.StatusCode())
+	}
+
+	return nil
 }
 
 func (c *Client) createIdentity(ctx context.Context, organizationID, projectID, regionID, clusterID string) (*regionapi.IdentityRead, error) {
@@ -280,12 +416,13 @@ func (c *Client) getRegion(ctx context.Context, organizationID, regionID string)
 	return &results[index], nil
 }
 
-func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizationID, projectID, regionID string, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
+func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizationID, projectID, regionID string, allocation *identityapi.AllocationRead, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
 	// Save the identity ID for later cleanup.
 	if cluster.Annotations == nil {
 		cluster.Annotations = map[string]string{}
 	}
 
+	cluster.Annotations[constants.AllocationAnnotation] = allocation.Metadata.Id
 	cluster.Annotations[constants.IdentityAnnotation] = identity.Metadata.Id
 
 	// Apply any region specific configuration based on feature flags.
@@ -306,6 +443,31 @@ func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizati
 		}
 
 		cluster.Annotations[constants.PhysicalNetworkAnnotation] = physicalNetwork.Metadata.Id
+	}
+
+	return nil
+}
+
+func preserveAnnotations(requested, current *unikornv1.KubernetesCluster) error {
+	identity, ok := current.Annotations[constants.IdentityAnnotation]
+	if !ok {
+		return fmt.Errorf("%w: identity annotation missing", ErrConsistency)
+	}
+
+	allocation, ok := current.Annotations[constants.AllocationAnnotation]
+	if !ok {
+		return fmt.Errorf("%w: allocation annotation missing", ErrConsistency)
+	}
+
+	if requested.Annotations == nil {
+		requested.Annotations = map[string]string{}
+	}
+
+	requested.Annotations[constants.IdentityAnnotation] = identity
+	requested.Annotations[constants.AllocationAnnotation] = allocation
+
+	if network, ok := current.Annotations[constants.PhysicalNetworkAnnotation]; ok {
+		requested.Annotations[constants.PhysicalNetworkAnnotation] = network
 	}
 
 	return nil
@@ -333,12 +495,17 @@ func (c *Client) Create(ctx context.Context, organizationID, projectID string, r
 		return nil, err
 	}
 
+	allocation, err := c.createAllocation(ctx, organizationID, projectID, cluster)
+	if err != nil {
+		return nil, errors.OAuth2ServerError("failed to create quota allocation").WithError(err)
+	}
+
 	identity, err := c.createIdentity(ctx, organizationID, projectID, request.Spec.RegionId, cluster.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := c.applyCloudSpecificConfiguration(ctx, organizationID, projectID, request.Spec.RegionId, identity, cluster); err != nil {
+	if err := c.applyCloudSpecificConfiguration(ctx, organizationID, projectID, request.Spec.RegionId, allocation, identity, cluster); err != nil {
 		return nil, err
 	}
 
@@ -356,15 +523,13 @@ func (c *Client) Delete(ctx context.Context, organizationID, projectID, clusterI
 		return err
 	}
 
-	if namespace.DeletionTimestamp != nil {
-		return errors.OAuth2InvalidRequest("control plane is being deleted")
-	}
+	cluster, err := c.get(ctx, namespace.Name, clusterID)
+	if err != nil {
+		if kerrors.IsNotFound(err) {
+			return errors.HTTPNotFound().WithError(err)
+		}
 
-	cluster := &unikornv1.KubernetesCluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      clusterID,
-			Namespace: namespace.Name,
-		},
+		return errors.OAuth2ServerError("failed to get cluster")
 	}
 
 	if err := c.client.Delete(ctx, cluster); err != nil {
@@ -373,6 +538,10 @@ func (c *Client) Delete(ctx context.Context, organizationID, projectID, clusterI
 		}
 
 		return errors.OAuth2ServerError("failed to delete cluster").WithError(err)
+	}
+
+	if err := c.deleteAllocation(ctx, organizationID, projectID, cluster.Annotations[constants.AllocationAnnotation]); err != nil {
+		return errors.OAuth2ServerError("failed to delete quota allocation").WithError(err)
 	}
 
 	return nil
@@ -401,6 +570,14 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 
 	if err := conversion.UpdateObjectMetadata(required, current, []string{constants.IdentityAnnotation}, []string{constants.PhysicalNetworkAnnotation}); err != nil {
 		return errors.OAuth2ServerError("failed to merge metadata").WithError(err)
+	}
+
+	if err := preserveAnnotations(required, current); err != nil {
+		return errors.OAuth2ServerError("failed to merge annotations").WithError(err)
+	}
+
+	if err := c.updateAllocation(ctx, organizationID, projectID, required); err != nil {
+		return errors.OAuth2ServerError("failed to update quota allocation").WithError(err)
 	}
 
 	// Experience has taught me that modifying caches by accident is a bad thing
