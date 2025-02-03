@@ -5,6 +5,8 @@ on:
     - main
     tags-ignore:
     - '*'
+permissions:
+  contents: read
 jobs:
   Coverage:
     runs-on: ubuntu-latest
