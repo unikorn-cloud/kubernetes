@@ -6,6 +6,8 @@ on:
     - synchronize
     - reopened
     - ready_for_review
+permissions:
+  contents: write
 jobs:
   Static:
     runs-on: ubuntu-latest
