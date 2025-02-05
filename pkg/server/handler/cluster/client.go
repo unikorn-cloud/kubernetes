@@ -253,7 +253,7 @@ func (c *Client) generateAllocations(ctx context.Context, organizationID string,
 		Spec: identityapi.AllocationSpec{
 			Kind: "kubernetescluster",
 			Id:   resource.Name,
-			Allocations: identityapi.QuotaListDetailed{
+			Allocations: identityapi.ResourceAllocationList{
 				{
 					Kind:      "clusters",
 					Committed: 1,
