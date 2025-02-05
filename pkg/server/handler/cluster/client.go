@@ -224,8 +224,10 @@ func (c *Client) generateAllocations(ctx context.Context, organizationID string,
 			serversMaximum = *pool.Autoscaling.MaximumReplicas
 		}
 
+		reserved := serversMaximum - serversMinimum
+
 		serversCommitted += serversMinimum
-		serversReserved += serversMaximum - serversMinimum
+		serversReserved += reserved
 
 		flavorByID := func(f regionapi.Flavor) bool {
 			return f.Metadata.Id == *pool.FlavorID
@@ -240,7 +242,7 @@ func (c *Client) generateAllocations(ctx context.Context, organizationID string,
 
 		if flavor.Spec.Gpu != nil {
 			gpusCommitted += serversMinimum * flavor.Spec.Gpu.PhysicalCount
-			gpusReserved += serversMaximum * flavor.Spec.Gpu.PhysicalCount
+			gpusReserved += reserved * flavor.Spec.Gpu.PhysicalCount
 		}
 	}
 
