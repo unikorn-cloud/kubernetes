@@ -469,6 +469,10 @@ components:
           type: string
         workloadPools:
           $ref: '#/components/schemas/kubernetesClusterWorkloadPools'
+        api:
+          $ref: '#/components/schemas/kubernetesClusterAPI'
+        networking:
+          $ref: '#/components/schemas/kubernetesClusterNetwork'
     kubernetesClusterRead:
       description: Kubernetes cluster read.
       type: object
