@@ -582,6 +582,9 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 		return errors.OAuth2ServerError("failed to update quota allocation").WithError(err)
 	}
 
+	// Preserve networking options as if they change it'll be fairly catastrophic.
+	required.Spec.Network = current.Spec.Network
+
 	// Experience has taught me that modifying caches by accident is a bad thing
 	// so be extra safe and deep copy the existing resource.
 	updated := current.DeepCopy()

@@ -25,11 +25,35 @@ type ClusterManagerWrite struct {
 // ClusterManagers A list of cluster managers.
 type ClusterManagers = []ClusterManagerRead
 
+// KubernetesClusterAPI Kubernetes API settings.
+type KubernetesClusterAPI struct {
+	// AllowedPrefixes Set of address prefixes to allow access to the Kubernetes API.
+	AllowedPrefixes *[]string `json:"allowedPrefixes,omitempty"`
+
+	// SubjectAlternativeNames Set of non-standard X.509 SANs to add to the API certificate.
+	SubjectAlternativeNames *[]string `json:"subjectAlternativeNames,omitempty"`
+}
+
 // KubernetesClusterAutoscaling A Kubernetes cluster workload pool autoscaling configuration. Cluster autoscaling
 // must also be enabled in the cluster features.
 type KubernetesClusterAutoscaling struct {
 	// MinimumReplicas The minimum number of replicas to allow. Must be less than the maximum.
 	MinimumReplicas int `json:"minimumReplicas"`
+}
+
+// KubernetesClusterNetwork A kubernetes cluster network settings.
+type KubernetesClusterNetwork struct {
+	// DnsNameservers A list of DNS name server to use.
+	DnsNameservers *[]string `json:"dnsNameservers,omitempty"`
+
+	// NodePrefix Network prefix to provision nodes in. Must be a valid CIDR block.
+	NodePrefix *string `json:"nodePrefix,omitempty"`
+
+	// PodPrefix Network prefix to provision pods in. Must be a valid CIDR block.
+	PodPrefix *string `json:"podPrefix,omitempty"`
+
+	// ServicePrefix Network prefix to provision services in. Must be a valid CIDR block.
+	ServicePrefix *string `json:"servicePrefix,omitempty"`
 }
 
 // KubernetesClusterRead Kubernetes cluster read.
@@ -42,9 +66,15 @@ type KubernetesClusterRead struct {
 
 // KubernetesClusterSpec Kubernetes cluster creation parameters.
 type KubernetesClusterSpec struct {
+	// Api Kubernetes API settings.
+	Api *KubernetesClusterAPI `json:"api,omitempty"`
+
 	// ClusterManagerId The name of the cluster manager to use, if one is not specified
 	// the system will create one for you.
 	ClusterManagerId *string `json:"clusterManagerId,omitempty"`
+
+	// Networking A kubernetes cluster network settings.
+	Networking *KubernetesClusterNetwork `json:"networking,omitempty"`
 
 	// RegionId The region to provision the cluster in.
 	RegionId string `json:"regionId"`

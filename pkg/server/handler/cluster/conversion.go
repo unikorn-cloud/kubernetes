@@ -21,6 +21,7 @@ import (
 	"context"
 	goerrors "errors"
 	"fmt"
+	"net"
 	"slices"
 
 	"github.com/Masterminds/semver/v3"
@@ -252,13 +253,43 @@ func (g *generator) defaultImage(ctx context.Context, request *openapi.Kubernete
 }
 
 // generateNetwork generates the network part of a cluster.
-func (g *generator) generateNetwork() *unikornv1.KubernetesClusterNetworkSpec {
+func (g *generator) generateNetwork(request *openapi.KubernetesClusterNetwork) (*unikornv1.KubernetesClusterNetworkSpec, error) {
 	// Grab some defaults (as these are in the right format already)
 	// the override with anything coming in from the API, if set.
 	nodeNetwork := g.options.NodeNetwork
 	serviceNetwork := g.options.ServiceNetwork
 	podNetwork := g.options.PodNetwork
 	dnsNameservers := g.options.DNSNameservers
+
+	//nolint:nestif
+	if request != nil {
+		if request.NodePrefix != nil {
+			_, net, err := net.ParseCIDR(*request.NodePrefix)
+			if err != nil {
+				return nil, errors.OAuth2InvalidRequest("failed to parse network prefix").WithError(err)
+			}
+
+			nodeNetwork = *net
+		}
+
+		if request.ServicePrefix != nil {
+			_, net, err := net.ParseCIDR(*request.ServicePrefix)
+			if err != nil {
+				return nil, errors.OAuth2InvalidRequest("failed to parse network prefix").WithError(err)
+			}
+
+			serviceNetwork = *net
+		}
+
+		if request.PodPrefix != nil {
+			_, net, err := net.ParseCIDR(*request.PodPrefix)
+			if err != nil {
+				return nil, errors.OAuth2InvalidRequest("failed to parse network prefix").WithError(err)
+			}
+
+			podNetwork = *net
+		}
+	}
 
 	network := &unikornv1.KubernetesClusterNetworkSpec{
 		NetworkGeneric: unikornv1core.NetworkGeneric{
@@ -269,7 +300,7 @@ func (g *generator) generateNetwork() *unikornv1.KubernetesClusterNetworkSpec {
 		PodNetwork:     &unikornv1core.IPv4Prefix{IPNet: podNetwork},
 	}
 
-	return network
+	return network, nil
 }
 
 // generateMachineGeneric generates a generic machine part of the cluster.
@@ -432,6 +463,11 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 		return nil, err
 	}
 
+	network, err := g.generateNetwork(request.Spec.Networking)
+	if err != nil {
+		return nil, err
+	}
+
 	cluster := &unikornv1.KubernetesCluster{
 		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, g.namespace, info.Userinfo.Sub).WithOrganization(g.organizationID).WithProject(g.projectID).Get(),
 		Spec: unikornv1.KubernetesClusterSpec{
@@ -443,7 +479,7 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 			},
 			ApplicationBundle:            applicationBundleName,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
-			Network:                      g.generateNetwork(),
+			Network:                      network,
 			ControlPlane:                 kubernetesControlPlane,
 			WorkloadPools:                kubernetesWorkloadPools,
 			Features: &unikornv1.KubernetesClusterFeaturesSpec{
