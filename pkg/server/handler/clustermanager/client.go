@@ -186,7 +186,13 @@ func (c *Client) defaultApplicationBundle(ctx context.Context) (*unikornv1.Clust
 		return nil, errors.OAuth2ServerError("unable to select an application bundle")
 	}
 
-	return &applicationBundles.Items[0], nil
+	// Sort by semanitc version...
+	slices.SortedStableFunc(slices.Values(applicationBundles.Items), func(a, b unikornv1.ClusterManagerApplicationBundle) int {
+		return a.Spec.Version.Compare(&b.Spec.Version)
+	})
+
+	// ... and select the latest.
+	return &applicationBundles.Items[len(applicationBundles.Items)-1], nil
 }
 
 // generate is a common function to create a Kubernetes type from an API one.

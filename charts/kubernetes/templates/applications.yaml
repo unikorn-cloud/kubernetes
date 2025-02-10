@@ -77,6 +77,13 @@ spec:
     parameters:
     - name: cluster-api-bootstrap-kubeadm.kubeadm_bootstrap_token_ttl
       value: 45m
+  - version: v0.2.2
+    repo: https://unikorn-cloud.github.io/helm-cluster-api
+    chart: cluster-api
+    interface: 1.0.0
+    parameters:
+    - name: cluster-api-bootstrap-kubeadm.kubeadm_bootstrap_token_ttl
+      value: 45m
 ---
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: HelmApplication
