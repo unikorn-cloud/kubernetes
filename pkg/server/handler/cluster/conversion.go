@@ -252,6 +252,41 @@ func (g *generator) defaultImage(ctx context.Context, request *openapi.Kubernete
 	return &images[0], nil
 }
 
+func (g *generator) generateAPI(request *openapi.KubernetesClusterAPI) (*unikornv1.KubernetesClusterAPISpec, error) {
+	if request == nil {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	var allowedPrefixes []unikornv1core.IPv4Prefix
+
+	var subjectAlternativeNames []string
+
+	if request.AllowedPrefixes != nil {
+		for i := range *request.AllowedPrefixes {
+			_, net, err := net.ParseCIDR((*request.AllowedPrefixes)[i])
+			if err != nil {
+				return nil, errors.OAuth2InvalidRequest("failed to parse network prefix").WithError(err)
+			}
+
+			allowedPrefixes = append(allowedPrefixes, unikornv1core.IPv4Prefix{
+				IPNet: *net,
+			})
+		}
+	}
+
+	if request.SubjectAlternativeNames != nil {
+		subjectAlternativeNames = *request.SubjectAlternativeNames
+	}
+
+	out := &unikornv1.KubernetesClusterAPISpec{
+		AllowedPrefixes:         allowedPrefixes,
+		SubjectAlternativeNames: subjectAlternativeNames,
+	}
+
+	return out, nil
+}
+
 // generateNetwork generates the network part of a cluster.
 func (g *generator) generateNetwork(request *openapi.KubernetesClusterNetwork) (*unikornv1.KubernetesClusterNetworkSpec, error) {
 	// Grab some defaults (as these are in the right format already)
@@ -418,6 +453,8 @@ func (g *generator) generateWorkloadPools(ctx context.Context, request *openapi.
 // generate generates the full cluster custom resource.
 // TODO: there are a lot of parameters being passed about, we should make this
 // a struct and pass them as a single blob.
+//
+//nolint:cyclop
 func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClusterWrite) (*unikornv1.KubernetesCluster, error) {
 	kubernetesControlPlane, err := g.generateControlPlane(ctx, request)
 	if err != nil {
@@ -463,6 +500,11 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 		return nil, err
 	}
 
+	api, err := g.generateAPI(request.Spec.Api)
+	if err != nil {
+		return nil, err
+	}
+
 	network, err := g.generateNetwork(request.Spec.Networking)
 	if err != nil {
 		return nil, err
@@ -479,6 +521,7 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 			},
 			ApplicationBundle:            applicationBundleName,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
+			API:                          api,
 			Network:                      network,
 			ControlPlane:                 kubernetesControlPlane,
 			WorkloadPools:                kubernetesWorkloadPools,
