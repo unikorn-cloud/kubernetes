@@ -84,6 +84,13 @@ func (p *Provisioner) Values(ctx context.Context, _ *string) (interface{}, error
 				"tolerations":  util.ControlPlaneTolerations(),
 			},
 		},
+		"ipam": map[string]interface{}{
+			"operator": map[string]interface{}{
+				"clusterPoolIPv4PodCIDRList": []interface{}{
+					cluster.Spec.Network.PodNetwork.IPNet.String(),
+				},
+			},
+		},
 	}
 
 	return values, nil
