@@ -170,7 +170,7 @@ type Options struct {
 	// clientOptions give access to client certificate information as
 	// we need to talk to identity to get a token, and then to region
 	// to ensure cloud identities and networks are provisioned, as well
-	// as deptovisioning them.
+	// as deprovisioning them.
 	clientOptions coreclient.HTTPClientOptions
 }
 
@@ -403,7 +403,7 @@ func (p *Provisioner) managerReady(ctx context.Context) error {
 }
 
 // getRegionClient returns an authenticated context with a client credentials access token
-// and a client.  The context must be used by subseqent API calls in order to extract
+// and a client.  The context must be used by subsequent API calls in order to extract
 // the access token.
 func (p *Provisioner) getRegionClient(ctx context.Context, traceName string) (context.Context, regionapi.ClientWithResponsesInterface, error) {
 	cli, err := coreclient.ProvisionerClientFromContext(ctx)

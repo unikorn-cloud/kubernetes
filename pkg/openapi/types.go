@@ -11,6 +11,12 @@ const (
 	Oauth2AuthenticationScopes = "oauth2Authentication.Scopes"
 )
 
+// Defines values for RegionTypeParameter.
+const (
+	Physical RegionTypeParameter = "physical"
+	Virtual  RegionTypeParameter = "virtual"
+)
+
 // ClusterManagerRead A cluster manager.
 type ClusterManagerRead struct {
 	Metadata externalRef0.ProjectScopedResourceReadMetadata `json:"metadata"`
@@ -214,6 +220,54 @@ type MachinePool struct {
 	Replicas *int `json:"replicas,omitempty"`
 }
 
+// RegionTypeParameter The region type, "physical" means a full Kubernetes cluster deployment, "virtual" is a virtual
+// Kubernetes cluster hosted by another one.
+type RegionTypeParameter string
+
+// VirtualKubernetesClusterRead Virtual Kubernetes cluster read.
+type VirtualKubernetesClusterRead struct {
+	Metadata externalRef0.ProjectScopedResourceReadMetadata `json:"metadata"`
+
+	// Spec Virtual Kubernetes cluster creation parameters.
+	Spec VirtualKubernetesClusterSpec `json:"spec"`
+}
+
+// VirtualKubernetesClusterSpec Virtual Kubernetes cluster creation parameters.
+type VirtualKubernetesClusterSpec struct {
+	// RegionId The region to provision the cluster in.
+	RegionId string `json:"regionId"`
+
+	// WorkloadPools A set of virtual workload pools.
+	WorkloadPools VirtualKubernetesClusterWorkloadPools `json:"workloadPools"`
+}
+
+// VirtualKubernetesClusterWorkloadPool A virtual workload pool.
+type VirtualKubernetesClusterWorkloadPool struct {
+	// FlavorId The flavor's ID
+	FlavorId string `json:"flavorId"`
+
+	// Name The workload pool name.
+	Name string `json:"name"`
+
+	// Replicas The number of nodes.
+	Replicas int `json:"replicas"`
+}
+
+// VirtualKubernetesClusterWorkloadPools A set of virtual workload pools.
+type VirtualKubernetesClusterWorkloadPools = []VirtualKubernetesClusterWorkloadPool
+
+// VirtualKubernetesClusterWrite Virtual Kubernetes cluster create or update.
+type VirtualKubernetesClusterWrite struct {
+	// Metadata Resource metadata valid for all API resource reads and writes.
+	Metadata externalRef0.ResourceWriteMetadata `json:"metadata"`
+
+	// Spec Virtual Kubernetes cluster creation parameters.
+	Spec VirtualKubernetesClusterSpec `json:"spec"`
+}
+
+// VirtualKubernetesClusters A list of virtual Kubernetes clusters.
+type VirtualKubernetesClusters = []VirtualKubernetesClusterRead
+
 // Volume A volume.
 type Volume struct {
 	// Size Disk size in GiB.
@@ -247,11 +301,26 @@ type KubernetesClusterResponse = KubernetesClusterRead
 // KubernetesClustersResponse A list of Kubernetes clusters.
 type KubernetesClustersResponse = KubernetesClusters
 
+// VirtualKubernetesClusterResponse Virtual Kubernetes cluster read.
+type VirtualKubernetesClusterResponse = VirtualKubernetesClusterRead
+
+// VirtualKubernetesClustersResponse A list of virtual Kubernetes clusters.
+type VirtualKubernetesClustersResponse = VirtualKubernetesClusters
+
 // CreateControlPlaneRequest A cluster manager.
 type CreateControlPlaneRequest = ClusterManagerWrite
 
 // CreateKubernetesClusterRequest Kubernetes cluster create or update.
 type CreateKubernetesClusterRequest = KubernetesClusterWrite
+
+// CreateVirtualKubernetesClusterRequest Virtual Kubernetes cluster create or update.
+type CreateVirtualKubernetesClusterRequest = VirtualKubernetesClusterWrite
+
+// GetApiV1OrganizationsOrganizationIDRegionsParams defines parameters for GetApiV1OrganizationsOrganizationIDRegions.
+type GetApiV1OrganizationsOrganizationIDRegionsParams struct {
+	// RegionType The type of region we are asking for.
+	RegionType RegionTypeParameter `form:"regionType" json:"regionType"`
+}
 
 // PostApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersJSONRequestBody defines body for PostApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagers for application/json ContentType.
 type PostApiV1OrganizationsOrganizationIDProjectsProjectIDClustermanagersJSONRequestBody = ClusterManagerWrite
@@ -264,3 +333,9 @@ type PostApiV1OrganizationsOrganizationIDProjectsProjectIDClustersJSONRequestBod
 
 // PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDJSONRequestBody defines body for PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterID for application/json ContentType.
 type PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterIDJSONRequestBody = KubernetesClusterWrite
+
+// PostApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualclustersJSONRequestBody defines body for PostApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualclusters for application/json ContentType.
+type PostApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualclustersJSONRequestBody = VirtualKubernetesClusterWrite
+
+// PutApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualclustersClusterIDJSONRequestBody defines body for PutApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualclustersClusterID for application/json ContentType.
+type PutApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualclustersClusterIDJSONRequestBody = VirtualKubernetesClusterWrite

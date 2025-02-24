@@ -24,7 +24,7 @@ spec:
         {{- include "unikorn.identity.flags" . | nindent 8 }}
         {{- include "unikorn.region.flags" . | nindent 8 }}
         - --client-certificate-namespace={{ .Release.Namespace }}
-        - --client-certificate-name=unikorn-kubernetes-client-certificate
+        - --client-certificate-name={{ .Release.Namespace }}-client-certificate
         ports:
         - name: http
           containerPort: 6080

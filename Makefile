@@ -13,6 +13,7 @@ REVISION := $(shell git rev-parse HEAD)
 CONTROLLERS = \
   unikorn-cluster-manager-controller \
   unikorn-cluster-controller\
+  unikorn-virtualcluster-controller\
   unikorn-server \
   unikorn-monitor
 

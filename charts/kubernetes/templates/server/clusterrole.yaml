@@ -11,6 +11,7 @@ rules:
   resources:
   - clustermanagers
   - kubernetesclusters
+  - virtualkubernetesclusters
   verbs:
   - create
   - get
@@ -24,6 +25,7 @@ rules:
   - regions
   - clustermanagerapplicationbundles
   - kubernetesclusterapplicationbundles
+  - virtualkubernetesclusterapplicationbundles
   - helmapplications
   verbs:
   - list

@@ -56,6 +56,7 @@ spec:
     repo: https://charts.loft.sh
     chart: vcluster
     release: vcluster
+    createNamespace: true
     parameters:
     - name: controlPlane.statefulSet.resources.limits.memory
       value: 4Gi
@@ -69,6 +70,7 @@ spec:
     repo: https://charts.loft.sh
     chart: vcluster
     release: vcluster
+    createNamespace: true
     parameters:
     - name: controlPlane.statefulSet.resources.limits.memory
       value: 4Gi

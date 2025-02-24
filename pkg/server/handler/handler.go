@@ -32,6 +32,7 @@ import (
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/cluster"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/clustermanager"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/region"
+	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/virtualcluster"
 	regionclient "github.com/unikorn-cloud/region/pkg/client"
 	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
 
@@ -109,6 +110,29 @@ func (h *Handler) setCacheable(w http.ResponseWriter) {
 
 func (h *Handler) setUncacheable(w http.ResponseWriter) {
 	w.Header().Add("Cache-Control", "no-cache")
+}
+
+func (h *Handler) GetApiV1OrganizationsOrganizationIDRegions(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, params openapi.GetApiV1OrganizationsOrganizationIDRegionsParams) {
+	ctx := r.Context()
+
+	if err := rbac.AllowOrganizationScope(ctx, "kubernetes:regions", identityapi.Read, organizationID); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	client, err := h.regionClient(ctx)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	result, err := region.Regions(ctx, client, organizationID, params)
+	if err != nil {
+		errors.HandleError(w, r, errors.OAuth2ServerError("unable to read regions").WithError(err))
+		return
+	}
+
+	util.WriteJSONResponse(w, r, http.StatusOK, result)
 }
 
 func (h *Handler) GetApiV1OrganizationsOrganizationIDRegionsRegionIDFlavors(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, regionID openapi.RegionIDParameter) {
@@ -331,6 +355,7 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDCluster
 	w.WriteHeader(http.StatusAccepted)
 }
 
+//nolint:dupl
 func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterID openapi.ClusterIDParameter) {
 	ctx := r.Context()
 
@@ -376,6 +401,152 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersCl
 	}
 
 	result, err := clusters.GetKubeconfig(ctx, organizationID, projectID, clusterID)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	h.setUncacheable(w)
+	util.WriteOctetStreamResponse(w, r, http.StatusOK, result)
+}
+
+func (h *Handler) virtualClusterClient(ctx context.Context) (*virtualcluster.Client, error) {
+	identity, err := h.identityClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	region, err := h.regionClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return virtualcluster.NewClient(h.client, h.namespace, identity, region), nil
+}
+
+func (h *Handler) GetApiV1OrganizationsOrganizationIDVirtualclusters(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter) {
+	ctx := r.Context()
+
+	virtualclusters, err := h.virtualClusterClient(ctx)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	result, err := virtualclusters.List(ctx, organizationID)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	result = slices.DeleteFunc(result, func(resource openapi.VirtualKubernetesClusterRead) bool {
+		return rbac.AllowProjectScope(ctx, "kubernetes:virtualclusters", identityapi.Read, organizationID, resource.Metadata.ProjectId) != nil
+	})
+
+	h.setUncacheable(w)
+	util.WriteJSONResponse(w, r, http.StatusOK, result)
+}
+
+func (h *Handler) PostApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualclusters(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter) {
+	ctx := r.Context()
+
+	if err := rbac.AllowProjectScope(ctx, "kubernetes:virtualclusters", identityapi.Create, organizationID, projectID); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	request := &openapi.VirtualKubernetesClusterWrite{}
+
+	if err := util.ReadJSONBody(r, request); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	virtualclusters, err := h.virtualClusterClient(ctx)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	result, err := virtualclusters.Create(ctx, organizationID, projectID, request)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	h.setUncacheable(w)
+	util.WriteJSONResponse(w, r, http.StatusAccepted, result)
+}
+
+func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualclustersClusterID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterID openapi.ClusterIDParameter) {
+	ctx := r.Context()
+
+	if err := rbac.AllowProjectScope(ctx, "kubernetes:virtualclusters", identityapi.Delete, organizationID, projectID); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	virtualclusters, err := h.virtualClusterClient(ctx)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := virtualclusters.Delete(ctx, organizationID, projectID, clusterID); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	h.setUncacheable(w)
+	w.WriteHeader(http.StatusAccepted)
+}
+
+//nolint:dupl
+func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualclustersClusterID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterID openapi.ClusterIDParameter) {
+	ctx := r.Context()
+
+	if err := rbac.AllowProjectScope(ctx, "kubernetes:virtualclusters", identityapi.Update, organizationID, projectID); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	request := &openapi.VirtualKubernetesClusterWrite{}
+
+	if err := util.ReadJSONBody(r, request); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	virtualclusters, err := h.virtualClusterClient(ctx)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := virtualclusters.Update(ctx, organizationID, projectID, clusterID, request); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	h.setUncacheable(w)
+	w.WriteHeader(http.StatusAccepted)
+}
+
+func (h *Handler) GetApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualclustersClusterIDKubeconfig(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterID openapi.ClusterIDParameter) {
+	ctx := r.Context()
+
+	if err := rbac.AllowProjectScope(ctx, "kubernetes:virtualclusters", identityapi.Read, organizationID, projectID); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	virtualclusters, err := h.virtualClusterClient(ctx)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	result, err := virtualclusters.GetKubeconfig(ctx, organizationID, projectID, clusterID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
