@@ -54,6 +54,19 @@ spec:
       value: 'true'
     - name: controlPlane.statefulSet.persistence.volumeClaim.retentionPolicy
       value: Delete
+  - version: 0.23.0
+    repo: https://charts.loft.sh
+    chart: vcluster
+    release: vcluster
+    parameters:
+    - name: controlPlane.statefulSet.resources.limits.memory
+      value: 4Gi
+    - name: controlPlane.hostPathMapper.enabled
+      value: 'true'
+    - name: controlPlane.backingStore.database.embedded.enabled
+      value: 'true'
+    - name: controlPlane.statefulSet.persistence.volumeClaim.retentionPolicy
+      value: Delete
 ---
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: HelmApplication
