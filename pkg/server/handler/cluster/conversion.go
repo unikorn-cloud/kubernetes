@@ -193,6 +193,11 @@ func (g *generator) defaultApplicationBundle(ctx context.Context) (*unikornv1.Ku
 		return nil, errors.OAuth2ServerError("unable to select an application bundle")
 	}
 
+	slices.SortFunc(applicationBundles.Items, func(a, b unikornv1.KubernetesClusterApplicationBundle) int {
+		return unikornv1.CompareKubernetesClusterApplicationBundle(b, a)
+	})
+
+	// Return the newest bundle (first after sorting in descending order)
 	return &applicationBundles.Items[0], nil
 }
 
