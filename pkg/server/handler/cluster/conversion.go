@@ -193,7 +193,8 @@ func (g *generator) defaultApplicationBundle(ctx context.Context) (*unikornv1.Ku
 		return nil, errors.OAuth2ServerError("unable to select an application bundle")
 	}
 
-	return &applicationBundles.Items[0], nil
+	// Return the newest bundle
+	return &applicationBundles.Items[len(applicationBundles.Items)-1], nil
 }
 
 // defaultControlPlaneFlavor returns a default control plane flavor.
