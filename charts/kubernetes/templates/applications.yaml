@@ -140,7 +140,7 @@ spec:
     - name: bpf.lbExternalClusterIP
       value: 'true'
     interface: 1.0.0
-  - version: 1.17.1
+  - version: 1.18.0-pre.0
     repo: https://helm.cilium.io
     chart: cilium
     namespace: kube-system
