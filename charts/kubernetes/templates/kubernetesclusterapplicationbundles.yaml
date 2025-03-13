@@ -71,7 +71,7 @@ spec:
     reference:
       kind: HelmApplication
       name: {{ include "resource.id" "cilium" }}
-      version: 1.17.1
+      version: 1.18.0-pre.0
   - name: openstack-cloud-provider
     reference:
       kind: HelmApplication
