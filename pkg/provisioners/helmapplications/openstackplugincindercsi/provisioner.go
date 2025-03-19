@@ -21,6 +21,7 @@ import (
 	"context"
 	"strings"
 
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
@@ -81,7 +82,7 @@ func (p *Provisioner) generateStorageClasses() []*storagev1.StorageClass {
 }
 
 // Generate implements the application.ValuesGenerator interface.
-func (p *Provisioner) Values(ctx context.Context, version *string) (interface{}, error) {
+func (p *Provisioner) Values(ctx context.Context, version unikornv1core.SemanticVersion) (interface{}, error) {
 	client, err := coreclient.ProvisionerClientFromContext(ctx)
 	if err != nil {
 		return nil, err

@@ -24,6 +24,8 @@ import (
 	"fmt"
 	"slices"
 
+	semver "github.com/Masterminds/semver/v3"
+
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
@@ -107,7 +109,9 @@ func (p *Provisioner) generateMachineHelmValues(machine *unikornv1core.MachineGe
 
 // generateWorkloadPoolHelmValues translates the API's idea of a workload pool into
 // what's expected by the underlying Helm chart.
-func (p *Provisioner) generateWorkloadPoolHelmValues(cluster *unikornv1.KubernetesCluster) (map[string]interface{}, error) {
+//
+//nolint:cyclop
+func (p *Provisioner) generateWorkloadPoolHelmValues(cluster *unikornv1.KubernetesCluster, version unikornv1core.SemanticVersion) (map[string]interface{}, error) {
 	workloadPools := map[string]interface{}{}
 
 	for i := range cluster.Spec.WorkloadPools.Pools {
@@ -153,6 +157,18 @@ func (p *Provisioner) generateWorkloadPoolHelmValues(cluster *unikornv1.Kubernet
 			}
 
 			object["files"] = files
+		}
+
+		// From 0.5.8 onward we are able to turn parallel image pulls on.
+		from := &unikornv1core.SemanticVersion{
+			Version: *semver.MustParse("0.5.8"),
+		}
+
+		if version.Compare(from) >= 0 {
+			object["kubelet"] = map[string]interface{}{
+				"serializeImagePulls":   false,
+				"maxParallelImagePulls": 3,
+			}
 		}
 
 		workloadPools[workloadPool.Name] = object
@@ -253,11 +269,11 @@ func (p *Provisioner) generateNetworkValues(cluster *unikornv1.KubernetesCluster
 }
 
 // Generate implements the application.Generator interface.
-func (p *Provisioner) Values(ctx context.Context, version *string) (interface{}, error) {
+func (p *Provisioner) Values(ctx context.Context, version unikornv1core.SemanticVersion) (interface{}, error) {
 	//nolint:forcetypeassert
 	cluster := application.FromContext(ctx).(*unikornv1.KubernetesCluster)
 
-	workloadPools, err := p.generateWorkloadPoolHelmValues(cluster)
+	workloadPools, err := p.generateWorkloadPoolHelmValues(cluster, version)
 	if err != nil {
 		return nil, err
 	}
