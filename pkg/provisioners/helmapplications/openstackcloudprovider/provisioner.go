@@ -28,6 +28,7 @@ import (
 	"github.com/gophercloud/utils/openstack/clientconfig"
 	ini "gopkg.in/ini.v1"
 
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	"github.com/unikorn-cloud/core/pkg/constants"
 	"github.com/unikorn-cloud/core/pkg/provisioners"
@@ -145,7 +146,7 @@ func GenerateCloudConfig(options *kubernetesprovisioners.ClusterOpenstackOptions
 // Generate implements the application.Generator interface.
 // Note there is an option, to just pass through the clouds.yaml file, however
 // the chart doesn't allow it to be exposed so we need to translate between formats.
-func (p *Provisioner) Values(ctx context.Context, _ *string) (interface{}, error) {
+func (p *Provisioner) Values(ctx context.Context, _ unikornv1core.SemanticVersion) (interface{}, error) {
 	cloudConfig, err := GenerateCloudConfig(p.options)
 	if err != nil {
 		return nil, err
