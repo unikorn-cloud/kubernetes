@@ -43,6 +43,7 @@ import (
 	"github.com/unikorn-cloud/kubernetes/pkg/constants"
 	kubernetesprovisioners "github.com/unikorn-cloud/kubernetes/pkg/provisioners"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/amdgpuoperator"
+	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/certmanager"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/cilium"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/clusterautoscaler"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/clusterautoscaleropenstack"
@@ -142,6 +143,10 @@ func (a *ApplicationReferenceGetter) metricsServer(ctx context.Context) (*unikor
 
 func (a *ApplicationReferenceGetter) nvidiaGPUOperator(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
 	return a.getApplication(ctx, "nvidia-gpu-operator")
+}
+
+func (a *ApplicationReferenceGetter) certManager(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
+	return a.getApplication(ctx, "cert-manager")
 }
 
 func (a *ApplicationReferenceGetter) amdGPUOperator(ctx context.Context) (*unikornv1core.HelmApplication, *unikornv1core.SemanticVersion, error) {
@@ -325,6 +330,10 @@ func (p *Provisioner) getProvisioner(ctx context.Context, options *kubernetespro
 		conditional.New("nvidia-gpu-operator",
 			func() bool { return p.cluster.GPUOperatorEnabled() && provisionerOptions.gpuVendorNvidia },
 			nvidiagpuoperator.New(apps.nvidiaGPUOperator),
+		),
+		conditional.New("cert-manager",
+			func() bool { return p.cluster.GPUOperatorEnabled() && provisionerOptions.gpuVendorAMD },
+			certmanager.New(apps.certManager),
 		),
 		conditional.New("amd-gpu-operator",
 			func() bool { return p.cluster.GPUOperatorEnabled() && provisionerOptions.gpuVendorAMD },

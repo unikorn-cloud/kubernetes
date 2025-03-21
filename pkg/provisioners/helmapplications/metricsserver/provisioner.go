@@ -20,6 +20,7 @@ package metricsserver
 import (
 	"context"
 
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 	"github.com/unikorn-cloud/core/pkg/provisioners/util"
 )
@@ -39,7 +40,7 @@ func New(getApplication application.GetterFunc) *application.Provisioner {
 // Generate implements the application.Generator interface.
 // This forces the server onto the control plane rather than take up a
 // worker node (and thus incur the ire of users).
-func (p *Provisioner) Values(ctx context.Context, version *string) (interface{}, error) {
+func (p *Provisioner) Values(ctx context.Context, version unikornv1core.SemanticVersion) (interface{}, error) {
 	values := map[string]interface{}{
 		"tolerations":  util.ControlPlaneTolerations(),
 		"nodeSelector": util.ControlPlaneNodeSelector(),
