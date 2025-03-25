@@ -350,12 +350,12 @@ spec:
     - name: labeller.enabled
       value: 'true'
   - version: v1.2.0
-    # TODO: upstream the hooks change!
+    # Awaiting upstream: https://github.com/ROCm/gpu-operator/pull/94
     #repo: https://rocm.github.io/gpu-operator
     #chart: gpu-operator-charts
     repo: https://github.com/spjmurray/gpu-operator
     path: helm-charts-k8s
-    branch: hooks_be_gone
+    branch: argocd
     namespace: kube-system
     parameters:
     - name: controllerManager.manager.image.tag
