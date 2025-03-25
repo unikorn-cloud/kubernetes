@@ -18,10 +18,36 @@ limitations under the License.
 package certmanager
 
 import (
+	"context"
+
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
+	"github.com/unikorn-cloud/core/pkg/provisioners/util"
 )
+
+type Provisioner struct{}
 
 // New returns a new initialized provisioner object.
 func New(getApplication application.GetterFunc) *application.Provisioner {
-	return application.New(getApplication)
+	return application.New(getApplication).WithGenerator(&Provisioner{})
+}
+
+func (p *Provisioner) Values(ctx context.Context, version unikornv1core.SemanticVersion) (interface{}, error) {
+	// Inject tolerations to allow cluster provisoning, especially useful for
+	// baremetal where the nodes take ages to come into existence and Argo decides
+	// it's going to give up trying to sync.
+	values := map[string]interface{}{
+		"tolerations": util.ControlPlaneTolerations(),
+		"webhook": map[string]interface{}{
+			"tolerations": util.ControlPlaneTolerations(),
+		},
+		"cainjector": map[string]interface{}{
+			"tolerations": util.ControlPlaneTolerations(),
+		},
+		"startupapicheck": map[string]interface{}{
+			"tolerations": util.ControlPlaneTolerations(),
+		},
+	}
+
+	return values, nil
 }
