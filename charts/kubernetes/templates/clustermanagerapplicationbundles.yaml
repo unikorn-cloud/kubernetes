@@ -46,7 +46,7 @@ spec:
     reference:
       kind: HelmApplication
       name: {{ include "resource.id" "cluster-api" }}
-      version: v0.2.3
+      version: v0.2.4
 ---
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: ClusterManagerApplicationBundle
@@ -71,4 +71,4 @@ spec:
     reference:
       kind: HelmApplication
       name: {{ include "resource.id" "cluster-api" }}
-      version: v0.2.3
+      version: v0.2.4
