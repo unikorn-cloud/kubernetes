@@ -126,7 +126,6 @@ metadata:
     {{- include "unikorn.labels" . | nindent 4 }}
 spec:
   version: 1.2.0
-  preview: true
   applications:
   - name: cluster-openstack
     reference:
