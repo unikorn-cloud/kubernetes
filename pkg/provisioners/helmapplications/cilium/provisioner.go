@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	coreerrors "github.com/unikorn-cloud/core/pkg/errors"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
@@ -40,7 +41,7 @@ type Provisioner struct{}
 // Ensure the Provisioner interface is implemented.
 var _ application.ValuesGenerator = &Provisioner{}
 
-func (p *Provisioner) Values(ctx context.Context, _ *string) (interface{}, error) {
+func (p *Provisioner) Values(ctx context.Context, _ unikornv1core.SemanticVersion) (interface{}, error) {
 	//nolint:forcetypeassert
 	cluster := application.FromContext(ctx).(*unikornv1.KubernetesCluster)
 

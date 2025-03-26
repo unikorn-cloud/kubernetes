@@ -18,6 +18,7 @@ limitations under the License.
 package clusterapi
 
 import (
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/core/pkg/cd"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 )
@@ -33,7 +34,7 @@ func New(getApplication application.GetterFunc) *application.Provisioner {
 }
 
 // Customize implments the application.Customizer interface.
-func (p *Provisioner) Customize(version *string) ([]cd.HelmApplicationField, error) {
+func (p *Provisioner) Customize(version unikornv1core.SemanticVersion) ([]cd.HelmApplicationField, error) {
 	fields := []cd.HelmApplicationField{
 		{
 			Group: "rbac.authorization.k8s.io",

@@ -451,11 +451,23 @@ func (g *generator) generateWorkloadPools(ctx context.Context, request *openapi.
 	return workloadPools, nil
 }
 
+// preserveDefaulted recognizes that, while we try to be opinionated and do things for
+// the end user, there are operation reasons for disabling things, and preventing surprise
+// upgrades when you update a cluster.
+func (g *generator) preserveDefaultedFields(cluster *unikornv1.KubernetesCluster) {
+	if g.existing == nil {
+		return
+	}
+
+	cluster.Spec.ApplicationBundle = g.existing.Spec.ApplicationBundle
+	cluster.Spec.ApplicationBundleAutoUpgrade = g.existing.Spec.ApplicationBundleAutoUpgrade
+	cluster.Spec.Features.Autoscaling = g.existing.Spec.Features.Autoscaling
+	cluster.Spec.Features.GPUOperator = g.existing.Spec.Features.GPUOperator
+}
+
 // generate generates the full cluster custom resource.
 // TODO: there are a lot of parameters being passed about, we should make this
 // a struct and pass them as a single blob.
-//
-//nolint:cyclop
 func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClusterWrite) (*unikornv1.KubernetesCluster, error) {
 	kubernetesControlPlane, err := g.generateControlPlane(ctx, request)
 	if err != nil {
@@ -467,28 +479,9 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 		return nil, err
 	}
 
-	// Handle anything defaulted so we preserve across calls.
-	var applicationBundleName *string
-
-	if g.existing != nil {
-		applicationBundleName = g.existing.Spec.ApplicationBundle
-	}
-
-	if applicationBundleName == nil {
-		applicationBundle, err := g.defaultApplicationBundle(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		applicationBundleName = &applicationBundle.Name
-	}
-
-	autoscaling := ptr.To(true)
-	gpuOperator := ptr.To(true)
-
-	if g.existing != nil {
-		autoscaling = g.existing.Spec.Features.Autoscaling
-		gpuOperator = g.existing.Spec.Features.GPUOperator
+	applicationBundle, err := g.defaultApplicationBundle(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	info, err := authorization.FromContext(ctx)
@@ -520,18 +513,20 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 			Version: &unikornv1core.SemanticVersion{
 				Version: *version,
 			},
-			ApplicationBundle:            applicationBundleName,
+			ApplicationBundle:            &applicationBundle.Name,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
 			API:                          api,
 			Network:                      network,
 			ControlPlane:                 kubernetesControlPlane,
 			WorkloadPools:                kubernetesWorkloadPools,
 			Features: &unikornv1.KubernetesClusterFeaturesSpec{
-				Autoscaling: autoscaling,
-				GPUOperator: gpuOperator,
+				Autoscaling: ptr.To(true),
+				GPUOperator: ptr.To(true),
 			},
 		},
 	}
+
+	g.preserveDefaultedFields(cluster)
 
 	return cluster, nil
 }

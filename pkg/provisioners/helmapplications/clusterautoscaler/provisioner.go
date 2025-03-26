@@ -20,6 +20,7 @@ package clusterautoscaler
 import (
 	"context"
 
+	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/core/pkg/provisioners/application"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/clusteropenstack"
@@ -38,7 +39,7 @@ func New(getApplication application.GetterFunc) *application.Provisioner {
 // Ensure the Provisioner interface is implemented.
 var _ application.Paramterizer = &Provisioner{}
 
-func (p *Provisioner) Parameters(ctx context.Context, version *string) (map[string]string, error) {
+func (p *Provisioner) Parameters(ctx context.Context, version unikornv1core.SemanticVersion) (map[string]string, error) {
 	//nolint:forcetypeassert
 	cluster := application.FromContext(ctx).(*unikornv1.KubernetesCluster)
 
