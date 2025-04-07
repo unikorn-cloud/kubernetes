@@ -76,6 +76,8 @@ spec:
       value: 'true'
     - name: controlPlane.statefulSet.persistence.volumeClaim.retentionPolicy
       value: Delete
+    - name: controlPlane.statefulSet.persistence.volumeClaim.size
+      value: 10Gi
 ---
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: HelmApplication
