@@ -80,6 +80,8 @@ spec:
       value: 10Gi
     - name: controlPlane.statefulSet.image.tag
       value: 0.23.1-rc.1
+    - name: serviceMonitor.enabled
+      value: 'true'
 ---
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: HelmApplication
