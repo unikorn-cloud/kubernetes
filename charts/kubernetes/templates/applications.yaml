@@ -78,6 +78,8 @@ spec:
       value: Delete
     - name: controlPlane.statefulSet.persistence.volumeClaim.size
       value: 10Gi
+    - name: controlPlane.statefulSet.image.tag
+      value: 0.23.1-rc.1
 ---
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: HelmApplication
