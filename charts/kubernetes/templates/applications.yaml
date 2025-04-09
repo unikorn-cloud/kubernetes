@@ -63,7 +63,7 @@ spec:
       value: 'true'
     - name: controlPlane.statefulSet.persistence.volumeClaim.retentionPolicy
       value: Delete
-  - version: 0.23.0
+  - version: 0.24.1
     repo: https://charts.loft.sh
     chart: vcluster
     release: vcluster
@@ -78,8 +78,6 @@ spec:
       value: Delete
     - name: controlPlane.statefulSet.persistence.volumeClaim.size
       value: 10Gi
-    - name: controlPlane.statefulSet.image.tag
-      value: 0.23.1-rc.1
     - name: serviceMonitor.enabled
       value: 'true'
 ---
