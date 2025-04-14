@@ -80,7 +80,7 @@ spec:
       value: Delete
     - name: controlPlane.statefulSet.persistence.volumeClaim.size
       value: 10Gi
-    - name: serviceMonitor.enabled
+    - name: controlPlane.serviceMonitor.enabled
       value: 'true'
 ---
 apiVersion: unikorn-cloud.org/v1alpha1
