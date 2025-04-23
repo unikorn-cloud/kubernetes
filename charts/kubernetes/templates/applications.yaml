@@ -368,6 +368,10 @@ spec:
       value: v1.2.0
     - name: kmm.controller.manager.image.tag
       value: v1.2.0
+    - name: kmm.controller.manager.env.relatedImageSign
+      value: v1.2.0
+    - name: kmm.controller.manager.env.relatedImageWorker
+      value: v1.2.0
     - name: kmm.webhookServer.webhookServer.image.tag
       value: v1.2.0
 ---
