@@ -277,7 +277,7 @@ func (g *generator) defaultControlPlaneFlavor(ctx context.Context, request *open
 
 // defaultImage returns a default image for either control planes or workload pools
 // based on the specified Kubernetes version.
-func (g *generator) defaultImage(ctx context.Context, request *openapi.KubernetesClusterWrite, version string) (*regionapi.Image, error) {
+func (g *generator) defaultImage(ctx context.Context, request *openapi.KubernetesClusterWrite) (*regionapi.Image, error) {
 	images, err := region.Images(ctx, g.region, g.organizationID, request.Spec.RegionId)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed to list images").WithError(err)
@@ -285,7 +285,7 @@ func (g *generator) defaultImage(ctx context.Context, request *openapi.Kubernete
 
 	// Only get the version asked for.
 	images = slices.DeleteFunc(images, func(x regionapi.Image) bool {
-		return (*x.Spec.SoftwareVersions)["kubernetes"] != version
+		return (*x.Spec.SoftwareVersions)["kubernetes"] != request.Spec.Version
 	})
 
 	if len(images) == 0 {
@@ -293,6 +293,21 @@ func (g *generator) defaultImage(ctx context.Context, request *openapi.Kubernete
 	}
 
 	return &images[0], nil
+}
+
+// imageID returns an existing image ID if one is available, and the Kubernetes version
+// has not changed, otherwise the newest image for the given version.
+func (g *generator) imageID(ctx context.Context, request *openapi.KubernetesClusterWrite, imageID *string) (*string, error) {
+	if imageID != nil && request.Spec.Version == g.existing.Spec.Version.Original() {
+		return imageID, nil
+	}
+
+	image, err := g.defaultImage(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	return ptr.To(image.Metadata.Id), nil
 }
 
 func (g *generator) generateAPI(request *openapi.KubernetesClusterAPI) (*unikornv1.KubernetesClusterAPISpec, error) {
@@ -389,14 +404,12 @@ func (g *generator) generateMachineGeneric(ctx context.Context, request *openapi
 		ImageID:  imageID,
 	}
 
-	if imageID == nil {
-		image, err := g.defaultImage(ctx, request, request.Spec.Version)
-		if err != nil {
-			return nil, err
-		}
-
-		machine.ImageID = ptr.To(image.Metadata.Id)
+	newImageID, err := g.imageID(ctx, request, imageID)
+	if err != nil {
+		return nil, err
 	}
+
+	machine.ImageID = newImageID
 
 	if m.Disk != nil {
 		size, err := resource.ParseQuantity(fmt.Sprintf("%dGi", m.Disk.Size))
