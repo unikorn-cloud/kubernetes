@@ -34,6 +34,78 @@ type KubernetesClusterAPI struct {
 	SubjectAlternativeNames *[]string `json:"subjectAlternativeNames,omitempty"`
 }
 
+// KubernetesClusterAutoUpgrade If set enables auto-upgrade to a set schedule, or opt out of upgrades
+// entirely.  Upgrades still occur when the cluster's application bundle
+// reaches end of life irrespective of whether auto upgrades are disabled.
+// The absence of this object represents a default auto-upgrade policy of
+// the platform.
+type KubernetesClusterAutoUpgrade struct {
+	// DaysOfWeek When defined allows explicit control of what days an auto upgrade can
+	// occur on.
+	DaysOfWeek *KubernetesClusterAutoUpgradeDaysOfWeek `json:"daysOfWeek,omitempty"`
+
+	// Enabled Whether or not auto upgrades are enabled.
+	Enabled bool `json:"enabled"`
+}
+
+// KubernetesClusterAutoUpgradeDaysOfWeek When defined allows explicit control of what days an auto upgrade can
+// occur on.
+type KubernetesClusterAutoUpgradeDaysOfWeek struct {
+	// Friday Defines when in the day an upgrade is allowed to occur, specified as an
+	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
+	// stop upgrades after 6am.
+	Friday *KubernetesClusterAutoUpgradeWindow `json:"friday,omitempty"`
+
+	// Monday Defines when in the day an upgrade is allowed to occur, specified as an
+	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
+	// stop upgrades after 6am.
+	Monday *KubernetesClusterAutoUpgradeWindow `json:"monday,omitempty"`
+
+	// Saturday Defines when in the day an upgrade is allowed to occur, specified as an
+	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
+	// stop upgrades after 6am.
+	Saturday *KubernetesClusterAutoUpgradeWindow `json:"saturday,omitempty"`
+
+	// Sunday Defines when in the day an upgrade is allowed to occur, specified as an
+	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
+	// stop upgrades after 6am.
+	Sunday *KubernetesClusterAutoUpgradeWindow `json:"sunday,omitempty"`
+
+	// Thursday Defines when in the day an upgrade is allowed to occur, specified as an
+	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
+	// stop upgrades after 6am.
+	Thursday *KubernetesClusterAutoUpgradeWindow `json:"thursday,omitempty"`
+
+	// Tuesday Defines when in the day an upgrade is allowed to occur, specified as an
+	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
+	// stop upgrades after 6am.
+	Tuesday *KubernetesClusterAutoUpgradeWindow `json:"tuesday,omitempty"`
+
+	// Wednesday Defines when in the day an upgrade is allowed to occur, specified as an
+	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
+	// stop upgrades after 6am.
+	Wednesday *KubernetesClusterAutoUpgradeWindow `json:"wednesday,omitempty"`
+}
+
+// KubernetesClusterAutoUpgradeWindow Defines when in the day an upgrade is allowed to occur, specified as an
+// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
+// stop upgrades after 6am.
+type KubernetesClusterAutoUpgradeWindow struct {
+	// End Hour to end upgrades.
+	End int `json:"end"`
+
+	// Start Hour to start upgrades.
+	Start int `json:"start"`
+}
+
 // KubernetesClusterAutoscaling A Kubernetes cluster workload pool autoscaling configuration. Cluster autoscaling
 // must also be enabled in the cluster features.
 type KubernetesClusterAutoscaling struct {
@@ -68,6 +140,16 @@ type KubernetesClusterRead struct {
 type KubernetesClusterSpec struct {
 	// Api Kubernetes API settings.
 	Api *KubernetesClusterAPI `json:"api,omitempty"`
+
+	// ApplicationBundleName An explicit set of applications to use for deploy.
+	ApplicationBundleName *string `json:"applicationBundleName,omitempty"`
+
+	// AutoUpgrade If set enables auto-upgrade to a set schedule, or opt out of upgrades
+	// entirely.  Upgrades still occur when the cluster's application bundle
+	// reaches end of life irrespective of whether auto upgrades are disabled.
+	// The absence of this object represents a default auto-upgrade policy of
+	// the platform.
+	AutoUpgrade *KubernetesClusterAutoUpgrade `json:"autoUpgrade,omitempty"`
 
 	// ClusterManagerId The name of the cluster manager to use, if one is not specified
 	// the system will create one for you.

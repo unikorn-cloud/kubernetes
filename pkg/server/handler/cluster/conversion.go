@@ -138,6 +138,46 @@ func convertWorkloadPools(in *unikornv1.KubernetesCluster) []openapi.KubernetesC
 	return workloadPools
 }
 
+func convertAutoUpgradeWindow(in *unikornv1.ApplicationBundleAutoUpgradeWindowSpec) *openapi.KubernetesClusterAutoUpgradeWindow {
+	if in == nil {
+		return nil
+	}
+
+	return &openapi.KubernetesClusterAutoUpgradeWindow{
+		Start: in.Start,
+		End:   in.End,
+	}
+}
+
+func convertAutoUpgrade(in *unikornv1.ApplicationBundleAutoUpgradeSpec) *openapi.KubernetesClusterAutoUpgrade {
+	out := &openapi.KubernetesClusterAutoUpgrade{}
+
+	// If nothing is specified in the CRD, then we need to explicitly opt out
+	// at the API.
+	if in == nil {
+		return out
+	}
+
+	// If there are no overrides, then return the default (legacy behaviour).
+	if in.WeekDay == nil {
+		return nil
+	}
+
+	out.Enabled = true
+	out.DaysOfWeek = &openapi.KubernetesClusterAutoUpgradeDaysOfWeek{
+		// Praise Jesus!
+		Sunday:    convertAutoUpgradeWindow(in.WeekDay.Sunday),
+		Monday:    convertAutoUpgradeWindow(in.WeekDay.Monday),
+		Tuesday:   convertAutoUpgradeWindow(in.WeekDay.Tuesday),
+		Wednesday: convertAutoUpgradeWindow(in.WeekDay.Wednesday),
+		Thursday:  convertAutoUpgradeWindow(in.WeekDay.Thursday),
+		Friday:    convertAutoUpgradeWindow(in.WeekDay.Friday),
+		Saturday:  convertAutoUpgradeWindow(in.WeekDay.Saturday),
+	}
+
+	return out
+}
+
 // convert converts from a custom resource into the API definition.
 func convert(in *unikornv1.KubernetesCluster) *openapi.KubernetesClusterRead {
 	provisioningStatus := coreopenapi.ResourceProvisioningStatusUnknown
@@ -149,10 +189,12 @@ func convert(in *unikornv1.KubernetesCluster) *openapi.KubernetesClusterRead {
 	out := &openapi.KubernetesClusterRead{
 		Metadata: conversion.ProjectScopedResourceReadMetadata(in, in.Spec.Tags, provisioningStatus),
 		Spec: openapi.KubernetesClusterSpec{
-			RegionId:         in.Spec.RegionID,
-			ClusterManagerId: &in.Spec.ClusterManagerID,
-			Version:          in.Spec.Version.Original(),
-			WorkloadPools:    convertWorkloadPools(in),
+			RegionId:              in.Spec.RegionID,
+			ClusterManagerId:      &in.Spec.ClusterManagerID,
+			ApplicationBundleName: in.Spec.ApplicationBundle,
+			AutoUpgrade:           convertAutoUpgrade(in.Spec.ApplicationBundleAutoUpgrade),
+			Version:               in.Spec.Version.Original(),
+			WorkloadPools:         convertWorkloadPools(in),
 		},
 	}
 
@@ -451,6 +493,67 @@ func (g *generator) generateWorkloadPools(ctx context.Context, request *openapi.
 	return workloadPools, nil
 }
 
+// generateApplicationBundleName either selects a default or an explicit version on
+// cluster creation, and preserves or uses an explicit version on update.
+func (g *generator) generateApplicationBundleName(ctx context.Context, in *openapi.KubernetesClusterWrite) (*string, error) {
+	// Cluster creation...
+	if g.existing == nil {
+		if in.Spec.ApplicationBundleName != nil {
+			return in.Spec.ApplicationBundleName, nil
+		}
+
+		bundle, err := g.defaultApplicationBundle(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		return &bundle.Name, nil
+	}
+
+	// Cluster update...
+	if in.Spec.ApplicationBundleName != nil {
+		return in.Spec.ApplicationBundleName, nil
+	}
+
+	return g.existing.Spec.ApplicationBundle, nil
+}
+
+func generateAutoUpgradeWindow(in *openapi.KubernetesClusterAutoUpgradeWindow) *unikornv1.ApplicationBundleAutoUpgradeWindowSpec {
+	if in == nil {
+		return nil
+	}
+
+	return &unikornv1.ApplicationBundleAutoUpgradeWindowSpec{
+		Start: in.Start,
+		End:   in.End,
+	}
+}
+
+// generateAutoUpgrade generates auot upgrade information.
+func generateAutoUpgrade(request *openapi.KubernetesClusterAutoUpgrade) *unikornv1.ApplicationBundleAutoUpgradeSpec {
+	if request != nil && !request.Enabled {
+		return nil
+	}
+
+	out := &unikornv1.ApplicationBundleAutoUpgradeSpec{}
+
+	if request != nil && request.DaysOfWeek != nil {
+		dow := &unikornv1.ApplicationBundleAutoUpgradeWeekDaySpec{
+			Sunday:    generateAutoUpgradeWindow(request.DaysOfWeek.Sunday),
+			Monday:    generateAutoUpgradeWindow(request.DaysOfWeek.Monday),
+			Tuesday:   generateAutoUpgradeWindow(request.DaysOfWeek.Tuesday),
+			Wednesday: generateAutoUpgradeWindow(request.DaysOfWeek.Wednesday),
+			Thursday:  generateAutoUpgradeWindow(request.DaysOfWeek.Thursday),
+			Friday:    generateAutoUpgradeWindow(request.DaysOfWeek.Friday),
+			Saturday:  generateAutoUpgradeWindow(request.DaysOfWeek.Saturday),
+		}
+
+		out.WeekDay = dow
+	}
+
+	return out
+}
+
 // preserveDefaulted recognizes that, while we try to be opinionated and do things for
 // the end user, there are operation reasons for disabling things, and preventing surprise
 // upgrades when you update a cluster.
@@ -459,8 +562,6 @@ func (g *generator) preserveDefaultedFields(cluster *unikornv1.KubernetesCluster
 		return
 	}
 
-	cluster.Spec.ApplicationBundle = g.existing.Spec.ApplicationBundle
-	cluster.Spec.ApplicationBundleAutoUpgrade = g.existing.Spec.ApplicationBundleAutoUpgrade
 	cluster.Spec.Features.Autoscaling = g.existing.Spec.Features.Autoscaling
 	cluster.Spec.Features.GPUOperator = g.existing.Spec.Features.GPUOperator
 }
@@ -479,7 +580,7 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 		return nil, err
 	}
 
-	applicationBundle, err := g.defaultApplicationBundle(ctx)
+	applicationBundleName, err := g.generateApplicationBundleName(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -513,8 +614,8 @@ func (g *generator) generate(ctx context.Context, request *openapi.KubernetesClu
 			Version: &unikornv1core.SemanticVersion{
 				Version: *version,
 			},
-			ApplicationBundle:            &applicationBundle.Name,
-			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
+			ApplicationBundle:            applicationBundleName,
+			ApplicationBundleAutoUpgrade: generateAutoUpgrade(request.Spec.AutoUpgrade),
 			API:                          api,
 			Network:                      network,
 			ControlPlane:                 kubernetesControlPlane,

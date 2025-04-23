@@ -349,6 +349,63 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/clusterManagerRead'
+    kubernetesClusterAutoUpgradeWindow:
+      description: |-
+        Defines when in the day an upgrade is allowed to occur, specified as an
+        hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+        day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
+        stop upgrades after 6am.
+      type: object
+      required:
+      - start
+      - end
+      properties:
+        start:
+          description: Hour to start upgrades.
+          type: integer
+          minimum: 0
+          maximum: 23
+        end:
+          description: Hour to end upgrades.
+          type: integer
+          minimum: 0
+          maximum: 23
+    kubernetesClusterAutoUpgradeDaysOfWeek:
+      description: |-
+        When defined allows explicit control of what days an auto upgrade can
+        occur on.
+      type: object
+      properties:
+        sunday:
+          $ref: '#/components/schemas/kubernetesClusterAutoUpgradeWindow'
+        monday:
+          $ref: '#/components/schemas/kubernetesClusterAutoUpgradeWindow'
+        tuesday:
+          $ref: '#/components/schemas/kubernetesClusterAutoUpgradeWindow'
+        wednesday:
+          $ref: '#/components/schemas/kubernetesClusterAutoUpgradeWindow'
+        thursday:
+          $ref: '#/components/schemas/kubernetesClusterAutoUpgradeWindow'
+        friday:
+          $ref: '#/components/schemas/kubernetesClusterAutoUpgradeWindow'
+        saturday:
+          $ref: '#/components/schemas/kubernetesClusterAutoUpgradeWindow'
+    kubernetesClusterAutoUpgrade:
+      description: |-
+        If set enables auto-upgrade to a set schedule, or opt out of upgrades
+        entirely.  Upgrades still occur when the cluster's application bundle
+        reaches end of life irrespective of whether auto upgrades are disabled.
+        The absence of this object represents a default auto-upgrade policy of
+        the platform.
+      type: object
+      required:
+      - enabled
+      properties:
+        enabled:
+          description: Whether or not auto upgrades are enabled.
+          type: boolean
+        daysOfWeek:
+          $ref: '#/components/schemas/kubernetesClusterAutoUpgradeDaysOfWeek'
     kubernetesClusterNetwork:
       description: A kubernetes cluster network settings.
       type: object
@@ -467,6 +524,11 @@ components:
           description: The Kuebernetes version.  This should be derived from
             image metadata.
           type: string
+        applicationBundleName:
+          description: An explicit set of applications to use for deploy.
+          type: string
+        autoUpgrade:
+          $ref: '#/components/schemas/kubernetesClusterAutoUpgrade'
         workloadPools:
           $ref: '#/components/schemas/kubernetesClusterWorkloadPools'
         api:
