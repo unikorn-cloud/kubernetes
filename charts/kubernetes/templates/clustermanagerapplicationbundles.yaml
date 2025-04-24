@@ -27,11 +27,11 @@ spec:
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: ClusterManagerApplicationBundle
 metadata:
-  name: cluster-manager-1.2.1
+  name: cluster-manager-2.0.0
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 spec:
-  version: 1.2.1
+  version: 2.0.0
   applications:
   - name: vcluster
     reference:
