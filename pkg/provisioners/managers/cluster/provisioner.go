@@ -29,7 +29,6 @@ import (
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	coreclient "github.com/unikorn-cloud/core/pkg/client"
 	coreconstants "github.com/unikorn-cloud/core/pkg/constants"
-	coreerrors "github.com/unikorn-cloud/core/pkg/errors"
 	"github.com/unikorn-cloud/core/pkg/manager"
 	coreapi "github.com/unikorn-cloud/core/pkg/openapi"
 	"github.com/unikorn-cloud/core/pkg/provisioners"
@@ -38,6 +37,7 @@ import (
 	"github.com/unikorn-cloud/core/pkg/provisioners/remotecluster"
 	"github.com/unikorn-cloud/core/pkg/provisioners/serial"
 	"github.com/unikorn-cloud/core/pkg/util"
+	coreapiutils "github.com/unikorn-cloud/core/pkg/util/api"
 	identityclient "github.com/unikorn-cloud/identity/pkg/client"
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/kubernetes/pkg/constants"
@@ -437,7 +437,7 @@ func (p *Provisioner) getIdentity(ctx context.Context, client regionapi.ClientWi
 	}
 
 	if response.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("%w: identity GET expected 200 got %d", coreerrors.ErrAPIStatus, response.StatusCode())
+		return nil, coreapiutils.ExtractError(response.StatusCode(), response)
 	}
 
 	resource := response.JSON200
@@ -467,7 +467,7 @@ func (p *Provisioner) deleteIdentity(ctx context.Context, client regionapi.Clien
 	// we can delete the cluster, a not found means it's been deleted already
 	// and again can proceed.  The goal here is not to leak resources.
 	if statusCode != http.StatusAccepted && statusCode != http.StatusNotFound {
-		return fmt.Errorf("%w: identity DELETE expected 202,404 got %d", ErrResourceDependency, statusCode)
+		return coreapiutils.ExtractError(response.StatusCode(), response)
 	}
 
 	return nil
@@ -488,7 +488,7 @@ func (p *Provisioner) getNetwork(ctx context.Context, client regionapi.ClientWit
 	}
 
 	if response.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("%w: physical network GET expected 200 got %d", coreerrors.ErrAPIStatus, response.StatusCode())
+		return nil, coreapiutils.ExtractError(response.StatusCode(), response)
 	}
 
 	resource := response.JSON200
@@ -513,7 +513,7 @@ func (p *Provisioner) getExternalNetwork(ctx context.Context, client regionapi.C
 	}
 
 	if response.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("%w: external networks GET expected 200 got %d", coreerrors.ErrAPIStatus, response.StatusCode())
+		return nil, coreapiutils.ExtractError(response.StatusCode(), response)
 	}
 
 	externalNetworks := *response.JSON200
