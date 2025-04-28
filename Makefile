@@ -100,10 +100,6 @@ all: $(CONTROLLER_BINARIES) $(CRDDIR)
 $(BINDIR) $(BINDIR)/amd64-linux-gnu $(BINDIR)/arm64-linux-gnu:
 	mkdir -p $@
 
-# Create a binary from a command.
-$(BINDIR)/%: $(SOURCES) $(GENDIR) $(OPENAPI_FILES) | $(BINDIR)
-	CGO_ENABLED=0 go build $(FLAGS) -o $@ $(CMDDIR)/$*/main.go
-
 $(BINDIR)/amd64-linux-gnu/%: $(SOURCES) $(GENDIR) $(OPENAPI_FILES) | $(BINDIR)/amd64-linux-gnu
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(FLAGS) -o $@ $(CMDDIR)/$*/main.go
 
