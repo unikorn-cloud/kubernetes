@@ -474,7 +474,7 @@ func preserveAnnotations(requested, current *unikornv1.KubernetesCluster) error 
 	return nil
 }
 
-// Create creates the implicit cluster indentified by the JTW claims.
+// Create creates the implicit cluster identified by the JTW claims.
 func (c *Client) Create(ctx context.Context, organizationID, projectID string, request *openapi.KubernetesClusterWrite) (*openapi.KubernetesClusterRead, error) {
 	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationID, projectID)
 	if err != nil {
@@ -517,7 +517,7 @@ func (c *Client) Create(ctx context.Context, organizationID, projectID string, r
 	return convert(cluster), nil
 }
 
-// Delete deletes the implicit cluster indentified by the JTW claims.
+// Delete deletes the implicit cluster identified by the JTW claims.
 func (c *Client) Delete(ctx context.Context, organizationID, projectID, clusterID string) error {
 	namespace, err := common.New(c.client).ProjectNamespace(ctx, organizationID, projectID)
 	if err != nil {

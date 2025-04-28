@@ -29,6 +29,13 @@ clusterController:
   # Allows override of the global default image.
   image:
 
+# Virtual cluster controller specific configuration.
+virtualClusterController:
+  # Allows override of the global default image.
+  image: ~
+  # Sets the DDNS domain virtual clusters will be part of
+  virtualKubernetesClusterDomain: ~
+
 # Monitor specific configuration.
 monitor:
   # Allows override of the global default image.

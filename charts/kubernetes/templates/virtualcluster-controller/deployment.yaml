@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: unikorn-cluster-controller
+  name: unikorn-virtualcluster-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: unikorn-cluster-controller
+      app: unikorn-virtualcluster-controller
   template:
     metadata:
       labels:
-        app: unikorn-cluster-controller
+        app: unikorn-virtualcluster-controller
     spec:
       containers:
-      - name: unikorn-cluster-controller
-        image: {{ include "unikorn.clusterControllerImage" . }}
+      - name: unikorn-virtualcluster-controller
+        image: {{ include "unikorn.virtualClusterControllerImage" . }}
         args:
         {{- include "unikorn.core.flags" . | nindent 8 }}
         {{- include "unikorn.identity.flags" . | nindent 8 }}
@@ -24,6 +24,9 @@ spec:
         {{- include "unikorn.otlp.flags" . | nindent 8 }}
         - --client-certificate-namespace={{ .Release.Namespace }}
         - --client-certificate-name={{ .Release.Namespace }}-client-certificate
+        {{- with $domain := .Values.virtualClusterController.virtualKubernetesClusterDomain }}
+        - --virtual-kubernetes-cluster-domain={{ $domain }}
+        {{- end }}
         ports:
         - name: prometheus
           containerPort: 8080
@@ -36,6 +39,6 @@ spec:
             memory: 100Mi
         securityContext:
           readOnlyRootFilesystem: true
-      serviceAccountName: unikorn-cluster-controller
+      serviceAccountName: unikorn-virtualcluster-controller
       securityContext:
         runAsNonRoot: true

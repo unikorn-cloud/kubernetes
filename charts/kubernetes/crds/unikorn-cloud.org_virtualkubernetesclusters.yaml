@@ -4,16 +4,16 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.3
-  name: kubernetesclusters.unikorn-cloud.org
+  name: virtualkubernetesclusters.unikorn-cloud.org
 spec:
   group: unikorn-cloud.org
   names:
     categories:
     - unikorn
-    kind: KubernetesCluster
-    listKind: KubernetesClusterList
-    plural: kubernetesclusters
-    singular: kubernetescluster
+    kind: VirtualKubernetesCluster
+    listKind: VirtualKubernetesClusterList
+    plural: virtualkubernetesclusters
+    singular: virtualkubernetescluster
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -35,11 +35,8 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: |-
-          KubernetesCluster is an object representing a Kubernetes cluster.
-          For now, this is a monolith for simplicity.  In future it may reference
-          a provider specific implementation e.g. if CAPI goes out of favour for
-          some other new starlet.
+        description: VirtualKubernetesCluster is an object representing a Kubernetes
+          cluster.
         properties:
           apiVersion:
             description: |-
@@ -59,28 +56,9 @@ spec:
           metadata:
             type: object
           spec:
-            description: KubernetesClusterSpec defines the requested state of the
-              Kubernetes cluster.
+            description: VirtualKubernetesClusterSpec defines the requested state
+              of the Kubernetes cluster.
             properties:
-              api:
-                description: API defines Kubernetes API specific options.
-                properties:
-                  allowedPrefixes:
-                    description: |-
-                      AllowedPrefixes is a list of all IPv4 prefixes that are allowed to access
-                      the API.
-                    items:
-                      pattern: ^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\/(?:3[0-2]|[1-2]?[0-9])$
-                      type: string
-                    type: array
-                  subjectAlternativeNames:
-                    description: |-
-                      SubjectAlternativeNames is a list of X.509 SANs to add to the API
-                      certificate.
-                    items:
-                      type: string
-                    type: array
-                type: object
               applicationBundle:
                 description: |-
                   ApplicationBundle defines the applications used to create the cluster.
@@ -264,87 +242,6 @@ spec:
                         type: object
                     type: object
                 type: object
-              clusterManagerId:
-                description: ClusterManager that provides lifecycle management for
-                  the cluster.
-                type: string
-              controlPlane:
-                description: ControlPlane defines the cluster manager topology.
-                properties:
-                  diskSize:
-                    anyOf:
-                    - type: integer
-                    - type: string
-                    description: |-
-                      DiskSize is the persistent root disk size to deploy with.  This
-                      overrides the default ephemeral disk size defined in the flavor.
-                      This is irrelevant for baremetal machine flavors.
-                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                    x-kubernetes-int-or-string: true
-                  flavorId:
-                    description: Flavor is the regions service flavor to deploy with.
-                    type: string
-                  imageId:
-                    description: Image is the region service image to deploy with.
-                    type: string
-                  replicas:
-                    default: 3
-                    description: Replicas is the initial pool size to deploy.
-                    minimum: 0
-                    type: integer
-                required:
-                - flavorId
-                - imageId
-                type: object
-              features:
-                description: Features defines add-on features that can be enabled
-                  for the cluster.
-                properties:
-                  autoscaling:
-                    description: |-
-                      Autoscaling enables the provision of a cluster autoscaler.
-                      This is only installed if a workload pool has autoscaling enabled.
-                    type: boolean
-                  gpuOperator:
-                    description: |-
-                      GPUOperator enables the provision of a GPU operator.
-                      This is only installed if a workload pool has a flavor that defines
-                      a valid GPU specification and vendor.
-                    type: boolean
-                type: object
-              network:
-                description: Network defines the Kubernetes networking.
-                properties:
-                  dnsNameservers:
-                    description: DNSNameservers sets the DNS nameservers for hosts
-                      on the network.
-                    items:
-                      pattern: ^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])$
-                      type: string
-                    minItems: 1
-                    type: array
-                    x-kubernetes-list-type: set
-                  nodeNetwork:
-                    description: |-
-                      NodeNetwork is the IPv4 prefix for the node network.
-                      This is tyically used to populate a physical network address range.
-                    pattern: ^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\/(?:3[0-2]|[1-2]?[0-9])$
-                    type: string
-                  podNetwork:
-                    description: PodNetwork is the IPv4 prefix for the pod network.
-                    pattern: ^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\/(?:3[0-2]|[1-2]?[0-9])$
-                    type: string
-                  serviceNetwork:
-                    description: ServiceNetwork is the IPv4 prefix for the service
-                      network.
-                    pattern: ^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\/(?:3[0-2]|[1-2]?[0-9])$
-                    type: string
-                required:
-                - dnsNameservers
-                - nodeNetwork
-                - podNetwork
-                - serviceNetwork
-                type: object
               pause:
                 description: Pause, if true, will inhibit reconciliation.
                 type: boolean
@@ -367,120 +264,35 @@ spec:
                   - value
                   type: object
                 type: array
-              version:
-                description: |-
-                  Version is the Kubernetes version to install.  For performance
-                  reasons this should match what is already pre-installed on the
-                  provided image.
-                pattern: ^v?[0-9]+(\.[0-9]+)?(\.[0-9]+)?(-([0-9A-Za-z\-]+(\.[0-9A-Za-z\-]+)*))?(\+([0-9A-Za-z\-]+(\.[0-9A-Za-z\-]+)*))?$
-                type: string
               workloadPools:
                 description: WorkloadPools defines the workload cluster topology.
-                properties:
-                  pools:
-                    description: |-
-                      Pools contains an inline set of pools.  This field will be ignored
-                      when Selector is set.  Inline pools are expected to be used for UI
-                      generated clusters.
-                    items:
-                      properties:
-                        autoscaling:
-                          description: |-
-                            Autoscaling contains optional sclaing limits and scheduling
-                            hints for autoscaling.
-                          properties:
-                            maximumReplicas:
-                              description: |-
-                                MaximumReplicas defines the maximum numer of replicas that
-                                this pool can be scaled up to.
-                              minimum: 1
-                              type: integer
-                            minimumReplicas:
-                              description: |-
-                                MinimumReplicas defines the minimum number of replicas that
-                                this pool can be scaled down to.
-                              minimum: 0
-                              type: integer
-                          required:
-                          - maximumReplicas
-                          - minimumReplicas
-                          type: object
-                          x-kubernetes-validations:
-                          - message: maximumReplicas must be greater than minimumReplicas
-                            rule: (self.maximumReplicas > self.minimumReplicas)
-                        diskSize:
-                          anyOf:
-                          - type: integer
-                          - type: string
-                          description: |-
-                            DiskSize is the persistent root disk size to deploy with.  This
-                            overrides the default ephemeral disk size defined in the flavor.
-                            This is irrelevant for baremetal machine flavors.
-                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                          x-kubernetes-int-or-string: true
-                        files:
-                          description: |-
-                            Files are a set of files that can be installed onto the node
-                            on initialisation/join.
-                          items:
-                            description: File is a file that can be deployed to a
-                              cluster node on creation.
-                            properties:
-                              content:
-                                description: Content is the file contents.
-                                format: byte
-                                type: string
-                              path:
-                                description: Path is the absolute path to create the
-                                  file in.
-                                type: string
-                            required:
-                            - content
-                            - path
-                            type: object
-                          type: array
-                        flavorId:
-                          description: Flavor is the regions service flavor to deploy
-                            with.
-                          type: string
-                        imageId:
-                          description: Image is the region service image to deploy
-                            with.
-                          type: string
-                        labels:
-                          additionalProperties:
-                            type: string
-                          description: |-
-                            Labels is the set of node labels to apply to the pool on
-                            initialisation/join.
-                          type: object
-                        name:
-                          description: Name is the name of the pool.
-                          type: string
-                        replicas:
-                          default: 3
-                          description: Replicas is the initial pool size to deploy.
-                          minimum: 0
-                          type: integer
-                      required:
-                      - flavorId
-                      - imageId
-                      - name
-                      type: object
-                    type: array
-                type: object
+                items:
+                  properties:
+                    flavorId:
+                      description: Flavor is the regions service flavor to deploy
+                        with.
+                      type: string
+                    name:
+                      description: Name is the name of the pool.
+                      type: string
+                    replicas:
+                      default: 3
+                      description: Replicas is the initial pool size to deploy.
+                      minimum: 0
+                      type: integer
+                  required:
+                  - flavorId
+                  - name
+                  type: object
+                type: array
             required:
             - applicationBundle
-            - clusterManagerId
-            - controlPlane
-            - network
             - regionId
-            - version
             - workloadPools
             type: object
           status:
-            description: KubernetesClusterStatus defines the observed state of the
-              Kubernetes cluster.
+            description: VirtualKubernetesClusterStatus defines the observed state
+              of the Kubernetes cluster.
             properties:
               conditions:
                 description: Current service state of a Kubernetes cluster.
@@ -528,9 +340,6 @@ spec:
                   - type
                   type: object
                 type: array
-              namespace:
-                description: Namespace defines the namespace a cluster resides in.
-                type: string
             type: object
         required:
         - spec

@@ -18,12 +18,52 @@ package region
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"slices"
 
 	coreapiutils "github.com/unikorn-cloud/core/pkg/util/api"
+	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
 )
+
+var (
+	ErrUnhandled = errors.New("unhandled case")
+)
+
+// regionTypeFilter creates a filter for use with DeleteFunc that selects regions
+// based on the requested cluster type.
+func regionTypeFilter(t openapi.RegionTypeParameter) (func(regionapi.RegionRead) bool, error) {
+	switch t {
+	case openapi.Physical:
+		return func(x regionapi.RegionRead) bool { return x.Spec.Type == regionapi.Kubernetes }, nil
+	case openapi.Virtual:
+		return func(x regionapi.RegionRead) bool { return x.Spec.Type != regionapi.Kubernetes }, nil
+	}
+
+	return nil, ErrUnhandled
+}
+
+// Regions lists all regions.
+func Regions(ctx context.Context, client regionapi.ClientWithResponsesInterface, organizationID string, params openapi.GetApiV1OrganizationsOrganizationIDRegionsParams) ([]regionapi.RegionRead, error) {
+	resp, err := client.GetApiV1OrganizationsOrganizationIDRegionsWithResponse(ctx, organizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return nil, coreapiutils.ExtractError(resp.StatusCode(), resp)
+	}
+
+	regions := *resp.JSON200
+
+	filter, err := regionTypeFilter(params.RegionType)
+	if err != nil {
+		return nil, err
+	}
+
+	return slices.DeleteFunc(regions, filter), nil
+}
 
 // Flavors returns all Kubernetes compatible flavors.
 func Flavors(ctx context.Context, client regionapi.ClientWithResponsesInterface, organizationID, regionID string) ([]regionapi.Flavor, error) {

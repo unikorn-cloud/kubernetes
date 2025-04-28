@@ -83,3 +83,15 @@ func (c *Client) ListCluster(ctx context.Context) (*unikornv1.KubernetesClusterA
 
 	return result, nil
 }
+
+func (c *Client) ListVirtualCluster(ctx context.Context) (*unikornv1.VirtualKubernetesClusterApplicationBundleList, error) {
+	result := &unikornv1.VirtualKubernetesClusterApplicationBundleList{}
+
+	if err := c.client.List(ctx, result); err != nil {
+		return nil, errors.OAuth2ServerError("failed to list application bundles").WithError(err)
+	}
+
+	slices.SortStableFunc(result.Items, unikornv1.CompareVirtualKubernetesClusterApplicationBundle)
+
+	return result, nil
+}

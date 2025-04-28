@@ -53,7 +53,7 @@ type ClusterManager struct {
 type ClusterManagerSpec struct {
 	// Pause, if true, will inhibit reconciliation.
 	Pause bool `json:"pause,omitempty"`
-	// Tags are aribrary user data.
+	// Tags are arbitrary user data.
 	Tags unikornv1core.TagList `json:"tags,omitempty"`
 	// ApplicationBundle defines the applications used to create the cluster manager.
 	// Change this to a new bundle to start an upgrade.
@@ -142,7 +142,7 @@ type KubernetesCluster struct {
 type KubernetesClusterSpec struct {
 	// Pause, if true, will inhibit reconciliation.
 	Pause bool `json:"pause,omitempty"`
-	// Tags are aribrary user data.
+	// Tags are arbitrary user data.
 	Tags unikornv1core.TagList `json:"tags,omitempty"`
 	// Region to provision the cluster in.
 	RegionID string `json:"regionId"`
@@ -220,6 +220,69 @@ type KubernetesClusterStatus struct {
 	Conditions []unikornv1core.Condition `json:"conditions,omitempty"`
 }
 
+// VrtualKubernetesClusterList is a typed list of kubernetes clusters.
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type VirtualKubernetesClusterList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []VirtualKubernetesCluster `json:"items"`
+}
+
+// VirtualKubernetesCluster is an object representing a Kubernetes cluster.
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:resource:scope=Namespaced,categories=unikorn
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="display name",type="string",JSONPath=".metadata.labels['unikorn-cloud\\.org/name']"
+// +kubebuilder:printcolumn:name="bundle",type="string",JSONPath=".spec.applicationBundle"
+// +kubebuilder:printcolumn:name="version",type="string",JSONPath=".spec.version"
+// +kubebuilder:printcolumn:name="status",type="string",JSONPath=".status.conditions[?(@.type==\"Available\")].reason"
+// +kubebuilder:printcolumn:name="age",type="date",JSONPath=".metadata.creationTimestamp"
+type VirtualKubernetesCluster struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Spec              VirtualKubernetesClusterSpec   `json:"spec"`
+	Status            VirtualKubernetesClusterStatus `json:"status,omitempty"`
+}
+
+// VirtualKubernetesClusterSpec defines the requested state of the Kubernetes cluster.
+type VirtualKubernetesClusterSpec struct {
+	// Pause, if true, will inhibit reconciliation.
+	Pause bool `json:"pause,omitempty"`
+	// Tags are arbitrary user data.
+	Tags unikornv1core.TagList `json:"tags,omitempty"`
+	// Region to provision the cluster in.
+	RegionID string `json:"regionId"`
+	// WorkloadPools defines the workload cluster topology.
+	WorkloadPools []VirtualKubernetesClusterWorkloadPoolSpec `json:"workloadPools"`
+	// ApplicationBundle defines the applications used to create the cluster.
+	// Change this to a new bundle to start an upgrade.
+	ApplicationBundle *string `json:"applicationBundle"`
+	// ApplicationBundleAutoUpgrade enables automatic upgrade of application bundles.
+	// When no properties are set in the specification, the platform will automatically
+	// choose an upgrade time for your resource.  This will be before a working day
+	// (Mon-Fri) and before working hours (00:00-07:00 UTC).  When any property is set
+	// the platform will follow the rules for the upgrade method.
+	ApplicationBundleAutoUpgrade *ApplicationBundleAutoUpgradeSpec `json:"applicationBundleAutoUpgrade,omitempty"`
+}
+
+type VirtualKubernetesClusterWorkloadPoolSpec struct {
+	// Name is the name of the pool.
+	Name string `json:"name"`
+	// Flavor is the regions service flavor to deploy with.
+	FlavorID *string `json:"flavorId"`
+	// Replicas is the initial pool size to deploy.
+	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:default=3
+	Replicas *int `json:"replicas,omitempty"`
+}
+
+// VirtualKubernetesClusterStatus defines the observed state of the Kubernetes cluster.
+type VirtualKubernetesClusterStatus struct {
+	// Current service state of a Kubernetes cluster.
+	Conditions []unikornv1core.Condition `json:"conditions,omitempty"`
+}
+
 // ClusterManagerApplicationBundleList defines a list of application bundles.
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type ClusterManagerApplicationBundleList struct {
@@ -266,6 +329,30 @@ type KubernetesClusterApplicationBundleList struct {
 // +kubebuilder:printcolumn:name="end of life",type="string",JSONPath=".spec.endOfLife"
 // +kubebuilder:printcolumn:name="age",type="date",JSONPath=".metadata.creationTimestamp"
 type KubernetesClusterApplicationBundle struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Spec              ApplicationBundleSpec   `json:"spec"`
+	Status            ApplicationBundleStatus `json:"status,omitempty"`
+}
+
+// VirtulKubernetesClusterApplicationBundleList defines a list of application bundles.
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type VirtualKubernetesClusterApplicationBundleList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []VirtualKubernetesClusterApplicationBundle `json:"items"`
+}
+
+// VirtualKubernetesClusterApplicationBundle defines a bundle of applications related with a particular
+// custom resource.
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:resource:scope=Namespaced,categories=unikorn
+// +kubebuilder:printcolumn:name="version",type="string",JSONPath=".spec.version"
+// +kubebuilder:printcolumn:name="preview",type="string",JSONPath=".spec.preview"
+// +kubebuilder:printcolumn:name="end of life",type="string",JSONPath=".spec.endOfLife"
+// +kubebuilder:printcolumn:name="age",type="date",JSONPath=".metadata.creationTimestamp"
+type VirtualKubernetesClusterApplicationBundle struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	Spec              ApplicationBundleSpec   `json:"spec"`

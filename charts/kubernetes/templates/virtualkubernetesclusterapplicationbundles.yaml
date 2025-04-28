@@ -1,0 +1,14 @@
+apiVersion: unikorn-cloud.org/v1alpha1
+kind: VirtualKubernetesClusterApplicationBundle
+metadata:
+  name: virtual-kubernetes-cluster-1.0.0
+  labels:
+    {{- include "unikorn.labels" . | nindent 4 }}
+spec:
+  version: 1.0.0
+  applications:
+  - name: vcluster
+    reference:
+      kind: HelmApplication
+      name: {{ include "resource.id" "vcluster" }}
+      version: 0.24.1
