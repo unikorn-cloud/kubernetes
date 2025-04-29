@@ -13,9 +13,9 @@ require (
 	github.com/prometheus/client_golang v1.21.1
 	github.com/spf13/pflag v1.0.6
 	github.com/stretchr/testify v1.10.0
-	github.com/unikorn-cloud/core v0.1.94-rc3
-	github.com/unikorn-cloud/identity v0.2.62-rc2
-	github.com/unikorn-cloud/region v0.1.53-rc4
+	github.com/unikorn-cloud/core v0.1.94
+	github.com/unikorn-cloud/identity v0.2.62
+	github.com/unikorn-cloud/region v0.1.53
 	go.opentelemetry.io/otel v1.35.0
 	go.opentelemetry.io/otel/sdk v1.35.0
 	gopkg.in/ini.v1 v1.67.0
