@@ -122,7 +122,7 @@ func (c *Checker) Check(ctx context.Context) error {
 		}
 
 		discard := func(bundle unikornv1.KubernetesClusterApplicationBundle) bool {
-			return bundle.Spec.Version.Version.Major() != currentBundle.Spec.Version.Major()
+			return bundle.Spec.Version.Major() != currentBundle.Spec.Version.Major()
 		}
 
 		allowedBundles := &unikornv1.KubernetesClusterApplicationBundleList{

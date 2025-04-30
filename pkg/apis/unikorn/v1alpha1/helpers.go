@@ -90,11 +90,11 @@ func (c *ClusterManager) ResourceLabels() (labels.Set, error) {
 	return labels, nil
 }
 
-func (c ClusterManager) Entropy() []byte {
+func (c *ClusterManager) Entropy() []byte {
 	return []byte(c.UID)
 }
 
-func (c ClusterManager) UpgradeSpec() *ApplicationBundleAutoUpgradeSpec {
+func (c *ClusterManager) UpgradeSpec() *ApplicationBundleAutoUpgradeSpec {
 	return c.Spec.ApplicationBundleAutoUpgrade
 }
 
@@ -134,11 +134,11 @@ func (c *KubernetesCluster) ResourceLabels() (labels.Set, error) {
 	return labels, nil
 }
 
-func (c KubernetesCluster) Entropy() []byte {
+func (c *KubernetesCluster) Entropy() []byte {
 	return []byte(c.UID)
 }
 
-func (c KubernetesCluster) UpgradeSpec() *ApplicationBundleAutoUpgradeSpec {
+func (c *KubernetesCluster) UpgradeSpec() *ApplicationBundleAutoUpgradeSpec {
 	return c.Spec.ApplicationBundleAutoUpgrade
 }
 
@@ -223,7 +223,7 @@ func CompareVirtualKubernetesClusterApplicationBundle(a, b VirtualKubernetesClus
 }
 
 // Get retrieves the named bundle.
-func (l ClusterManagerApplicationBundleList) Get(name string) *ClusterManagerApplicationBundle {
+func (l *ClusterManagerApplicationBundleList) Get(name string) *ClusterManagerApplicationBundle {
 	for i := range l.Items {
 		if l.Items[i].Name == name {
 			return &l.Items[i]
@@ -233,7 +233,7 @@ func (l ClusterManagerApplicationBundleList) Get(name string) *ClusterManagerApp
 	return nil
 }
 
-func (l KubernetesClusterApplicationBundleList) Get(name string) *KubernetesClusterApplicationBundle {
+func (l *KubernetesClusterApplicationBundleList) Get(name string) *KubernetesClusterApplicationBundle {
 	for i := range l.Items {
 		if l.Items[i].Name == name {
 			return &l.Items[i]
@@ -245,7 +245,7 @@ func (l KubernetesClusterApplicationBundleList) Get(name string) *KubernetesClus
 
 // Upgradable returns a new list of bundles that are "stable" e.g. not end of life and
 // not a preview.
-func (l ClusterManagerApplicationBundleList) Upgradable() *ClusterManagerApplicationBundleList {
+func (l *ClusterManagerApplicationBundleList) Upgradable() *ClusterManagerApplicationBundleList {
 	result := &ClusterManagerApplicationBundleList{}
 
 	for _, bundle := range l.Items {
@@ -263,7 +263,7 @@ func (l ClusterManagerApplicationBundleList) Upgradable() *ClusterManagerApplica
 	return result
 }
 
-func (l KubernetesClusterApplicationBundleList) Upgradable() *KubernetesClusterApplicationBundleList {
+func (l *KubernetesClusterApplicationBundleList) Upgradable() *KubernetesClusterApplicationBundleList {
 	result := &KubernetesClusterApplicationBundleList{}
 
 	for _, bundle := range l.Items {
@@ -281,7 +281,7 @@ func (l KubernetesClusterApplicationBundleList) Upgradable() *KubernetesClusterA
 	return result
 }
 
-func (s ApplicationBundleSpec) GetApplication(name string) (*unikornv1core.ApplicationReference, error) {
+func (s *ApplicationBundleSpec) GetApplication(name string) (*unikornv1core.ApplicationReference, error) {
 	for i := range s.Applications {
 		if *s.Applications[i].Name == name {
 			return s.Applications[i].Reference, nil
@@ -292,7 +292,7 @@ func (s ApplicationBundleSpec) GetApplication(name string) (*unikornv1core.Appli
 }
 
 // Weekdays returns the days of the week that are set in the spec.
-func (s ApplicationBundleAutoUpgradeWeekDaySpec) Weekdays() []time.Weekday {
+func (s *ApplicationBundleAutoUpgradeWeekDaySpec) Weekdays() []time.Weekday {
 	var result []time.Weekday
 
 	if s.Sunday != nil {

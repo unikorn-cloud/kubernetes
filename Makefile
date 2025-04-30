@@ -63,10 +63,10 @@ GOBIN := $(if $(shell go env GOBIN),$(shell go env GOBIN),$(GOPATH)/bin)
 FLAGS=-trimpath -ldflags '-X $(MODULE)/pkg/constants.Version=$(VERSION) -X $(MODULE)/pkg/constants.Revision=$(REVISION)'
 
 # Defines the linter version.
-LINT_VERSION=v1.61.0
+LINT_VERSION=v2.1.5
 
 # Defines the version of the CRD generation tools to use.
-CONTROLLER_TOOLS_VERSION=v0.16.3
+CONTROLLER_TOOLS_VERSION=v0.17.3
 
 # Defines the version of code generator tools to use.
 # This should be kept in sync with the Kubenetes library versions defined in go.mod.
@@ -181,7 +181,7 @@ touch:
 # This must pass or you will be denied by CI.
 .PHOMY: lint
 lint: $(GENDIR)
-	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(LINT_VERSION)
+	@go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(LINT_VERSION)
 	$(GOBIN)/golangci-lint run --timeout=10m ./...
 	helm lint --strict charts/kubernetes
 
