@@ -131,6 +131,18 @@ func (p *Provisioner) Values(ctx context.Context, version unikornv1core.Semantic
 		"statefulSet":  statefulSet,
 	}
 
+	sync := map[string]any{
+		"fromHost": map[string]any{
+			"nodes": map[string]any{
+				"enabled":          true,
+				"clearImageStatus": true,
+			},
+			"runtimeClasses": map[string]any{
+				"enabled": true,
+			},
+		},
+	}
+
 	// Block all network traffic between vclusters and the underlying system,
 	// with the exception of egress traffic to the internet.
 	// TODO: we probably want to enable the metric-server integration, and that
@@ -170,6 +182,7 @@ func (p *Provisioner) Values(ctx context.Context, version unikornv1core.Semantic
 	values := map[string]any{
 		"controlPlane":     controlPlane,
 		"policies":         policies,
+		"sync":             sync,
 		"exportKubeConfig": kubeConfig,
 	}
 
