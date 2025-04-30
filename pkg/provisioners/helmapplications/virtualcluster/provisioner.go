@@ -79,7 +79,7 @@ func (*Provisioner) ReleaseName(ctx context.Context) string {
 }
 
 // Values implements the application.ValuesGenerator interface.
-func (p *Provisioner) Values(ctx context.Context, version unikornv1core.SemanticVersion) (interface{}, error) {
+func (p *Provisioner) Values(ctx context.Context, version unikornv1core.SemanticVersion) (any, error) {
 	// TODO: syncer... loking forward to a world where things are dynamically scheduled
 	// and the cost is "what you use", we'll need to worry about billing, so it may
 	// be prudent to add organization, project and cluster labels to pods.
@@ -87,19 +87,19 @@ func (p *Provisioner) Values(ctx context.Context, version unikornv1core.Semantic
 	hostname := p.ReleaseName(ctx) + "." + p.domain
 
 	// Allow users to actually hit the cluster.
-	ingress := map[string]interface{}{
+	ingress := map[string]any{
 		"enabled": true,
 		"host":    hostname,
-		"spec": map[string]interface{}{
-			"tls": []interface{}{
-				map[string]interface{}{
-					"hosts": []interface{}{
+		"spec": map[string]any{
+			"tls": []any{
+				map[string]any{
+					"hosts": []any{
 						hostname,
 					},
 				},
 			},
 		},
-		"annotations": map[string]interface{}{
+		"annotations": map[string]any{
 			"external-dns.alpha.kubernetes.io/hostname": hostname,
 		},
 	}
@@ -108,24 +108,24 @@ func (p *Provisioner) Values(ctx context.Context, version unikornv1core.Semantic
 	// TODO: etcd is only available with a Pro license, we can probably source this from
 	// some controller options pointing at a secret and adapt the configuration based on
 	// its presence.
-	backingStore := map[string]interface{}{
-		"database": map[string]interface{}{
-			"embedded": map[string]interface{}{
+	backingStore := map[string]any{
+		"database": map[string]any{
+			"embedded": map[string]any{
 				"enabled": true,
 			},
 		},
 	}
 
 	// Clean up the volume when the cluster is deleted, lest we leak a ton of space.
-	statefulSet := map[string]interface{}{
-		"persistence": map[string]interface{}{
-			"volumeClaim": map[string]interface{}{
+	statefulSet := map[string]any{
+		"persistence": map[string]any{
+			"volumeClaim": map[string]any{
 				"retentionPolicy": "Delete",
 			},
 		},
 	}
 
-	controlPlane := map[string]interface{}{
+	controlPlane := map[string]any{
 		"ingress":      ingress,
 		"backingStore": backingStore,
 		"statefulSet":  statefulSet,
@@ -157,17 +157,17 @@ func (p *Provisioner) Values(ctx context.Context, version unikornv1core.Semantic
 	//               k8s-app: metrics-server
 	//   policyTypes:
 	//     - Egress
-	policies := map[string]interface{}{
-		"networkPolicy": map[string]interface{}{
+	policies := map[string]any{
+		"networkPolicy": map[string]any{
 			"enabled": true,
 		},
 	}
 
-	kubeConfig := map[string]interface{}{
+	kubeConfig := map[string]any{
 		"server": "https://" + hostname,
 	}
 
-	values := map[string]interface{}{
+	values := map[string]any{
 		"controlPlane":     controlPlane,
 		"policies":         policies,
 		"exportKubeConfig": kubeConfig,

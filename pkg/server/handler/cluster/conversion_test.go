@@ -88,7 +88,7 @@ func newClient(t *testing.T) client.Client {
 func TestApplicationBundleNameGenerationCreateDefault(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
 	defer cancel()
 
 	c := newClient(t)
@@ -110,7 +110,7 @@ func TestApplicationBundleNameGenerationCreateDefault(t *testing.T) {
 func TestApplicationBundleNameGenerationCreateExplicit(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
 	defer cancel()
 
 	c := newClient(t)
@@ -134,7 +134,7 @@ func TestApplicationBundleNameGenerationCreateExplicit(t *testing.T) {
 func TestApplicationBundleNameGenerationUpdateDefault(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
 	defer cancel()
 
 	c := newClient(t)
@@ -162,7 +162,7 @@ func TestApplicationBundleNameGenerationUpdateDefault(t *testing.T) {
 func TestApplicationBundleNameGenerationUpdateExplicit(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
 	defer cancel()
 
 	c := newClient(t)

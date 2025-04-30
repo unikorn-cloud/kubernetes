@@ -111,16 +111,16 @@ func convertMachine(in *unikornv1core.MachineGeneric) *openapi.MachinePool {
 func convertWorkloadPool(in *unikornv1.KubernetesClusterWorkloadPoolsPoolSpec) openapi.KubernetesClusterWorkloadPool {
 	workloadPool := openapi.KubernetesClusterWorkloadPool{
 		Name:    in.Name,
-		Machine: *convertMachine(&in.KubernetesWorkloadPoolSpec.MachineGeneric),
+		Machine: *convertMachine(&in.MachineGeneric),
 	}
 
-	if in.KubernetesWorkloadPoolSpec.Labels != nil {
-		workloadPool.Labels = &in.KubernetesWorkloadPoolSpec.Labels
+	if in.Labels != nil {
+		workloadPool.Labels = &in.Labels
 	}
 
-	if in.KubernetesWorkloadPoolSpec.Autoscaling != nil {
+	if in.Autoscaling != nil {
 		workloadPool.Autoscaling = &openapi.KubernetesClusterAutoscaling{
-			MinimumReplicas: *in.KubernetesWorkloadPoolSpec.Autoscaling.MinimumReplicas,
+			MinimumReplicas: *in.Autoscaling.MinimumReplicas,
 		}
 	}
 
