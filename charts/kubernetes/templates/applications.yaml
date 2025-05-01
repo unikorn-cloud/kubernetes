@@ -191,6 +191,13 @@ spec:
     parameters:
       - name: controlPlane.kubeadmSkipPhases[0]
         value: addon/kube-proxy
+  - version: v0.6.1
+    repo: https://unikorn-cloud.github.io/helm-cluster-api
+    chart: cluster-api-cluster-openstack
+    createNamespace: true
+    parameters:
+      - name: controlPlane.kubeadmSkipPhases[0]
+        value: addon/kube-proxy
 ---
 apiVersion: unikorn-cloud.org/v1alpha1
 kind: HelmApplication
