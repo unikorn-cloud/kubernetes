@@ -83,8 +83,8 @@ func (g *generator) withExisting(existing *unikornv1.VirtualKubernetesCluster) *
 func convertWorkloadPool(in *unikornv1.VirtualKubernetesClusterWorkloadPoolSpec) openapi.VirtualKubernetesClusterWorkloadPool {
 	workloadPool := openapi.VirtualKubernetesClusterWorkloadPool{
 		Name:     in.Name,
-		Replicas: *in.Replicas,
-		FlavorId: *in.FlavorID,
+		Replicas: in.Replicas,
+		FlavorId: in.FlavorID,
 	}
 
 	return workloadPool
@@ -139,7 +139,7 @@ func (g *generator) defaultApplicationBundle(ctx context.Context) (*unikornv1.Vi
 	}
 
 	applicationBundles.Items = slices.DeleteFunc(applicationBundles.Items, func(bundle unikornv1.VirtualKubernetesClusterApplicationBundle) bool {
-		if bundle.Spec.Preview != nil && *bundle.Spec.Preview {
+		if bundle.Spec.Preview {
 			return true
 		}
 
@@ -167,8 +167,8 @@ func generateWorkloadPools(request *openapi.VirtualKubernetesClusterWrite) []uni
 
 		workloadPool := unikornv1.VirtualKubernetesClusterWorkloadPoolSpec{
 			Name:     pool.Name,
-			Replicas: &pool.Replicas,
-			FlavorID: &pool.FlavorId,
+			Replicas: pool.Replicas,
+			FlavorID: pool.FlavorId,
 		}
 
 		workloadPools[i] = workloadPool
@@ -208,7 +208,7 @@ func (g *generator) generate(ctx context.Context, request *openapi.VirtualKubern
 		Spec: unikornv1.VirtualKubernetesClusterSpec{
 			Tags:                         conversion.GenerateTagList(request.Metadata.Tags),
 			RegionID:                     request.Spec.RegionId,
-			ApplicationBundle:            &applicationBundle.Name,
+			ApplicationBundle:            applicationBundle.Name,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
 			WorkloadPools:                generateWorkloadPools(request),
 		},

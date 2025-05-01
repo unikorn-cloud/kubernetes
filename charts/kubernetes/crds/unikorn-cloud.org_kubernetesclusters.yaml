@@ -288,7 +288,6 @@ spec:
                     description: Image is the region service image to deploy with.
                     type: string
                   replicas:
-                    default: 3
                     description: Replicas is the initial pool size to deploy.
                     minimum: 0
                     type: integer
@@ -389,12 +388,6 @@ spec:
                             Autoscaling contains optional sclaing limits and scheduling
                             hints for autoscaling.
                           properties:
-                            maximumReplicas:
-                              description: |-
-                                MaximumReplicas defines the maximum numer of replicas that
-                                this pool can be scaled up to.
-                              minimum: 1
-                              type: integer
                             minimumReplicas:
                               description: |-
                                 MinimumReplicas defines the minimum number of replicas that
@@ -402,12 +395,8 @@ spec:
                               minimum: 0
                               type: integer
                           required:
-                          - maximumReplicas
                           - minimumReplicas
                           type: object
-                          x-kubernetes-validations:
-                          - message: maximumReplicas must be greater than minimumReplicas
-                            rule: (self.maximumReplicas > self.minimumReplicas)
                         diskSize:
                           anyOf:
                           - type: integer
@@ -458,7 +447,6 @@ spec:
                           description: Name is the name of the pool.
                           type: string
                         replicas:
-                          default: 3
                           description: Replicas is the initial pool size to deploy.
                           minimum: 0
                           type: integer

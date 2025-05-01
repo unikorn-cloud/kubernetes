@@ -276,7 +276,6 @@ spec:
                       description: Name is the name of the pool.
                       type: string
                     replicas:
-                      default: 3
                       description: Replicas is the initial pool size to deploy.
                       minimum: 0
                       type: integer
