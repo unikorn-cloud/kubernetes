@@ -102,7 +102,7 @@ func TestApplicationBundleNameGenerationCreateDefault(t *testing.T) {
 	name, err := g.generateApplicationBundleName(ctx, request)
 	require.NoError(t, err)
 	require.NotNil(t, name)
-	require.Equal(t, bundleName(versionNewest), *name)
+	require.Equal(t, bundleName(versionNewest), name)
 }
 
 // TestApplicationBundleNameGenerationCreateExplicit checks that a bundle is selected explicitly
@@ -126,7 +126,7 @@ func TestApplicationBundleNameGenerationCreateExplicit(t *testing.T) {
 	name, err := g.generateApplicationBundleName(ctx, request)
 	require.NoError(t, err)
 	require.NotNil(t, name)
-	require.Equal(t, bundleName(versionMiddle), *name)
+	require.Equal(t, bundleName(versionMiddle), name)
 }
 
 // TestApplicationBundleNameGenerationUpdateDefault checks that on update a bundle version
@@ -141,7 +141,7 @@ func TestApplicationBundleNameGenerationUpdateDefault(t *testing.T) {
 
 	existing := &unikornv1.KubernetesCluster{
 		Spec: unikornv1.KubernetesClusterSpec{
-			ApplicationBundle: ptr.To(bundleName(versionMiddle)),
+			ApplicationBundle: bundleName(versionMiddle),
 		},
 	}
 
@@ -154,7 +154,7 @@ func TestApplicationBundleNameGenerationUpdateDefault(t *testing.T) {
 	name, err := g.generateApplicationBundleName(ctx, request)
 	require.NoError(t, err)
 	require.NotNil(t, name)
-	require.Equal(t, bundleName(versionMiddle), *name)
+	require.Equal(t, bundleName(versionMiddle), name)
 }
 
 // TestApplicationBundleNameGenerationUpdateExplicit checks that a bundle selected at the API
@@ -169,7 +169,7 @@ func TestApplicationBundleNameGenerationUpdateExplicit(t *testing.T) {
 
 	existing := &unikornv1.KubernetesCluster{
 		Spec: unikornv1.KubernetesClusterSpec{
-			ApplicationBundle: ptr.To(bundleName(versionNewest)),
+			ApplicationBundle: bundleName(versionNewest),
 		},
 	}
 
@@ -184,5 +184,5 @@ func TestApplicationBundleNameGenerationUpdateExplicit(t *testing.T) {
 	name, err := g.generateApplicationBundleName(ctx, request)
 	require.NoError(t, err)
 	require.NotNil(t, name)
-	require.Equal(t, bundleName(versionOldest), *name)
+	require.Equal(t, bundleName(versionOldest), name)
 }

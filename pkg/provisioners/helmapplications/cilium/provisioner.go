@@ -52,7 +52,7 @@ func (p *Provisioner) Values(ctx context.Context, _ unikornv1core.SemanticVersio
 
 	// If the cluster CP has one node, then this will fail to deploy
 	// as cilium has 2 as the default, we need to work some magic here.
-	if *cluster.Spec.ControlPlane.Replicas == 1 {
+	if cluster.Spec.ControlPlane.Replicas == 1 {
 		operatorValues["replicas"] = cluster.Spec.ControlPlane.Replicas
 	}
 	// We run in sans-kube-proxy mode, as it's faster and doesn't involve

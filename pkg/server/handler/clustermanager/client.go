@@ -171,7 +171,7 @@ func (c *Client) defaultApplicationBundle(ctx context.Context) (*unikornv1.Clust
 	}
 
 	applicationBundles.Items = slices.DeleteFunc(applicationBundles.Items, func(bundle unikornv1.ClusterManagerApplicationBundle) bool {
-		if bundle.Spec.Preview != nil && *bundle.Spec.Preview {
+		if bundle.Spec.Preview {
 			return true
 		}
 
@@ -211,7 +211,7 @@ func (c *Client) generate(ctx context.Context, namespace *corev1.Namespace, orga
 		ObjectMeta: conversion.NewObjectMetadata(&request.Metadata, namespace.Name, info.Userinfo.Sub).WithOrganization(organizationID).WithProject(projectID).Get(),
 		Spec: unikornv1.ClusterManagerSpec{
 			Tags:                         conversion.GenerateTagList(request.Metadata.Tags),
-			ApplicationBundle:            &applicationBundle.Name,
+			ApplicationBundle:            applicationBundle.Name,
 			ApplicationBundleAutoUpgrade: &unikornv1.ApplicationBundleAutoUpgradeSpec{},
 		},
 	}

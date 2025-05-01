@@ -80,7 +80,7 @@ func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name st
 
 	key := client.ObjectKey{
 		Namespace: namespace,
-		Name:      *a.clusterManager.Spec.ApplicationBundle,
+		Name:      a.clusterManager.Spec.ApplicationBundle,
 	}
 
 	bundle := &unikornv1.ClusterManagerApplicationBundle{}

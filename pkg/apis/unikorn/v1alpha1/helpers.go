@@ -144,12 +144,12 @@ func (c *KubernetesCluster) UpgradeSpec() *ApplicationBundleAutoUpgradeSpec {
 
 // AutoscalingEnabled indicates whether cluster autoscaling is enabled for the cluster.
 func (c *KubernetesCluster) AutoscalingEnabled() bool {
-	return c.Spec.Features != nil && c.Spec.Features.Autoscaling != nil && *c.Spec.Features.Autoscaling
+	return c.Spec.Features != nil && c.Spec.Features.Autoscaling
 }
 
 // GPUOperatorEnabled indicates whether to install the GPU operator.
 func (c *KubernetesCluster) GPUOperatorEnabled() bool {
-	return c.Spec.Features != nil && c.Spec.Features.GPUOperator != nil && *c.Spec.Features.GPUOperator
+	return c.Spec.Features != nil && c.Spec.Features.GPUOperator
 }
 
 func (c *KubernetesCluster) GetWorkloadPool(name string) *KubernetesClusterWorkloadPoolsPoolSpec {
@@ -249,7 +249,7 @@ func (l *ClusterManagerApplicationBundleList) Upgradable() *ClusterManagerApplic
 	result := &ClusterManagerApplicationBundleList{}
 
 	for _, bundle := range l.Items {
-		if bundle.Spec.Preview != nil && *bundle.Spec.Preview {
+		if bundle.Spec.Preview {
 			continue
 		}
 
@@ -267,7 +267,7 @@ func (l *KubernetesClusterApplicationBundleList) Upgradable() *KubernetesCluster
 	result := &KubernetesClusterApplicationBundleList{}
 
 	for _, bundle := range l.Items {
-		if bundle.Spec.Preview != nil && *bundle.Spec.Preview {
+		if bundle.Spec.Preview {
 			continue
 		}
 
@@ -283,8 +283,8 @@ func (l *KubernetesClusterApplicationBundleList) Upgradable() *KubernetesCluster
 
 func (s *ApplicationBundleSpec) GetApplication(name string) (*unikornv1core.ApplicationReference, error) {
 	for i := range s.Applications {
-		if *s.Applications[i].Name == name {
-			return s.Applications[i].Reference, nil
+		if s.Applications[i].Name == name {
+			return &s.Applications[i].Reference, nil
 		}
 	}
 

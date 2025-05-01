@@ -75,7 +75,7 @@ func (a *ApplicationReferenceGetter) getApplication(ctx context.Context, name st
 
 	key := client.ObjectKey{
 		Namespace: namespace,
-		Name:      *a.cluster.Spec.ApplicationBundle,
+		Name:      a.cluster.Spec.ApplicationBundle,
 	}
 
 	bundle := &unikornv1.VirtualKubernetesClusterApplicationBundle{}

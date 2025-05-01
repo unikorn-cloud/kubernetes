@@ -80,7 +80,7 @@ func (p *Provisioner) getFlavor(flavorID string) (*regionapi.Flavor, error) {
 // generateMachineHelmValues translates the API's idea of a machine into what's
 // expected by the underlying Helm chart.
 func (p *Provisioner) generateMachineHelmValues(machine *unikornv1core.MachineGeneric, controlPlane bool) (map[string]any, error) {
-	flavor, err := p.getFlavor(*machine.FlavorID)
+	flavor, err := p.getFlavor(machine.FlavorID)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (p *Provisioner) generateMachineHelmValues(machine *unikornv1core.MachineGe
 	// Translate from flavor ID to flavor name, because CAPO cannot accept one...
 	// https://github.com/kubernetes-sigs/cluster-api-provider-openstack/pull/2148
 	object := map[string]any{
-		"imageID":  *machine.ImageID,
+		"imageID":  machine.ImageID,
 		"flavorID": flavor.Metadata.Name,
 	}
 
@@ -123,7 +123,7 @@ func (p *Provisioner) generateWorkloadPoolHelmValues(cluster *unikornv1.Kubernet
 		}
 
 		object := map[string]any{
-			"replicas": *workloadPool.Replicas,
+			"replicas": workloadPool.Replicas,
 			"machine":  machine,
 		}
 
@@ -151,7 +151,7 @@ func (p *Provisioner) generateWorkloadPoolHelmValues(cluster *unikornv1.Kubernet
 
 			for i, file := range workloadPool.Files {
 				files[i] = map[string]any{
-					"path":    *file.Path,
+					"path":    file.Path,
 					"content": base64.StdEncoding.EncodeToString(file.Content),
 				}
 			}
@@ -182,7 +182,7 @@ func (p *Provisioner) generateWorkloadPoolHelmValues(cluster *unikornv1.Kubernet
 func (p *Provisioner) generateWorkloadPoolSchedulerHelmValues(pool *unikornv1.KubernetesClusterWorkloadPoolsPoolSpec) (map[string]any, error) {
 	// When scaler from zero is enabled, you need to provide CPU and memory hints,
 	// the autoscaler cannot guess the flavor attributes.
-	flavor, err := p.getFlavor(*pool.FlavorID)
+	flavor, err := p.getFlavor(pool.FlavorID)
 	if err != nil {
 		return nil, err
 	}
@@ -218,8 +218,8 @@ func (p *Provisioner) generateWorkloadPoolSchedulerHelmValues(pool *unikornv1.Ku
 
 	values := map[string]any{
 		"limits": map[string]any{
-			"minReplicas": *pool.Autoscaling.MinimumReplicas,
-			"maxReplicas": *pool.Autoscaling.MaximumReplicas,
+			"minReplicas": pool.Autoscaling.MinimumReplicas,
+			"maxReplicas": pool.Replicas,
 		},
 		"scheduler": scheduling,
 	}
@@ -306,7 +306,7 @@ func (p *Provisioner) Values(ctx context.Context, version unikornv1core.Semantic
 		"regionID":       cluster.Spec.RegionID,
 	}
 
-	machine, err := p.generateMachineHelmValues(cluster.Spec.ControlPlane, true)
+	machine, err := p.generateMachineHelmValues(&cluster.Spec.ControlPlane, true)
 	if err != nil {
 		return nil, err
 	}
@@ -331,7 +331,7 @@ func (p *Provisioner) Values(ctx context.Context, version unikornv1core.Semantic
 			"serverMetadata": serverMetadata,
 		},
 		"controlPlane": map[string]any{
-			"replicas": *cluster.Spec.ControlPlane.Replicas,
+			"replicas": cluster.Spec.ControlPlane.Replicas,
 			"machine":  machine,
 		},
 		"workloadPools": workloadPools,
