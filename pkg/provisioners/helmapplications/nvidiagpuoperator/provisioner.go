@@ -39,8 +39,7 @@ var _ application.ValuesGenerator = &Provisioner{}
 
 // Generate implements the application.Generator interface.
 func (p *Provisioner) Values(ctx context.Context, version unikornv1core.SemanticVersion) (any, error) {
-	// We limit images to those with the driver pre-installed as it's far quicker for UX.
-	// Also the default affinity is broken and prevents scale to zero, also tolerations
+	// The default affinity is broken and prevents scale to zero, also tolerations
 	// don't allow execution using our default taints.
 	// TODO: This includes the node-feature-discovery as a subchart, and doesn't expose
 	// node selectors/tolerations, however, it does scale to zero.
