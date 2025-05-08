@@ -1,29 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: unikorn-virtualcluster-controller
+  name: {{ .Release.Name }}-virtualcluster-controller
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: unikorn-virtualcluster-controller
+      app: {{ .Release.Name }}-virtualcluster-controller
   template:
     metadata:
       labels:
-        app: unikorn-virtualcluster-controller
+        app: {{ .Release.Name }}-virtualcluster-controller
     spec:
       containers:
-      - name: unikorn-virtualcluster-controller
+      - name: {{ .Release.Name }}-virtualcluster-controller
         image: {{ include "unikorn.virtualClusterControllerImage" . }}
         args:
         {{- include "unikorn.core.flags" . | nindent 8 }}
         {{- include "unikorn.identity.flags" . | nindent 8 }}
         {{- include "unikorn.region.flags" . | nindent 8 }}
         {{- include "unikorn.otlp.flags" . | nindent 8 }}
-        - --client-certificate-namespace={{ .Release.Namespace }}
-        - --client-certificate-name={{ .Release.Namespace }}-client-certificate
+        {{- include "unikorn.mtls.flags" . | nindent 8 }}
         {{- with $domain := .Values.virtualClusterController.virtualKubernetesClusterDomain }}
         - --virtual-kubernetes-cluster-domain={{ $domain }}
         {{- end }}
@@ -39,6 +38,6 @@ spec:
             memory: 100Mi
         securityContext:
           readOnlyRootFilesystem: true
-      serviceAccountName: unikorn-virtualcluster-controller
+      serviceAccountName: {{ .Release.Name }}-virtualcluster-controller
       securityContext:
         runAsNonRoot: true

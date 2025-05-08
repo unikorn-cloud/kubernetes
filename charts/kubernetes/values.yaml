@@ -9,15 +9,10 @@ organization: unikorn-cloud
 # actual release.
 # tag:
 
-# Set the docker configuration, doing so will create a secret and link it
-# to the service accounts of all the controllers.  You can do something like:
-# --set dockerConfig=$(cat ~/.docker/config.json | base64 -w0)
-dockerConfig:
-
 # Set the image pull secret on the service accounts of all the controllers.
 # This is an alternative to dockerConfigs, but unlikely to play ball with
 # ArgoCD as it's a foreign object that needs pruning.
-imagePullSecret:
+imagePullSecret: ~
 
 # Cluster manager controller specific configuration.
 clusterManagerController:

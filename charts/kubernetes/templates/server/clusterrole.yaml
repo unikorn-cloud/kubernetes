@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: unikorn-server
+  name: {{ .Release.Name }}-server
   labels:
     {{- include "unikorn.labels" . | nindent 4 }}
 rules:
@@ -22,11 +22,9 @@ rules:
 - apiGroups:
   - unikorn-cloud.org
   resources:
-  - regions
   - clustermanagerapplicationbundles
   - kubernetesclusterapplicationbundles
   - virtualkubernetesclusterapplicationbundles
-  - helmapplications
   verbs:
   - list
   - watch
@@ -35,14 +33,6 @@ rules:
   - ""
   resources:
   - namespaces
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  - services
   verbs:
   - list
   - watch

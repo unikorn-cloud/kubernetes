@@ -11,5 +11,5 @@ icon: https://raw.githubusercontent.com/unikorn-cloud/assets/main/images/logos/d
 
 dependencies:
 - name: unikorn-common
-  version: v0.1.14
+  version: v0.1.15
   repository: https://unikorn-cloud.github.io/helm-common
