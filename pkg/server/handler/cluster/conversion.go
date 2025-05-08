@@ -60,7 +60,7 @@ type generator struct {
 	// options allows access to resource defaults.
 	options *Options
 	// region is a client to access regions.
-	region regionapi.ClientWithResponsesInterface
+	region *region.Client
 	// namespace the resource is provisioned in.
 	namespace string
 	// organizationID is the unique organization identifier.
@@ -74,7 +74,7 @@ type generator struct {
 	existing *unikornv1.KubernetesCluster
 }
 
-func newGenerator(client client.Client, options *Options, region regionapi.ClientWithResponsesInterface, namespace, organizationID, projectID string) *generator {
+func newGenerator(client client.Client, options *Options, region *region.Client, namespace, organizationID, projectID string) *generator {
 	return &generator{
 		client:         client,
 		options:        options,
@@ -241,7 +241,7 @@ func (g *generator) defaultApplicationBundle(ctx context.Context) (*unikornv1.Ku
 
 // defaultControlPlaneFlavor returns a default control plane flavor.
 func (g *generator) defaultControlPlaneFlavor(ctx context.Context, request *openapi.KubernetesClusterWrite) (*regionapi.Flavor, error) {
-	flavors, err := region.Flavors(ctx, g.region, g.organizationID, request.Spec.RegionId)
+	flavors, err := g.region.Flavors(ctx, g.organizationID, request.Spec.RegionId)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed to list flavors").WithError(err)
 	}
@@ -278,18 +278,9 @@ func (g *generator) defaultControlPlaneFlavor(ctx context.Context, request *open
 // defaultImage returns a default image for either control planes or workload pools
 // based on the specified Kubernetes version.
 func (g *generator) defaultImage(ctx context.Context, request *openapi.KubernetesClusterWrite) (*regionapi.Image, error) {
-	images, err := region.Images(ctx, g.region, g.organizationID, request.Spec.RegionId)
+	images, err := g.region.Images(ctx, g.organizationID, request.Spec.RegionId)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("failed to list images").WithError(err)
-	}
-
-	// Only get the version asked for.
-	images = slices.DeleteFunc(images, func(x regionapi.Image) bool {
-		return (*x.Spec.SoftwareVersions)["kubernetes"] != request.Spec.Version
-	})
-
-	if len(images) == 0 {
-		return nil, errors.OAuth2ServerError("unable to select an image")
 	}
 
 	return &images[0], nil

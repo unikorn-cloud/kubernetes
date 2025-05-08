@@ -53,7 +53,6 @@ import (
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/openstackcloudprovider"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/openstackplugincindercsi"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/vcluster"
-	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/region"
 	regionclient "github.com/unikorn-cloud/region/pkg/client"
 	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
 
@@ -428,6 +427,21 @@ func (p *Provisioner) getRegionClient(ctx context.Context, traceName string) (co
 	return ctx, client, nil
 }
 
+func (p *Provisioner) getFlavors(ctx context.Context, client regionapi.ClientWithResponsesInterface, organizationID, regionID string) ([]regionapi.Flavor, error) {
+	resp, err := client.GetApiV1OrganizationsOrganizationIDRegionsRegionIDFlavorsWithResponse(ctx, organizationID, regionID)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return nil, coreapiutils.ExtractError(resp.StatusCode(), resp)
+	}
+
+	flavors := *resp.JSON200
+
+	return flavors, nil
+}
+
 func (p *Provisioner) getIdentity(ctx context.Context, client regionapi.ClientWithResponsesInterface) (*regionapi.IdentityRead, error) {
 	log := log.FromContext(ctx)
 
@@ -538,7 +552,7 @@ func (p *Provisioner) identityOptions(ctx context.Context, client regionapi.Clie
 		return nil, err
 	}
 
-	flavors, err := region.Flavors(ctx, client, p.cluster.Labels[coreconstants.OrganizationLabel], p.cluster.Spec.RegionID)
+	flavors, err := p.getFlavors(ctx, client, p.cluster.Labels[coreconstants.OrganizationLabel], p.cluster.Spec.RegionID)
 	if err != nil {
 		return nil, err
 	}

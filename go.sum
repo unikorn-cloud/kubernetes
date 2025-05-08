@@ -10,6 +10,8 @@ github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6r
 github.com/blang/semver/v4 v4.0.0 h1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=
 github.com/blang/semver/v4 v4.0.0/go.mod h1:IbckMUScFkM3pff0VJDNKRiT6TG/YpiHIM2yvyW5YoQ=
 github.com/bmatcuk/doublestar v1.1.1/go.mod h1:UD6OnuiIn0yFxxA2le/rnRU1G4RaI4UvFv1sNto9p6w=
+github.com/brunoga/deep v1.2.4 h1:Aj9E9oUbE+ccbyh35VC/NHlzzjfIVU69BXu2mt2LmL8=
+github.com/brunoga/deep v1.2.4/go.mod h1:GDV6dnXqn80ezsLSZ5Wlv1PdKAWAO4L5PnKYtv2dgaI=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
 github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
@@ -173,8 +175,8 @@ github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOf
 github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/ugorji/go/codec v1.2.12 h1:9LC83zGrHhuUA9l16C9AHXAqEV/2wBQ4nkvumAE65EE=
 github.com/ugorji/go/codec v1.2.12/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
-github.com/unikorn-cloud/core v0.1.95 h1:i5jyWnleYbFxvniKfneiEeeNL2oCtkJjdGtRJipYH9Y=
-github.com/unikorn-cloud/core v0.1.95/go.mod h1:OdZlqXlkO0EFaThARFYRctKAtsVKimhSZid72OaC43Y=
+github.com/unikorn-cloud/core v0.1.96-rc1 h1:TgSMyHhUWYmWgLXiTWNUsroO3F2LtTJ/k+nEDgDnOAo=
+github.com/unikorn-cloud/core v0.1.96-rc1/go.mod h1:stInT6j9sM9KzDHgNxBtmrdDIAxQuIZI1/TCGo0jNK8=
 github.com/unikorn-cloud/identity v0.2.63 h1:cG3Aa3LmweqOwNtOeq9W29/aoJ4wY0uiulLNzWwn7TY=
 github.com/unikorn-cloud/identity v0.2.63/go.mod h1:xuOIyB4wDAz4+kJfZk2q+8MqGj+9IhVbd0Q38iqBY24=
 github.com/unikorn-cloud/region v0.1.54 h1:orGCMLIMUmSWLOlBBha6q5SgXKAlzFqQJRVhneD4/so=

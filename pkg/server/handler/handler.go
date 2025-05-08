@@ -31,6 +31,7 @@ import (
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/cluster"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/clustermanager"
+	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/identity"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/region"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/virtualcluster"
 	regionclient "github.com/unikorn-cloud/region/pkg/client"
@@ -54,51 +55,55 @@ type Handler struct {
 	issuer *identityclient.TokenIssuer
 
 	// identity is a client to access the identity service.
-	identity *identityclient.Client
+	identity *identity.Client
 
 	// region is a client to access regions.
-	region *regionclient.Client
+	region *region.Client
 }
 
-func New(client client.Client, namespace string, options *Options, issuer *identityclient.TokenIssuer, identity *identityclient.Client, region *regionclient.Client) (*Handler, error) {
+func regionClientGetter(issuer *identityclient.TokenIssuer, factory *regionclient.Client) region.ClientGetterFunc {
+	return func(ctx context.Context) (regionapi.ClientWithResponsesInterface, error) {
+		token, err := issuer.Issue(ctx, "kubernetes-api")
+		if err != nil {
+			return nil, err
+		}
+
+		client, err := factory.Client(ctx, token)
+		if err != nil {
+			return nil, err
+		}
+
+		return client, nil
+	}
+}
+
+func identityClientGetter(issuer *identityclient.TokenIssuer, factory *identityclient.Client) identity.ClientGetterFunc {
+	return func(ctx context.Context) (identityapi.ClientWithResponsesInterface, error) {
+		token, err := issuer.Issue(ctx, "kubernetes-api")
+		if err != nil {
+			return nil, err
+		}
+
+		client, err := factory.Client(ctx, token)
+		if err != nil {
+			return nil, err
+		}
+
+		return client, nil
+	}
+}
+
+func New(client client.Client, namespace string, options *Options, issuer *identityclient.TokenIssuer, identityFactory *identityclient.Client, regionFactory *regionclient.Client) (*Handler, error) {
 	h := &Handler{
 		client:    client,
 		namespace: namespace,
 		options:   options,
 		issuer:    issuer,
-		identity:  identity,
-		region:    region,
+		identity:  identity.New(identityClientGetter(issuer, identityFactory)),
+		region:    region.New(regionClientGetter(issuer, regionFactory)),
 	}
 
 	return h, nil
-}
-
-func (h *Handler) identityClient(ctx context.Context) (*identityapi.ClientWithResponses, error) {
-	token, err := h.issuer.Issue(ctx, "kubernetes-api")
-	if err != nil {
-		return nil, err
-	}
-
-	identity, err := h.identity.Client(ctx, token)
-	if err != nil {
-		return nil, err
-	}
-
-	return identity, nil
-}
-
-func (h *Handler) regionClient(ctx context.Context) (*regionapi.ClientWithResponses, error) {
-	token, err := h.issuer.Issue(ctx, "kubernetes-api")
-	if err != nil {
-		return nil, err
-	}
-
-	region, err := h.region.Client(ctx, token)
-	if err != nil {
-		return nil, err
-	}
-
-	return region, nil
 }
 
 /*
@@ -120,13 +125,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDRegions(w http.ResponseWrit
 		return
 	}
 
-	client, err := h.regionClient(ctx)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := region.Regions(ctx, client, organizationID, params)
+	result, err := h.region.List(ctx, organizationID, params)
 	if err != nil {
 		errors.HandleError(w, r, errors.OAuth2ServerError("unable to read regions").WithError(err))
 		return
@@ -143,13 +142,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDRegionsRegionIDFlavors(w ht
 		return
 	}
 
-	client, err := h.regionClient(ctx)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := region.Flavors(ctx, client, organizationID, regionID)
+	result, err := h.region.Flavors(ctx, organizationID, regionID)
 	if err != nil {
 		errors.HandleError(w, r, errors.OAuth2ServerError("unable to read flavors").WithError(err))
 		return
@@ -166,13 +159,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDRegionsRegionIDImages(w htt
 		return
 	}
 
-	client, err := h.regionClient(ctx)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := region.Images(ctx, client, organizationID, regionID)
+	result, err := h.region.Images(ctx, organizationID, regionID)
 	if err != nil {
 		errors.HandleError(w, r, errors.OAuth2ServerError("unable to read flavors").WithError(err))
 		return
@@ -264,30 +251,14 @@ func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClusterman
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) clusterClient(ctx context.Context) (*cluster.Client, error) {
-	identity, err := h.identityClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	region, err := h.regionClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return cluster.NewClient(h.client, h.namespace, &h.options.Cluster, identity, region), nil
+func (h *Handler) clusterClient() *cluster.Client {
+	return cluster.NewClient(h.client, h.namespace, &h.options.Cluster, h.identity, h.region)
 }
 
 func (h *Handler) GetApiV1OrganizationsOrganizationIDClusters(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter) {
 	ctx := r.Context()
 
-	clusters, err := h.clusterClient(ctx)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := clusters.List(ctx, organizationID)
+	result, err := h.clusterClient().List(ctx, organizationID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -316,13 +287,7 @@ func (h *Handler) PostApiV1OrganizationsOrganizationIDProjectsProjectIDClusters(
 		return
 	}
 
-	clusters, err := h.clusterClient(ctx)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := clusters.Create(ctx, organizationID, projectID, request)
+	result, err := h.clusterClient().Create(ctx, organizationID, projectID, request)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -340,13 +305,7 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDCluster
 		return
 	}
 
-	clusters, err := h.clusterClient(ctx)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	if err := clusters.Delete(ctx, organizationID, projectID, clusterID); err != nil {
+	if err := h.clusterClient().Delete(ctx, organizationID, projectID, clusterID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -355,7 +314,6 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDCluster
 	w.WriteHeader(http.StatusAccepted)
 }
 
-//nolint:dupl
 func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersClusterID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterID openapi.ClusterIDParameter) {
 	ctx := r.Context()
 
@@ -371,13 +329,7 @@ func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDClustersCl
 		return
 	}
 
-	clusters, err := h.clusterClient(ctx)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	if err := clusters.Update(ctx, organizationID, projectID, clusterID, request); err != nil {
+	if err := h.clusterClient().Update(ctx, organizationID, projectID, clusterID, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -394,13 +346,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersCl
 		return
 	}
 
-	clusters, err := h.clusterClient(ctx)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := clusters.GetKubeconfig(ctx, organizationID, projectID, clusterID)
+	result, err := h.clusterClient().GetKubeconfig(ctx, organizationID, projectID, clusterID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -410,30 +356,14 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDProjectsProjectIDClustersCl
 	util.WriteOctetStreamResponse(w, r, http.StatusOK, result)
 }
 
-func (h *Handler) virtualClusterClient(ctx context.Context) (*virtualcluster.Client, error) {
-	identity, err := h.identityClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	region, err := h.regionClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return virtualcluster.NewClient(h.client, h.namespace, identity, region), nil
+func (h *Handler) virtualClusterClient() *virtualcluster.Client {
+	return virtualcluster.NewClient(h.client, h.namespace, h.identity, h.region)
 }
 
 func (h *Handler) GetApiV1OrganizationsOrganizationIDVirtualclusters(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter) {
 	ctx := r.Context()
 
-	virtualclusters, err := h.virtualClusterClient(ctx)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := virtualclusters.List(ctx, organizationID)
+	result, err := h.virtualClusterClient().List(ctx, organizationID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -462,13 +392,7 @@ func (h *Handler) PostApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualcl
 		return
 	}
 
-	virtualclusters, err := h.virtualClusterClient(ctx)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := virtualclusters.Create(ctx, organizationID, projectID, request)
+	result, err := h.virtualClusterClient().Create(ctx, organizationID, projectID, request)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -486,13 +410,7 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDVirtual
 		return
 	}
 
-	virtualclusters, err := h.virtualClusterClient(ctx)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	if err := virtualclusters.Delete(ctx, organizationID, projectID, clusterID); err != nil {
+	if err := h.virtualClusterClient().Delete(ctx, organizationID, projectID, clusterID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -501,7 +419,6 @@ func (h *Handler) DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDVirtual
 	w.WriteHeader(http.StatusAccepted)
 }
 
-//nolint:dupl
 func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualclustersClusterID(w http.ResponseWriter, r *http.Request, organizationID openapi.OrganizationIDParameter, projectID openapi.ProjectIDParameter, clusterID openapi.ClusterIDParameter) {
 	ctx := r.Context()
 
@@ -517,13 +434,7 @@ func (h *Handler) PutApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualclu
 		return
 	}
 
-	virtualclusters, err := h.virtualClusterClient(ctx)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	if err := virtualclusters.Update(ctx, organizationID, projectID, clusterID, request); err != nil {
+	if err := h.virtualClusterClient().Update(ctx, organizationID, projectID, clusterID, request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -540,13 +451,7 @@ func (h *Handler) GetApiV1OrganizationsOrganizationIDProjectsProjectIDVirtualclu
 		return
 	}
 
-	virtualclusters, err := h.virtualClusterClient(ctx)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	result, err := virtualclusters.GetKubeconfig(ctx, organizationID, projectID, clusterID)
+	result, err := h.virtualClusterClient().GetKubeconfig(ctx, organizationID, projectID, clusterID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
