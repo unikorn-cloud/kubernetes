@@ -32,6 +32,7 @@ import (
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/virtualcluster"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/common"
+	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/identity"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/region"
 	regionutil "github.com/unikorn-cloud/kubernetes/pkg/util/region"
 	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
@@ -61,14 +62,14 @@ type Client struct {
 	namespace string
 
 	// identity is a client to access the identity service.
-	identity identityapi.ClientWithResponsesInterface
+	identity *identity.Client
 
 	// region is a client to access regions.
-	region regionapi.ClientWithResponsesInterface
+	region *region.Client
 }
 
 // NewClient returns a new client with required parameters.
-func NewClient(client client.Client, namespace string, identity identityapi.ClientWithResponsesInterface, region regionapi.ClientWithResponsesInterface) *Client {
+func NewClient(client client.Client, namespace string, identity *identity.Client, region *region.Client) *Client {
 	return &Client{
 		client:    client,
 		namespace: namespace,
@@ -120,7 +121,7 @@ func (c *Client) get(ctx context.Context, namespace, clusterID string) (*unikorn
 // regionKubernetesClient wraps up access to the remote Kubernetes cluster for
 // the region.
 func (c *Client) regionKubernetesClient(ctx context.Context, organizationID string, cluster *unikornv1.VirtualKubernetesCluster) (client.Client, error) {
-	region, err := regionutil.Region(ctx, c.region, organizationID, cluster.Spec.RegionID)
+	region, err := c.region.Get(ctx, organizationID, cluster.Spec.RegionID)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +189,7 @@ func (c *Client) GetKubeconfig(ctx context.Context, organizationID, projectID, c
 }
 
 func (c *Client) generateAllocations(ctx context.Context, organizationID string, resource *unikornv1.VirtualKubernetesCluster) (*identityapi.AllocationWrite, error) {
-	flavors, err := region.Flavors(ctx, c.region, organizationID, resource.Spec.RegionID)
+	flavors, err := c.region.Flavors(ctx, organizationID, resource.Spec.RegionID)
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +253,12 @@ func (c *Client) createAllocation(ctx context.Context, organizationID, projectID
 		return nil, err
 	}
 
-	resp, err := c.identity.PostApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsWithResponse(ctx, organizationID, projectID, *allocations)
+	client, err := c.identity.Client(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.PostApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsWithResponse(ctx, organizationID, projectID, *allocations)
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +276,12 @@ func (c *Client) updateAllocation(ctx context.Context, organizationID, projectID
 		return err
 	}
 
-	resp, err := c.identity.PutApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsAllocationIDWithResponse(ctx, organizationID, projectID, resource.Annotations[constants.AllocationAnnotation], *allocations)
+	client, err := c.identity.Client(ctx)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.PutApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsAllocationIDWithResponse(ctx, organizationID, projectID, resource.Annotations[constants.AllocationAnnotation], *allocations)
 	if err != nil {
 		return err
 	}
@@ -283,7 +294,12 @@ func (c *Client) updateAllocation(ctx context.Context, organizationID, projectID
 }
 
 func (c *Client) deleteAllocation(ctx context.Context, organizationID, projectID, allocationID string) error {
-	resp, err := c.identity.DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsAllocationIDWithResponse(ctx, organizationID, projectID, allocationID)
+	client, err := c.identity.Client(ctx)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsAllocationIDWithResponse(ctx, organizationID, projectID, allocationID)
 	if err != nil {
 		return err
 	}
@@ -330,7 +346,7 @@ func (c *Client) Create(ctx context.Context, organizationID, projectID string, r
 		return nil, err
 	}
 
-	cluster, err := newGenerator(c.client, c.region, namespace.Name, organizationID, projectID).generate(ctx, request)
+	cluster, err := newGenerator(c.client, namespace.Name, organizationID, projectID).generate(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -396,7 +412,7 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 		return err
 	}
 
-	required, err := newGenerator(c.client, c.region, namespace.Name, organizationID, projectID).withExisting(current).generate(ctx, request)
+	required, err := newGenerator(c.client, namespace.Name, organizationID, projectID).withExisting(current).generate(ctx, request)
 	if err != nil {
 		return err
 	}
@@ -409,16 +425,16 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 		return errors.OAuth2ServerError("failed to merge annotations").WithError(err)
 	}
 
-	if err := c.updateAllocation(ctx, organizationID, projectID, required); err != nil {
-		return errors.OAuth2ServerError("failed to update quota allocation").WithError(err)
-	}
-
 	// Experience has taught me that modifying caches by accident is a bad thing
 	// so be extra safe and deep copy the existing resource.
 	updated := current.DeepCopy()
 	updated.Labels = required.Labels
 	updated.Annotations = required.Annotations
 	updated.Spec = required.Spec
+
+	if err := c.updateAllocation(ctx, organizationID, projectID, updated); err != nil {
+		return errors.OAuth2ServerError("failed to update quota allocation").WithError(err)
+	}
 
 	if err := c.client.Patch(ctx, updated, client.MergeFrom(current)); err != nil {
 		return errors.OAuth2ServerError("failed to patch cluster").WithError(err)

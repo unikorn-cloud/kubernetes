@@ -29,7 +29,6 @@ import (
 	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/kubernetes/pkg/openapi"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/applicationbundle"
-	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -48,8 +47,6 @@ var (
 type generator struct {
 	// client allows Kubernetes access.
 	client client.Client
-	// region is a client to access regions.
-	region regionapi.ClientWithResponsesInterface
 	// namespace the resource is provisioned in.
 	namespace string
 	// organizationID is the unique organization identifier.
@@ -63,10 +60,9 @@ type generator struct {
 	existing *unikornv1.VirtualKubernetesCluster
 }
 
-func newGenerator(client client.Client, region regionapi.ClientWithResponsesInterface, namespace, organizationID, projectID string) *generator {
+func newGenerator(client client.Client, namespace, organizationID, projectID string) *generator {
 	return &generator{
 		client:         client,
-		region:         region,
 		namespace:      namespace,
 		organizationID: organizationID,
 		projectID:      projectID,

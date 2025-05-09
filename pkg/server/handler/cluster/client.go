@@ -40,6 +40,7 @@ import (
 	"github.com/unikorn-cloud/kubernetes/pkg/provisioners/helmapplications/vcluster"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/clustermanager"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/common"
+	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/identity"
 	"github.com/unikorn-cloud/kubernetes/pkg/server/handler/region"
 	regionapi "github.com/unikorn-cloud/region/pkg/openapi"
 
@@ -92,14 +93,14 @@ type Client struct {
 	options *Options
 
 	// identity is a client to access the identity service.
-	identity identityapi.ClientWithResponsesInterface
+	identity *identity.Client
 
 	// region is a client to access regions.
-	region regionapi.ClientWithResponsesInterface
+	region *region.Client
 }
 
 // NewClient returns a new client with required parameters.
-func NewClient(client client.Client, namespace string, options *Options, identity identityapi.ClientWithResponsesInterface, region regionapi.ClientWithResponsesInterface) *Client {
+func NewClient(client client.Client, namespace string, options *Options, identity *identity.Client, region *region.Client) *Client {
 	return &Client{
 		client:    client,
 		namespace: namespace,
@@ -200,7 +201,7 @@ func (c *Client) GetKubeconfig(ctx context.Context, organizationID, projectID, c
 }
 
 func (c *Client) generateAllocations(ctx context.Context, organizationID string, resource *unikornv1.KubernetesCluster) (*identityapi.AllocationWrite, error) {
-	flavors, err := region.Flavors(ctx, c.region, organizationID, resource.Spec.RegionID)
+	flavors, err := c.region.Flavors(ctx, organizationID, resource.Spec.RegionID)
 	if err != nil {
 		return nil, err
 	}
@@ -280,7 +281,12 @@ func (c *Client) createAllocation(ctx context.Context, organizationID, projectID
 		return nil, err
 	}
 
-	resp, err := c.identity.PostApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsWithResponse(ctx, organizationID, projectID, *allocations)
+	client, err := c.identity.Client(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.PostApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsWithResponse(ctx, organizationID, projectID, *allocations)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +304,12 @@ func (c *Client) updateAllocation(ctx context.Context, organizationID, projectID
 		return err
 	}
 
-	resp, err := c.identity.PutApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsAllocationIDWithResponse(ctx, organizationID, projectID, resource.Annotations[constants.AllocationAnnotation], *allocations)
+	client, err := c.identity.Client(ctx)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.PutApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsAllocationIDWithResponse(ctx, organizationID, projectID, resource.Annotations[constants.AllocationAnnotation], *allocations)
 	if err != nil {
 		return err
 	}
@@ -311,7 +322,12 @@ func (c *Client) updateAllocation(ctx context.Context, organizationID, projectID
 }
 
 func (c *Client) deleteAllocation(ctx context.Context, organizationID, projectID, allocationID string) error {
-	resp, err := c.identity.DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsAllocationIDWithResponse(ctx, organizationID, projectID, allocationID)
+	client, err := c.identity.Client(ctx)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.DeleteApiV1OrganizationsOrganizationIDProjectsProjectIDAllocationsAllocationIDWithResponse(ctx, organizationID, projectID, allocationID)
 	if err != nil {
 		return err
 	}
@@ -342,7 +358,12 @@ func (c *Client) createIdentity(ctx context.Context, organizationID, projectID, 
 		},
 	}
 
-	resp, err := c.region.PostApiV1OrganizationsOrganizationIDProjectsProjectIDIdentitiesWithResponse(ctx, organizationID, projectID, request)
+	client, err := c.region.Client(ctx)
+	if err != nil {
+		return nil, errors.OAuth2ServerError("unable to create region client").WithError(err)
+	}
+
+	resp, err := client.PostApiV1OrganizationsOrganizationIDProjectsProjectIDIdentitiesWithResponse(ctx, organizationID, projectID, request)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("unable to create identity").WithError(err)
 	}
@@ -380,7 +401,12 @@ func (c *Client) createPhysicalNetworkOpenstack(ctx context.Context, organizatio
 		},
 	}
 
-	resp, err := c.region.PostApiV1OrganizationsOrganizationIDProjectsProjectIDIdentitiesIdentityIDNetworksWithResponse(ctx, organizationID, projectID, identity.Metadata.Id, request)
+	client, err := c.region.Client(ctx)
+	if err != nil {
+		return nil, errors.OAuth2ServerError("unable to create region client").WithError(err)
+	}
+
+	resp, err := client.PostApiV1OrganizationsOrganizationIDProjectsProjectIDIdentitiesIdentityIDNetworksWithResponse(ctx, organizationID, projectID, identity.Metadata.Id, request)
 	if err != nil {
 		return nil, errors.OAuth2ServerError("unable to physical network").WithError(err)
 	}
@@ -390,30 +416,6 @@ func (c *Client) createPhysicalNetworkOpenstack(ctx context.Context, organizatio
 	}
 
 	return resp.JSON201, nil
-}
-
-func (c *Client) getRegion(ctx context.Context, organizationID, regionID string) (*regionapi.RegionRead, error) {
-	// TODO: Need a straight get interface rather than a list.
-	resp, err := c.region.GetApiV1OrganizationsOrganizationIDRegionsWithResponse(ctx, organizationID)
-	if err != nil {
-		return nil, errors.OAuth2ServerError("unable to get region").WithError(err)
-	}
-
-	if resp.StatusCode() != http.StatusOK {
-		return nil, errors.OAuth2ServerError("unable to get region")
-	}
-
-	results := *resp.JSON200
-
-	index := slices.IndexFunc(results, func(region regionapi.RegionRead) bool {
-		return region.Metadata.Id == regionID
-	})
-
-	if index < 0 {
-		return nil, errors.OAuth2ServerError("unable to get region")
-	}
-
-	return &results[index], nil
 }
 
 func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizationID, projectID, regionID string, allocation *identityapi.AllocationRead, identity *regionapi.IdentityRead, cluster *unikornv1.KubernetesCluster) error {
@@ -426,7 +428,7 @@ func (c *Client) applyCloudSpecificConfiguration(ctx context.Context, organizati
 	cluster.Annotations[constants.IdentityAnnotation] = identity.Metadata.Id
 
 	// Apply any region specific configuration based on feature flags.
-	region, err := c.getRegion(ctx, organizationID, regionID)
+	region, err := c.region.Get(ctx, organizationID, regionID)
 	if err != nil {
 		return err
 	}
@@ -576,10 +578,6 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 		return errors.OAuth2ServerError("failed to merge annotations").WithError(err)
 	}
 
-	if err := c.updateAllocation(ctx, organizationID, projectID, required); err != nil {
-		return errors.OAuth2ServerError("failed to update quota allocation").WithError(err)
-	}
-
 	// Preserve networking options as if they change it'll be fairly catastrophic.
 	required.Spec.Network = current.Spec.Network
 
@@ -589,6 +587,10 @@ func (c *Client) Update(ctx context.Context, organizationID, projectID, clusterI
 	updated.Labels = required.Labels
 	updated.Annotations = required.Annotations
 	updated.Spec = required.Spec
+
+	if err := c.updateAllocation(ctx, organizationID, projectID, updated); err != nil {
+		return errors.OAuth2ServerError("failed to update quota allocation").WithError(err)
+	}
 
 	if err := c.client.Patch(ctx, updated, client.MergeFrom(current)); err != nil {
 		return errors.OAuth2ServerError("failed to patch cluster").WithError(err)
