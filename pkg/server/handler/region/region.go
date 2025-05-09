@@ -56,10 +56,12 @@ type ClientGetterFunc func(context.Context) (regionapi.ClientWithResponsesInterf
 
 // Client provides a caching layer for retrieval of region assets, and lazy population.
 type Client struct {
-	clientGetter ClientGetterFunc
-	regionCache  *cache.LRUExpireCache[string, []regionapi.RegionRead]
-	flavorCache  *cache.LRUExpireCache[string, []regionapi.Flavor]
-	imageCache   *cache.LRUExpireCache[string, []regionapi.Image]
+	clientGetter  ClientGetterFunc
+	client        regionapi.ClientWithResponsesInterface
+	clientTimeout time.Time
+	regionCache   *cache.LRUExpireCache[string, []regionapi.RegionRead]
+	flavorCache   *cache.LRUExpireCache[string, []regionapi.Flavor]
+	imageCache    *cache.LRUExpireCache[string, []regionapi.Image]
 }
 
 // New returns a new client.
@@ -74,12 +76,26 @@ func New(clientGetter ClientGetterFunc) *Client {
 
 // Client returns a client.
 func (c *Client) Client(ctx context.Context) (regionapi.ClientWithResponsesInterface, error) {
-	return c.clientGetter(ctx)
+	if time.Now().Before(c.clientTimeout) {
+		return c.client, nil
+	}
+
+	client, err := c.clientGetter(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: the timeout should be driven by the token expiry, so we need to expose
+	// that eventually.
+	c.client = client
+	c.clientTimeout = time.Now().Add(10 * time.Minute)
+
+	return client, nil
 }
 
 // Get gets a specific region.
 func (c *Client) Get(ctx context.Context, organizationID, regionID string) (*regionapi.RegionDetailRead, error) {
-	client, err := c.clientGetter(ctx)
+	client, err := c.Client(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +119,7 @@ func (c *Client) list(ctx context.Context, organizationID string) ([]regionapi.R
 		return regions, nil
 	}
 
-	client, err := c.clientGetter(ctx)
+	client, err := c.Client(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +163,7 @@ func (c *Client) Flavors(ctx context.Context, organizationID, regionID string) (
 		return flavors, nil
 	}
 
-	client, err := c.clientGetter(ctx)
+	client, err := c.Client(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +197,7 @@ func (c *Client) Images(ctx context.Context, organizationID, regionID string) ([
 		return images, nil
 	}
 
-	client, err := c.clientGetter(ctx)
+	client, err := c.Client(ctx)
 	if err != nil {
 		return nil, err
 	}
