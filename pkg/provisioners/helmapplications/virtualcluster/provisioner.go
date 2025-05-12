@@ -104,14 +104,15 @@ func (p *Provisioner) Values(ctx context.Context, version unikornv1core.Semantic
 		},
 	}
 
-	// Choose the database options... wisely.
-	// TODO: etcd is only available with a Pro license, we can probably source this from
-	// some controller options pointing at a secret and adapt the configuration based on
-	// its presence.
 	backingStore := map[string]any{
-		"database": map[string]any{
-			"embedded": map[string]any{
+		"etcd": map[string]any{
+			"deploy": map[string]any{
 				"enabled": true,
+				"statefulSet": map[string]any{
+					"highAvailability": map[string]int{
+						"replicas": 3,
+					},
+				},
 			},
 		},
 	}

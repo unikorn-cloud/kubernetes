@@ -76,8 +76,6 @@ spec:
       value: 4Gi
     - name: controlPlane.hostPathMapper.enabled
       value: 'true'
-    - name: controlPlane.backingStore.database.embedded.enabled
-      value: 'true'
     - name: controlPlane.statefulSet.persistence.volumeClaim.retentionPolicy
       value: Delete
     - name: controlPlane.statefulSet.persistence.volumeClaim.size
