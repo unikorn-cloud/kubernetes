@@ -91,7 +91,7 @@ GENAPIBASE = github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1
 GENARGS = --go-header-file hack/boilerplate.go.txt
 
 # This defines how docker containers are tagged.
-DOCKER_ORG = ghcr.io/unikorn-cloud
+DOCKER_ORG = ghcr.io/nscaledev
 
 # Main target, builds all binaries.
 .PHONY: all
