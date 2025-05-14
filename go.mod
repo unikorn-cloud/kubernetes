@@ -115,3 +115,9 @@ require (
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.7.0 // indirect
 )
+
+replace (
+	github.com/unikorn-cloud/core => github.com/nscaledev/uni-core v1.0.0
+	github.com/unikorn-cloud/identity => github.com/nscaledev/uni-identity v1.0.0
+	github.com/unikorn-cloud/region => github.com/nscaledev/uni-region v1.0.0
+)

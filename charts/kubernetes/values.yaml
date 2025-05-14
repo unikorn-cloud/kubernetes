@@ -2,7 +2,7 @@
 repository: ghcr.io
 
 # Set the global container repo organization.
-organization: unikorn-cloud
+organization: nscaledev
 
 # Set the global container tag.
 # Defaults to the chart revision, which should be in lock-step with the
