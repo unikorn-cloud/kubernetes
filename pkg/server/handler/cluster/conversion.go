@@ -283,6 +283,15 @@ func (g *generator) defaultImage(ctx context.Context, request *openapi.Kubernete
 		return nil, errors.OAuth2ServerError("failed to list images").WithError(err)
 	}
 
+	// Only get the version asked for.
+	images = slices.DeleteFunc(images, func(x regionapi.Image) bool {
+		return (*x.Spec.SoftwareVersions)["kubernetes"] != request.Spec.Version
+	})
+
+	if len(images) == 0 {
+		return nil, errors.OAuth2ServerError("unable to select an image")
+	}
+
 	return &images[0], nil
 }
 
