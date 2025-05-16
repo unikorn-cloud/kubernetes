@@ -22,13 +22,6 @@ linters:
   settings:
     nlreturn:
       block-size: 2
-    gomoddirectives:
-      replace-allow-list:
-      - github.com/unikorn-cloud/core
-      - github.com/unikorn-cloud/identity
-      - github.com/unikorn-cloud/region
-      - github.com/unikorn-cloud/kubernetes
-      - github.com/unikorn-cloud/compute
   exclusions:
     generated: lax
     presets:
