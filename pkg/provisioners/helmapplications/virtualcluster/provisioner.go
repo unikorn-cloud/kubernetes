@@ -36,7 +36,7 @@ var (
 	//nolint:gochecknoglobals
 	durationMetric = prometheus.NewHistogram(prometheus.HistogramOpts{
 		Name: "unikorn_virtual_kubernetes_provision_duration",
-		Help: "Time taken for vcluster to provision",
+		Help: "Time taken for virtual cluster to provision",
 		Buckets: []float64{
 			1, 5, 10, 15, 20, 30, 45, 60, 90, 120,
 		},
@@ -88,8 +88,7 @@ func (p *Provisioner) Values(ctx context.Context, version unikornv1core.Semantic
 
 	// Allow users to actually hit the cluster.
 	ingress := map[string]any{
-		"enabled": true,
-		"host":    hostname,
+		"host": hostname,
 		"spec": map[string]any{
 			"tls": []any{
 				map[string]any{
@@ -104,44 +103,8 @@ func (p *Provisioner) Values(ctx context.Context, version unikornv1core.Semantic
 		},
 	}
 
-	backingStore := map[string]any{
-		"etcd": map[string]any{
-			"deploy": map[string]any{
-				"enabled": true,
-				"statefulSet": map[string]any{
-					"highAvailability": map[string]int{
-						"replicas": 3,
-					},
-				},
-			},
-		},
-	}
-
-	// Clean up the volume when the cluster is deleted, lest we leak a ton of space.
-	statefulSet := map[string]any{
-		"persistence": map[string]any{
-			"volumeClaim": map[string]any{
-				"retentionPolicy": "Delete",
-			},
-		},
-	}
-
 	controlPlane := map[string]any{
-		"ingress":      ingress,
-		"backingStore": backingStore,
-		"statefulSet":  statefulSet,
-	}
-
-	sync := map[string]any{
-		"fromHost": map[string]any{
-			"nodes": map[string]any{
-				"enabled":          true,
-				"clearImageStatus": true,
-			},
-			"runtimeClasses": map[string]any{
-				"enabled": true,
-			},
-		},
+		"ingress": ingress,
 	}
 
 	// Block all network traffic between vclusters and the underlying system,
@@ -170,21 +133,16 @@ func (p *Provisioner) Values(ctx context.Context, version unikornv1core.Semantic
 	//               k8s-app: metrics-server
 	//   policyTypes:
 	//     - Egress
-	policies := map[string]any{
-		"networkPolicy": map[string]any{
-			"enabled": true,
-		},
-	}
 
 	kubeConfig := map[string]any{
 		"server": "https://" + hostname,
 	}
 
 	values := map[string]any{
-		"controlPlane":     controlPlane,
-		"policies":         policies,
-		"sync":             sync,
-		"exportKubeConfig": kubeConfig,
+		"vcluster": map[string]any{ // values for the `vcluster` subchart
+			"controlPlane":     controlPlane,
+			"exportKubeConfig": kubeConfig,
+		},
 	}
 
 	return values, nil
