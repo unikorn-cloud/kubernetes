@@ -19,6 +19,7 @@ package virtualcluster
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -41,6 +42,10 @@ var (
 			1, 5, 10, 15, 20, 30, 45, 60, 90, 120,
 		},
 	})
+)
+
+var (
+	errNoVKCInContext = errors.New("no VirtualKubernetesCluster in context")
 )
 
 //nolint:gochecknoinits
@@ -84,7 +89,13 @@ func (p *Provisioner) Values(ctx context.Context, version unikornv1core.Semantic
 	// and the cost is "what you use", we'll need to worry about billing, so it may
 	// be prudent to add organization, project and cluster labels to pods.
 	// We use SNI to demutiplex at the ingress to the correct vcluster instance.
-	hostname := p.ReleaseName(ctx) + "." + p.domain
+	vkc, ok := application.FromContext(ctx).(*unikornv1.VirtualKubernetesCluster)
+	if !ok {
+		return nil, errNoVKCInContext
+	}
+
+	releaseName := p.ReleaseName(ctx)
+	hostname := releaseName + "." + p.domain
 
 	// Allow users to actually hit the cluster.
 	ingress := map[string]any{
@@ -185,7 +196,21 @@ func (p *Provisioner) Values(ctx context.Context, version unikornv1core.Semantic
 		"policies":         policies,
 		"sync":             sync,
 		"exportKubeConfig": kubeConfig,
+		"workloadPools":    workloadPoolsAsValues(vkc),
 	}
 
 	return values, nil
+}
+
+func workloadPoolsAsValues(vkc *unikornv1.VirtualKubernetesCluster) []any {
+	pools := make([]any, len(vkc.Spec.WorkloadPools))
+	for i, pool := range vkc.Spec.WorkloadPools {
+		pools[i] = map[string]any{
+			"name":     pool.Name,
+			"replicas": pool.Replicas,
+			"flavorId": pool.FlavorID,
+		}
+	}
+
+	return pools
 }
