@@ -20,6 +20,7 @@ package v1alpha1
 import (
 	"errors"
 	"fmt"
+	"iter"
 	"strings"
 	"time"
 
@@ -39,6 +40,39 @@ var (
 	// present in an application bundle bundle.
 	ErrApplicationLookup = errors.New("failed to lookup an application")
 )
+
+// All implements generic iteration over list items.
+func (l *ClusterManagerList) All() iter.Seq[*ClusterManager] {
+	return func(yield func(t *ClusterManager) bool) {
+		for i := range l.Items {
+			if !yield(&l.Items[i]) {
+				return
+			}
+		}
+	}
+}
+
+// All implements generic iteration over list items.
+func (l *KubernetesClusterList) All() iter.Seq[*KubernetesCluster] {
+	return func(yield func(t *KubernetesCluster) bool) {
+		for i := range l.Items {
+			if !yield(&l.Items[i]) {
+				return
+			}
+		}
+	}
+}
+
+// All implements generic iteration over list items.
+func (l *VirtualKubernetesClusterList) All() iter.Seq[*VirtualKubernetesCluster] {
+	return func(yield func(t *VirtualKubernetesCluster) bool) {
+		for i := range l.Items {
+			if !yield(&l.Items[i]) {
+				return
+			}
+		}
+	}
+}
 
 // Paused implements the ReconcilePauser interface.
 func (c *ClusterManager) Paused() bool {
