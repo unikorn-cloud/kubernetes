@@ -27,7 +27,6 @@ import (
 	"github.com/Masterminds/semver/v3"
 
 	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
-	coreopenapi "github.com/unikorn-cloud/core/pkg/openapi"
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/identity/pkg/middleware/authorization"
@@ -180,14 +179,8 @@ func convertAutoUpgrade(in *unikornv1.ApplicationBundleAutoUpgradeSpec) *openapi
 
 // convert converts from a custom resource into the API definition.
 func convert(in *unikornv1.KubernetesCluster) *openapi.KubernetesClusterRead {
-	provisioningStatus := coreopenapi.ResourceProvisioningStatusUnknown
-
-	if condition, err := in.StatusConditionRead(unikornv1core.ConditionAvailable); err == nil {
-		provisioningStatus = conversion.ConvertStatusCondition(condition)
-	}
-
 	out := &openapi.KubernetesClusterRead{
-		Metadata: conversion.ProjectScopedResourceReadMetadata(in, in.Spec.Tags, provisioningStatus),
+		Metadata: conversion.ProjectScopedResourceReadMetadata(in, in.Spec.Tags),
 		Spec: openapi.KubernetesClusterSpec{
 			RegionId:              in.Spec.RegionID,
 			ClusterManagerId:      &in.Spec.ClusterManagerID,

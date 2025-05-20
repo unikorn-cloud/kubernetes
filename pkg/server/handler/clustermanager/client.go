@@ -21,7 +21,6 @@ import (
 	"context"
 	"slices"
 
-	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
 	"github.com/unikorn-cloud/core/pkg/constants"
 	coreopenapi "github.com/unikorn-cloud/core/pkg/openapi"
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
@@ -99,14 +98,8 @@ func (c *Client) CreateImplicit(ctx context.Context, organizationID, projectID s
 
 // convert converts from Kubernetes into OpenAPI types.
 func (c *Client) convert(in *unikornv1.ClusterManager) *openapi.ClusterManagerRead {
-	provisioningStatus := coreopenapi.ResourceProvisioningStatusUnknown
-
-	if condition, err := in.StatusConditionRead(unikornv1core.ConditionAvailable); err == nil {
-		provisioningStatus = conversion.ConvertStatusCondition(condition)
-	}
-
 	out := &openapi.ClusterManagerRead{
-		Metadata: conversion.ProjectScopedResourceReadMetadata(in, in.Spec.Tags, provisioningStatus),
+		Metadata: conversion.ProjectScopedResourceReadMetadata(in, in.Spec.Tags),
 	}
 
 	return out

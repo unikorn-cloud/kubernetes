@@ -21,8 +21,6 @@ import (
 	goerrors "errors"
 	"slices"
 
-	unikornv1core "github.com/unikorn-cloud/core/pkg/apis/unikorn/v1alpha1"
-	coreopenapi "github.com/unikorn-cloud/core/pkg/openapi"
 	"github.com/unikorn-cloud/core/pkg/server/conversion"
 	"github.com/unikorn-cloud/core/pkg/server/errors"
 	"github.com/unikorn-cloud/identity/pkg/middleware/authorization"
@@ -99,14 +97,8 @@ func convertWorkloadPools(in *unikornv1.VirtualKubernetesCluster) []openapi.Virt
 
 // convert converts from a custom resource into the API definition.
 func convert(in *unikornv1.VirtualKubernetesCluster) *openapi.VirtualKubernetesClusterRead {
-	provisioningStatus := coreopenapi.ResourceProvisioningStatusUnknown
-
-	if condition, err := in.StatusConditionRead(unikornv1core.ConditionAvailable); err == nil {
-		provisioningStatus = conversion.ConvertStatusCondition(condition)
-	}
-
 	out := &openapi.VirtualKubernetesClusterRead{
-		Metadata: conversion.ProjectScopedResourceReadMetadata(in, in.Spec.Tags, provisioningStatus),
+		Metadata: conversion.ProjectScopedResourceReadMetadata(in, in.Spec.Tags),
 		Spec: openapi.VirtualKubernetesClusterSpec{
 			RegionId:      in.Spec.RegionID,
 			WorkloadPools: convertWorkloadPools(in),
