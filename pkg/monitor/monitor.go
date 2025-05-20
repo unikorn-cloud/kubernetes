@@ -23,6 +23,8 @@ import (
 
 	"github.com/spf13/pflag"
 
+	unikornv1 "github.com/unikorn-cloud/kubernetes/pkg/apis/unikorn/v1alpha1"
+	healthchecker "github.com/unikorn-cloud/kubernetes/pkg/monitor/health/util"
 	upgradecluster "github.com/unikorn-cloud/kubernetes/pkg/monitor/upgrade/cluster"
 	upgradeclustermanager "github.com/unikorn-cloud/kubernetes/pkg/monitor/upgrade/clustermanager"
 
@@ -59,6 +61,9 @@ func Run(ctx context.Context, c client.Client, o *Options) {
 	checkers := []Checker{
 		upgradecluster.New(c),
 		upgradeclustermanager.New(c),
+		healthchecker.New(c, &unikornv1.ClusterManager{}, &unikornv1.ClusterManagerList{}),
+		healthchecker.New(c, &unikornv1.KubernetesCluster{}, &unikornv1.KubernetesClusterList{}),
+		healthchecker.New(c, &unikornv1.VirtualKubernetesCluster{}, &unikornv1.VirtualKubernetesClusterList{}),
 	}
 
 	for {
