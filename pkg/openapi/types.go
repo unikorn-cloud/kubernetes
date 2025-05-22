@@ -19,12 +19,13 @@ const (
 
 // ClusterManagerRead A cluster manager.
 type ClusterManagerRead struct {
+	// Metadata Metadata required by project scoped resource reads.
 	Metadata externalRef0.ProjectScopedResourceReadMetadata `json:"metadata"`
 }
 
 // ClusterManagerWrite A cluster manager.
 type ClusterManagerWrite struct {
-	// Metadata Resource metadata valid for all API resource reads and writes.
+	// Metadata Metadata required for all API resource reads and writes.
 	Metadata externalRef0.ResourceWriteMetadata `json:"metadata"`
 }
 
@@ -40,10 +41,10 @@ type KubernetesClusterAPI struct {
 	SubjectAlternativeNames *[]string `json:"subjectAlternativeNames,omitempty"`
 }
 
-// KubernetesClusterAutoUpgrade If set enables auto-upgrade to a set schedule, or opt out of upgrades
-// entirely.  Upgrades still occur when the cluster's application bundle
-// reaches end of life irrespective of whether auto upgrades are disabled.
-// The absence of this object represents a default auto-upgrade policy of
+// KubernetesClusterAutoUpgrade If set, enables auto-upgrade to a set schedule, or if not set, opts
+// out of upgrades entirely.  Upgrades still occur when the cluster's
+// application bundle reaches end of life irrespective of whether auto upgrades
+// are disabled. The absence of this object represents a default auto-upgrade policy of
 // the platform.
 type KubernetesClusterAutoUpgrade struct {
 	// DaysOfWeek When defined allows explicit control of what days an auto upgrade can
@@ -58,50 +59,50 @@ type KubernetesClusterAutoUpgrade struct {
 // occur on.
 type KubernetesClusterAutoUpgradeDaysOfWeek struct {
 	// Friday Defines when in the day an upgrade is allowed to occur, specified as an
-	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// hour starting from 0 up to 23.  Upgrade windows can overflow into the next
 	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
 	// stop upgrades after 6am.
 	Friday *KubernetesClusterAutoUpgradeWindow `json:"friday,omitempty"`
 
 	// Monday Defines when in the day an upgrade is allowed to occur, specified as an
-	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// hour starting from 0 up to 23.  Upgrade windows can overflow into the next
 	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
 	// stop upgrades after 6am.
 	Monday *KubernetesClusterAutoUpgradeWindow `json:"monday,omitempty"`
 
 	// Saturday Defines when in the day an upgrade is allowed to occur, specified as an
-	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// hour starting from 0 up to 23.  Upgrade windows can overflow into the next
 	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
 	// stop upgrades after 6am.
 	Saturday *KubernetesClusterAutoUpgradeWindow `json:"saturday,omitempty"`
 
 	// Sunday Defines when in the day an upgrade is allowed to occur, specified as an
-	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// hour starting from 0 up to 23.  Upgrade windows can overflow into the next
 	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
 	// stop upgrades after 6am.
 	Sunday *KubernetesClusterAutoUpgradeWindow `json:"sunday,omitempty"`
 
 	// Thursday Defines when in the day an upgrade is allowed to occur, specified as an
-	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// hour starting from 0 up to 23.  Upgrade windows can overflow into the next
 	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
 	// stop upgrades after 6am.
 	Thursday *KubernetesClusterAutoUpgradeWindow `json:"thursday,omitempty"`
 
 	// Tuesday Defines when in the day an upgrade is allowed to occur, specified as an
-	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// hour starting from 0 up to 23.  Upgrade windows can overflow into the next
 	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
 	// stop upgrades after 6am.
 	Tuesday *KubernetesClusterAutoUpgradeWindow `json:"tuesday,omitempty"`
 
 	// Wednesday Defines when in the day an upgrade is allowed to occur, specified as an
-	// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+	// hour starting from 0 up to 23.  Upgrade windows can overflow into the next
 	// day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
 	// stop upgrades after 6am.
 	Wednesday *KubernetesClusterAutoUpgradeWindow `json:"wednesday,omitempty"`
 }
 
 // KubernetesClusterAutoUpgradeWindow Defines when in the day an upgrade is allowed to occur, specified as an
-// hour starting from 0 up to 23\.  Upgrade windows can overflow into the next
+// hour starting from 0 up to 23.  Upgrade windows can overflow into the next
 // day e.g. a start of 22 will begin upgrades from 10pm, and an end of 6 will
 // stop upgrades after 6am.
 type KubernetesClusterAutoUpgradeWindow struct {
@@ -119,7 +120,7 @@ type KubernetesClusterAutoscaling struct {
 	MinimumReplicas int `json:"minimumReplicas"`
 }
 
-// KubernetesClusterNetwork A kubernetes cluster network settings.
+// KubernetesClusterNetwork A Kubernetes cluster network settings.
 type KubernetesClusterNetwork struct {
 	// DnsNameservers A list of DNS name server to use.
 	DnsNameservers *[]string `json:"dnsNameservers,omitempty"`
@@ -136,6 +137,7 @@ type KubernetesClusterNetwork struct {
 
 // KubernetesClusterRead Kubernetes cluster read.
 type KubernetesClusterRead struct {
+	// Metadata Metadata required by project scoped resource reads.
 	Metadata externalRef0.ProjectScopedResourceReadMetadata `json:"metadata"`
 
 	// Spec Kubernetes cluster creation parameters.
@@ -150,10 +152,10 @@ type KubernetesClusterSpec struct {
 	// ApplicationBundleName An explicit set of applications to use for deploy.
 	ApplicationBundleName *string `json:"applicationBundleName,omitempty"`
 
-	// AutoUpgrade If set enables auto-upgrade to a set schedule, or opt out of upgrades
-	// entirely.  Upgrades still occur when the cluster's application bundle
-	// reaches end of life irrespective of whether auto upgrades are disabled.
-	// The absence of this object represents a default auto-upgrade policy of
+	// AutoUpgrade If set, enables auto-upgrade to a set schedule, or if not set, opts
+	// out of upgrades entirely.  Upgrades still occur when the cluster's
+	// application bundle reaches end of life irrespective of whether auto upgrades
+	// are disabled. The absence of this object represents a default auto-upgrade policy of
 	// the platform.
 	AutoUpgrade *KubernetesClusterAutoUpgrade `json:"autoUpgrade,omitempty"`
 
@@ -161,20 +163,20 @@ type KubernetesClusterSpec struct {
 	// the system will create one for you.
 	ClusterManagerId *string `json:"clusterManagerId,omitempty"`
 
-	// Networking A kubernetes cluster network settings.
+	// Networking A Kubernetes cluster network settings.
 	Networking *KubernetesClusterNetwork `json:"networking,omitempty"`
 
 	// RegionId The region to provision the cluster in.
 	RegionId string `json:"regionId"`
 
-	// Version The Kuebernetes version.  This should be derived from image metadata.
+	// Version The Kubernetes version.  This should be derived from image metadata.
 	Version string `json:"version"`
 
 	// WorkloadPools A list of Kubernetes cluster workload pools.
 	WorkloadPools KubernetesClusterWorkloadPools `json:"workloadPools"`
 }
 
-// KubernetesClusterWorkloadPool A Kuberntes cluster workload pool.
+// KubernetesClusterWorkloadPool A Kubernetes cluster workload pool.
 type KubernetesClusterWorkloadPool struct {
 	// Autoscaling A Kubernetes cluster workload pool autoscaling configuration. Cluster autoscaling
 	// must also be enabled in the cluster features.
@@ -195,7 +197,7 @@ type KubernetesClusterWorkloadPools = []KubernetesClusterWorkloadPool
 
 // KubernetesClusterWrite Kubernetes cluster create or update.
 type KubernetesClusterWrite struct {
-	// Metadata Resource metadata valid for all API resource reads and writes.
+	// Metadata Metadata required for all API resource reads and writes.
 	Metadata externalRef0.ResourceWriteMetadata `json:"metadata"`
 
 	// Spec Kubernetes cluster creation parameters.
@@ -220,12 +222,13 @@ type MachinePool struct {
 	Replicas *int `json:"replicas,omitempty"`
 }
 
-// RegionTypeParameter The region type, "physical" means a full Kubernetes cluster deployment, "virtual" is a virtual
+// RegionTypeParameter The region type. "physical" means a full Kubernetes cluster deployment, "virtual" is a virtual
 // Kubernetes cluster hosted by another one.
 type RegionTypeParameter string
 
 // VirtualKubernetesClusterRead Virtual Kubernetes cluster read.
 type VirtualKubernetesClusterRead struct {
+	// Metadata Metadata required by project scoped resource reads.
 	Metadata externalRef0.ProjectScopedResourceReadMetadata `json:"metadata"`
 
 	// Spec Virtual Kubernetes cluster creation parameters.
@@ -258,7 +261,7 @@ type VirtualKubernetesClusterWorkloadPools = []VirtualKubernetesClusterWorkloadP
 
 // VirtualKubernetesClusterWrite Virtual Kubernetes cluster create or update.
 type VirtualKubernetesClusterWrite struct {
-	// Metadata Resource metadata valid for all API resource reads and writes.
+	// Metadata Metadata required for all API resource reads and writes.
 	Metadata externalRef0.ResourceWriteMetadata `json:"metadata"`
 
 	// Spec Virtual Kubernetes cluster creation parameters.
