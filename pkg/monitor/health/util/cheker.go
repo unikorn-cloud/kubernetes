@@ -26,8 +26,6 @@ import (
 	"github.com/unikorn-cloud/core/pkg/cd/argocd"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -36,26 +34,27 @@ var (
 	ErrTypeConversion = errors.New("type conversion error")
 )
 
+type Lister[T unikornv1.ManagableResourceInterface] interface {
+	client.ObjectList
+	GetItems() []T
+}
+
 // HealthChecker lists all resources of the specified type and does a health check on it.
 // The type itself is constrained to a manageable resource so we can get the label selector
 // to pass to the CD layer to get all applications for the resource, then once we have
 // checked the status of those applications we can set the condition generically, again
 // as provided by the manageable resource interface.
-type HealthChecker[T unikornv1.ManagableResourceInterface, L client.ObjectList] struct {
+type HealthChecker[T unikornv1.ManagableResourceInterface, L Lister[T]] struct {
 	// client allows access to Kubernetes resources.
 	client client.Client
-	// t is storage for the manageable resource.
-	t T
-	// l is storage for the manageable resource list.
-	l L
+	l      L
 }
 
 // New creates a new checker.  All types can be inferred, the template parameters
 // are purely for type constraints.
-func New[T unikornv1.ManagableResourceInterface, L client.ObjectList](client client.Client, t T, l L) *HealthChecker[T, L] {
+func New[T unikornv1.ManagableResourceInterface, L Lister[T]](client client.Client, l L) *HealthChecker[T, L] {
 	return &HealthChecker[T, L]{
 		client: client,
-		t:      t,
 		l:      l,
 	}
 }
@@ -136,35 +135,11 @@ func (c *HealthChecker[T, L]) Check(ctx context.Context) error {
 		return err
 	}
 
-	// Now for the fun bit... there is no generic way to iterate over list
-	// items, so we need to destructure...
-	o, err := runtime.DefaultUnstructuredConverter.ToUnstructured(c.l)
-	if err != nil {
-		return err
-	}
-
-	// ... then the unstructured stuff will handle any types with an items
-	// field in it.
-	l := &unstructured.UnstructuredList{}
-	l.SetUnstructuredContent(o)
-
-	callback := func(o runtime.Object) error {
-		// As we iterate over the objects we can convert back into a
-		// useful interface type.
-		u, ok := o.(*unstructured.Unstructured)
-		if !ok {
-			return fmt.Errorf("%w: failed to convert from runtime.Object to ManageableResourceInterface", ErrTypeConversion)
-		}
-
-		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, c.t); err != nil {
+	items := c.l.GetItems()
+	for i := range items {
+		if err := c.check(ctx, items[i]); err != nil {
 			return err
 		}
-
-		return c.check(ctx, c.t)
-	}
-
-	if err := l.EachListItem(callback); err != nil {
-		return err
 	}
 
 	return nil

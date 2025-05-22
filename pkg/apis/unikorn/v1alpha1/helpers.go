@@ -98,6 +98,16 @@ func (c *ClusterManager) UpgradeSpec() *ApplicationBundleAutoUpgradeSpec {
 	return c.Spec.ApplicationBundleAutoUpgrade
 }
 
+func (l *ClusterManagerList) GetItems() []*ClusterManager {
+	result := make([]*ClusterManager, len(l.Items))
+
+	for i := range l.Items {
+		result[i] = &l.Items[i]
+	}
+
+	return result
+}
+
 // StatusConditionRead scans the status conditions for an existing condition whose type
 // matches.
 func (c *KubernetesCluster) StatusConditionRead(t unikornv1core.ConditionType) (*unikornv1core.Condition, error) {
@@ -162,6 +172,16 @@ func (c *KubernetesCluster) GetWorkloadPool(name string) *KubernetesClusterWorkl
 	return nil
 }
 
+func (l *KubernetesClusterList) GetItems() []*KubernetesCluster {
+	result := make([]*KubernetesCluster, len(l.Items))
+
+	for i := range l.Items {
+		result[i] = &l.Items[i]
+	}
+
+	return result
+}
+
 // StatusConditionRead scans the status conditions for an existing condition whose type
 // matches.
 func (c *VirtualKubernetesCluster) StatusConditionRead(t unikornv1core.ConditionType) (*unikornv1core.Condition, error) {
@@ -196,6 +216,16 @@ func (c *VirtualKubernetesCluster) ResourceLabels() (labels.Set, error) {
 	}
 
 	return labels, nil
+}
+
+func (l *VirtualKubernetesClusterList) GetItems() []*VirtualKubernetesCluster {
+	result := make([]*VirtualKubernetesCluster, len(l.Items))
+
+	for i := range l.Items {
+		result[i] = &l.Items[i]
+	}
+
+	return result
 }
 
 func CompareClusterManager(a, b ClusterManager) int {
