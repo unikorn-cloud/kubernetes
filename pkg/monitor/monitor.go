@@ -61,9 +61,9 @@ func Run(ctx context.Context, c client.Client, o *Options) {
 	checkers := []Checker{
 		upgradecluster.New(c),
 		upgradeclustermanager.New(c),
-		healthchecker.New(c, &unikornv1.ClusterManager{}, &unikornv1.ClusterManagerList{}),
-		healthchecker.New(c, &unikornv1.KubernetesCluster{}, &unikornv1.KubernetesClusterList{}),
-		healthchecker.New(c, &unikornv1.VirtualKubernetesCluster{}, &unikornv1.VirtualKubernetesClusterList{}),
+		healthchecker.New(c, &unikornv1.ClusterManagerList{}),
+		healthchecker.New(c, &unikornv1.KubernetesClusterList{}),
+		healthchecker.New(c, &unikornv1.VirtualKubernetesClusterList{}),
 	}
 
 	for {
